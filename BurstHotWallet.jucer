@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="GmxFtL" name="BurstHotWallet" projectType="guiapp" version="1.0.0"
+              bundleIdentifier="com.CE.ArBit" includeBinaryInAppConfig="1"
+              jucerVersion="4.2.1" companyName="CryptoExtensions">
+  <MAINGROUP id="OXzctD" name="BurstHotWallet">
+    <GROUP id="{D85C0C04-C916-D7B6-1C02-82BD1D0BBF3E}" name="Source">
+      <FILE id="BGJyRW" name="BurstHotWallet-icon.svg" compile="0" resource="1"
+            file="Source/BurstHotWallet-icon.svg"/>
+      <FILE id="Uc0DyG" name="TransactionsComponent.cpp" compile="1" resource="0"
+            file="Source/TransactionsComponent.cpp"/>
+      <FILE id="VO6TiQ" name="TransactionsComponent.h" compile="0" resource="0"
+            file="Source/TransactionsComponent.h"/>
+      <FILE id="J4K7o8" name="AboutComponent.cpp" compile="1" resource="0"
+            file="Source/AboutComponent.cpp"/>
+      <FILE id="y6SXuB" name="AboutComponent.h" compile="0" resource="0"
+            file="Source/AboutComponent.h"/>
+      <FILE id="gLSPIA" name="HistoryComponent.cpp" compile="1" resource="0"
+            file="Source/HistoryComponent.cpp"/>
+      <FILE id="Q2c2qV" name="HistoryComponent.h" compile="0" resource="0"
+            file="Source/HistoryComponent.h"/>
+      <FILE id="R2JWUQ" name="SendComponent.cpp" compile="1" resource="0"
+            file="Source/SendComponent.cpp"/>
+      <FILE id="nSUpLF" name="SendComponent.h" compile="0" resource="0" file="Source/SendComponent.h"/>
+      <FILE id="z2nCzY" name="PinComponent.cpp" compile="1" resource="0"
+            file="Source/PinComponent.cpp"/>
+      <FILE id="JSC3Np" name="PinComponent.h" compile="0" resource="0" file="Source/PinComponent.h"/>
+      <FILE id="JBwRoq" name="InterfaceComponent.cpp" compile="1" resource="0"
+            file="Source/InterfaceComponent.cpp"/>
+      <FILE id="fO10aA" name="InterfaceComponent.h" compile="0" resource="0"
+            file="Source/InterfaceComponent.h"/>
+      <FILE id="XriQgD" name="Listeners.h" compile="0" resource="0" file="Source/Listeners.h"/>
+      <FILE id="nc6G9z" name="Logger.cpp" compile="1" resource="0" file="Source/Logger.cpp"/>
+      <FILE id="bhMvMx" name="Logger.h" compile="0" resource="0" file="Source/Logger.h"/>
+      <FILE id="UNAsHl" name="LookAndFeel.cpp" compile="1" resource="0" file="Source/LookAndFeel.cpp"/>
+      <FILE id="EQJIKL" name="LookAndFeel.h" compile="0" resource="0" file="Source/LookAndFeel.h"/>
+      <FILE id="chBqlr" name="NotoSans-Regular.ttf" compile="0" resource="1"
+            file="Source/NotoSans-Regular.ttf"/>
+      <FILE id="M2ktYL" name="SettingsComponent.cpp" compile="1" resource="0"
+            file="Source/SettingsComponent.cpp"/>
+      <FILE id="Um98eE" name="SettingsComponent.h" compile="0" resource="0"
+            file="Source/SettingsComponent.h"/>
+      <FILE id="dfHF2d" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <XCODE_MAC targetFolder="Builds/MacOSX" smallIcon="BGJyRW" bigIcon="BGJyRW">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="BurstHotWallet"
+                       headerPath="$(SRCROOT)/../../../../../Libs/JUCE_4.3.0/modules&#10;$(SRCROOT)/../../../BurstLib/Source&#10;$(SRCROOT)/../../../../../Libs/boost_1_67_0"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="BurstHotWallet"
+                       headerPath="$(SRCROOT)/../../../../../Libs/JUCE_4.3.0/modules&#10;$(SRCROOT)/../../../BurstLib/Source&#10;$(SRCROOT)/../../../../../Libs/boost_1_67_0"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_video" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+      </MODULEPATHS>
+    </XCODE_MAC>
+    <VS2013 targetFolder="Builds/VisualStudio2013" extraLinkerFlags="/MANIFESTUAC:level='asInvoker'"
+            smallIcon="BGJyRW" bigIcon="BGJyRW">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
+                       isDebug="1" optimisation="1" targetName="BurstHotWallet" headerPath="E:\Libraries\boost_1_64_0&#10;..\..\..\..\..\BurstLib\trunk\Source"
+                       prebuildCommand="revision-update.bat &quot;$(ProjectDir)..\..\&quot;"/>
+        <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
+                       isDebug="0" optimisation="2" targetName="BurstHotWallet" headerPath="E:\Libraries\boost_1_64_0&#10;..\..\..\..\..\BurstLib\trunk\Source"
+                       prebuildCommand="revision-update.bat &quot;$(ProjectDir)..\..\&quot;"
+                       useRuntimeLibDLL="0"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../../../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_video" path="../../../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+      </MODULEPATHS>
+    </VS2013>
+    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" smallIcon="BGJyRW" bigIcon="BGJyRW">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="BurstHotWallet"
+                       libraryPath="/usr/X11R6/lib/"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="BurstHotWallet"
+                       libraryPath="/usr/X11R6/lib/"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_video" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
+      </MODULEPATHS>
+    </LINUX_MAKE>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="0" useLocalCopy="0"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_formats" showAllCode="0" useLocalCopy="0"/>
+    <MODULE id="juce_audio_processors" showAllCode="0" useLocalCopy="0"/>
+    <MODULE id="juce_core" showAllCode="0" useLocalCopy="0"/>
+    <MODULE id="juce_cryptography" showAllCode="0" useLocalCopy="0"/>
+    <MODULE id="juce_data_structures" showAllCode="0" useLocalCopy="0"/>
+    <MODULE id="juce_events" showAllCode="0" useLocalCopy="0"/>
+    <MODULE id="juce_graphics" showAllCode="0" useLocalCopy="0"/>
+    <MODULE id="juce_gui_basics" showAllCode="0" useLocalCopy="0"/>
+    <MODULE id="juce_gui_extra" showAllCode="0" useLocalCopy="0"/>
+    <MODULE id="juce_opengl" showAllCode="0" useLocalCopy="0"/>
+    <MODULE id="juce_video" showAllCode="0" useLocalCopy="0"/>
+  </MODULES>
+  <JUCEOPTIONS/>
+  <LIVE_SETTINGS>
+    <WINDOWS/>
+  </LIVE_SETTINGS>
+</JUCERPROJECT>

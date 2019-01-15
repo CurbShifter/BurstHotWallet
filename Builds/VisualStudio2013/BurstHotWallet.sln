@@ -1,0 +1,19 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2013
+Project("{9207D310-4250-0997-442F-A2B316CD42D4}") = "BurstHotWallet", "BurstHotWallet.vcxproj", "{59DBACFE-8155-2BEC-1EA8-167B9EA30AB7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{59DBACFE-8155-2BEC-1EA8-167B9EA30AB7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{59DBACFE-8155-2BEC-1EA8-167B9EA30AB7}.Debug|Win32.Build.0 = Debug|Win32
+		{59DBACFE-8155-2BEC-1EA8-167B9EA30AB7}.Release|Win32.ActiveCfg = Release|Win32
+		{59DBACFE-8155-2BEC-1EA8-167B9EA30AB7}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
