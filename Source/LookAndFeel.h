@@ -2,7 +2,6 @@
 #define CBLOOKANDFEEL_H_INCLUDED
 
 /*
-CloudBurst DAPP
 Copyright (C) 2018  CurbShifter
 
 This program is free software: you can redistribute it and/or modify
@@ -60,8 +59,8 @@ struct CELookAndFeel    : public LookAndFeel_V3
 	class OSXWindowButton;
 
 	int getTabButtonSpaceAroundImage() { return 3; };
-	int getTabButtonOverlap(int tabDepth) { return -1; };
-	int getTabButtonBestWidth(TabBarButton &tb, int tabDepth)
+	int getTabButtonOverlap(int /*tabDepth*/) { return -1; };
+	int getTabButtonBestWidth(TabBarButton &tb, int /*tabDepth*/)
 	{		
 		int w = jmax<int>(20+(tb.getButtonText().length() * 7), 50);
 		return w;

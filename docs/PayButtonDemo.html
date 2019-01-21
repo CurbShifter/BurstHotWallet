@@ -1,0 +1,177 @@
+<!--
+Copyright (C) 2019  CurbShifter
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Burstcoin pay request Hotwallet.cash</title>
+<meta charset="utf-8"/>
+</head>
+<style>
+body {font-family: Arial, Helvetica, sans-serif;
+    background-color: #77b517; /* For browsers that do not support gradients */
+    background-image: linear-gradient(to bottom right, #4f7711 , #77b517);
+	width: 80%;
+	margin-left: auto;
+    margin-right: auto;
+	margin-top: 8%; 
+	margin-bottom: 20%; 
+}
+* {
+box-sizing: border-box;
+}
+a {
+  color: #00579d;
+  text-decoration: none;
+}
+input[type=text]:focus, input[type=password]:focus {
+    background-color: #ddd;
+    outline: none;
+}
+select {
+    width: 100%;
+    padding: 15px;
+    margin: 5px 0 22px 0;
+}
+hr {
+	border: 1px solid #f1f1f1;
+    margin-bottom: 25px;
+}
+button {
+    background-color: #77b517;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    opacity: 0.9;
+}
+button:hover {
+    opacity:1;
+}
+.container {
+    width: 80%;
+	margin-left: auto;
+    margin-right: auto;
+    padding: 80px;
+	background-color: white;
+	max-width: 700px;
+	min-width: 450px;
+}
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+.error_msg {
+    color: #F00;
+    line-height: 20px;
+    font-size: 1.2em;
+}
+.underwriting {
+    color: #444;
+    line-height: 18px;
+    font-size: 0.7em;
+}
+.copyright {
+    color: #ccc;
+    line-height: 20px;
+    font-size: 0.75em;
+}
+</style>
+	<body>
+		<form id="startform" action="/" style="border:0px solid #ccc" name="startform">
+			<div class="container" style="text-align:center">
+				<label for="alias"><b>hotwallet.cash</b></label>
+				<p>Open your <a href="http://hotwallet.cash">HotWallet Desktop App</a>. And use the button below to show a transfer request.</p>
+				<hr>
+				<div class="clearfix">
+					<button type="button" onclick="Donate()" class="signupbtn">Send 1000 Burstcoin to CurbShifter</button>
+					<p class="error_msg" id="result_output"></p>
+				</div>
+				</br>
+				<p class="copyright">© CurbShifter 2019<br>released under GNU General Public License v3.<br><a href="https://github.com/CurbShifter">https://github.com/CurbShifter</a></p>
+				<p class="underwriting">Simply use the code from this single static page to make your own pay request buttons. HotWallet.cash makes it easy to send and request Burstcoin !</p>
+			</div>
+		</form>
+		<script>
+		// To make your own buttons copy and mod these 2 functions below
+		function Donate()
+		{
+			// START POINT
+			// This example will make a request to send 1000 Burstcoin to CurbShifter
+			var requestHeader = "Please confirm this this donation to fund development :)"; // describe the payment request. It will be shown in hotwallet
+			var recipient = "Curbshifter"; // the recipient can be an alias or BURST address (RS or numeric).
+			var amountNQT = "100000000000"; // the amount is in planck. 1 burst coin is 100000000 planck.
+			var feeNQT = "normal"; // the fee is in planck, or the currently suggested fee "cheap" "normal" or "priority". Using "normal" is recommened.
+			var msg = "Donation !"; // the message has a max length of 1000. this can describe the item/service that will be payed for.
+			var encrypted = false; // the last argument can be set to true to encrypt the payment message.
+			
+			RequestPaymentHotWallet(requestHeader, recipient, amountNQT, feeNQT, msg, encrypted);
+		};
+
+		function RequestPaymentHotWallet(requestHeader, recipient, amountNQT, feeNQT, msg, encrypted) {
+			window.WebSocket = window.WebSocket || window.MozWebSocket; // if mozilla use built-in WebSocket
+			var connection = new WebSocket('ws://127.0.0.1:41137'); // the connection is local and therefor not secured
+			
+			connection.onopen = function () {	
+				document.getElementById("result_output").innerHTML = "please confirm the transaction in your hotwallet";
+				
+				var requestJSON = "{\"requestHeader\":\"";
+				requestJSON += requestHeader;
+				requestJSON += "\",\"recipient\":\"";
+				requestJSON += recipient;
+				requestJSON += "\",\"amountNQT\":\"";
+				requestJSON += amountNQT;
+				requestJSON += "\",\"feeNQT\":\"";
+				requestJSON += feeNQT;
+				requestJSON += "\",\"msg\":\"";
+				requestJSON += msg;
+				requestJSON += "\",\"encrypted\":";
+				requestJSON += encrypted;
+				requestJSON += "}";				
+				connection.send(requestJSON);
+			};
+			connection.onclose = function (error) {
+				document.getElementById("result_output").innerHTML = "No connection.</br></br>Make sure HotWallet running and 'Browser requests' is enabled";
+			}
+			connection.onerror = function (error) {
+				document.getElementById("result_output").innerHTML = "Error sending transaction request.</br></br>Make sure HotWallet running and 'Browser requests' is enabled";
+			};
+			connection.onmessage = function (message) {		
+				try {
+					var json = JSON.parse(message.data);			
+					if (json["transaction"] > 0)
+					{
+						// END POINT
+						// When the transaction is made in the hotwallet you can check the return data here
+						// the transaction number allows you to check if it is valid on a burstcoin node. and continue the buy process
+						console.log("payment JSON " + message.data);
+						document.getElementById("result_output").innerHTML = "Success !</br>transaction ID " + json["transaction"];
+					}
+				} catch (e) {
+					console.log('This doesn\'t look like a valid JSON: ',
+					message.data);
+					return;
+				}
+			};
+		};
+		</script>
+	</body>
+</html>

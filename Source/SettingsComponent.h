@@ -55,18 +55,18 @@ public:
 	void textEditorEscapeKeyPressed(TextEditor &editor); //Called when the user presses the escape key.
 	void textEditorFocusLost(TextEditor &editor); //Called when the text editor loses focus.
 
-	void SetSecretPhrase(const String str);
-	void SetBurstRS(const String rs);
-	void EnableControls(const bool on);
+	void SetSecretPhrase(const String str) override;
+	void SetBurstRS(const String rs) override;
+	void EnableControls(const bool on) override;
 
 	void ChangePIN();
-	void CreateWallet();
-	void NewWallet();
-	void ExportWallet();
-	void ImportWallet();
+	void CreateWallet() override;
+	void NewWallet() override;
+	void ExportWallet() override;
+	void ImportWallet() override;
 
-	void SetCMCkey(const String key);
-	void SetCurrencyType(const String type);
+	void SetCMCkey(const String key) override;
+	void SetCurrencyType(const String type) override;
 	void SetCurrencyType(const int type);
     //[/UserMethods]
 
@@ -92,6 +92,7 @@ private:
     ScopedPointer<TextButton> myPassPhraseButton;
     ScopedPointer<TextButton> cmcButton;
     ScopedPointer<TextEditor> cmcTextEditor;
+    ScopedPointer<TextButton> websocketButton;
 
 
     //==============================================================================

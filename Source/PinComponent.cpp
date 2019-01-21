@@ -448,7 +448,7 @@ bool PinComponent::keyPressed (const KeyPress& key)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
-void PinComponent::textEditorTextChanged(TextEditor &editor) //Called when the user changes the text in some way.
+void PinComponent::textEditorTextChanged(TextEditor &/*editor*/) //Called when the user changes the text in some way.
 {
 }
 
@@ -472,7 +472,7 @@ void PinComponent::textEditorReturnKeyPressed(TextEditor &editor) //Called when 
 void PinComponent::textEditorEscapeKeyPressed(TextEditor &/*editor*/) //Called when the user presses the escape key.
 {
 }
-void PinComponent::textEditorFocusLost(TextEditor &editor) //Called when the text editor loses focus.
+void PinComponent::textEditorFocusLost(TextEditor &/*editor*/) //Called when the text editor loses focus.
 {
 }
 
@@ -480,7 +480,6 @@ void PinComponent::setMode(String passPhrase)
 {
 	bool unlockOn = false;
 	bool saveOn = false;
-	bool exportOn = false;
 
 	this->passPhrase = passPhrase;
 	if (passPhrase.isEmpty())

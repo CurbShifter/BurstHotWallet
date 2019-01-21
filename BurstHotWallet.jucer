@@ -2,9 +2,29 @@
 
 <JUCERPROJECT id="GmxFtL" name="BurstHotWallet" projectType="guiapp" version="1.0.0"
               bundleIdentifier="com.CE.ArBit" includeBinaryInAppConfig="1"
-              jucerVersion="4.2.1" companyName="CryptoExtensions">
+              jucerVersion="4.3.1" companyName="CryptoExtensions">
   <MAINGROUP id="OXzctD" name="BurstHotWallet">
     <GROUP id="{D85C0C04-C916-D7B6-1C02-82BD1D0BBF3E}" name="Source">
+      <GROUP id="{153CD020-A93E-10F8-120F-1A98E5032FF5}" name="websockets">
+        <FILE id="WXXeBO" name="Base64.cpp" compile="1" resource="0" file="Source/websockets/Base64.cpp"/>
+        <FILE id="e40QEn" name="Base64.h" compile="0" resource="0" file="Source/websockets/Base64.h"/>
+        <FILE id="mXiXow" name="hl_hashwrapper.h" compile="0" resource="0"
+              file="Source/websockets/hl_hashwrapper.h"/>
+        <FILE id="LtocXS" name="hl_sha1.cpp" compile="1" resource="0" file="Source/websockets/hl_sha1.cpp"/>
+        <FILE id="cOqo9F" name="hl_sha1.h" compile="0" resource="0" file="Source/websockets/hl_sha1.h"/>
+        <FILE id="BN3aNG" name="hl_sha1wrapper.cpp" compile="1" resource="0"
+              file="Source/websockets/hl_sha1wrapper.cpp"/>
+        <FILE id="mRVPrX" name="hl_sha1wrapper.h" compile="0" resource="0"
+              file="Source/websockets/hl_sha1wrapper.h"/>
+        <FILE id="VufpNJ" name="Socket.cpp" compile="1" resource="0" file="Source/websockets/Socket.cpp"/>
+        <FILE id="ErQM09" name="Socket.h" compile="0" resource="0" file="Source/websockets/Socket.h"/>
+        <FILE id="a6mjLf" name="WebSocket.cpp" compile="1" resource="0" file="Source/websockets/WebSocket.cpp"/>
+        <FILE id="mY5P3P" name="WebSocket.h" compile="0" resource="0" file="Source/websockets/WebSocket.h"/>
+        <FILE id="Goh07V" name="WebSocketServer.cpp" compile="1" resource="0"
+              file="Source/websockets/WebSocketServer.cpp"/>
+        <FILE id="NFPfDI" name="WebSocketServer.h" compile="0" resource="0"
+              file="Source/websockets/WebSocketServer.h"/>
+      </GROUP>
       <FILE id="BGJyRW" name="BurstHotWallet-icon.svg" compile="0" resource="1"
             file="Source/BurstHotWallet-icon.svg"/>
       <FILE id="Uc0DyG" name="TransactionsComponent.cpp" compile="1" resource="0"
@@ -44,12 +64,13 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" smallIcon="BGJyRW" bigIcon="BGJyRW">
+    <XCODE_MAC targetFolder="Builds/MacOSX" smallIcon="BGJyRW" bigIcon="BGJyRW"
+               customPList="&lt;key&gt;NSAppTransportSecurity&lt;/key&gt;&#10;&lt;dict&gt;&#10;    &lt;key&gt;NSAllowsArbitraryLoads&lt;/key&gt;&#10;    &lt;true/&gt;&#10;    &lt;key&gt;NSExceptionDomains&lt;/key&gt;&#10;    &lt;dict&gt;&#10;        &lt;key&gt;3.16.150.48&lt;/key&gt;&#10;        &lt;key&gt;wallet.burst-team.us&lt;/key&gt;&#10;        &lt;dict&gt;&#10;            &lt;key&gt;NSExceptionAllowsInsecureHTTPLoads&lt;/key&gt;&#10;            &lt;true/&gt;&#10;            &lt;key&gt;NSIncludesSubdomains&lt;/key&gt;&#10;            &lt;true/&gt;&#10;        &lt;/dict&gt;&#10;    &lt;/dict&gt;&#10;&lt;/dict&gt;">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="BurstHotWallet"
-                       headerPath="$(SRCROOT)/../../../../../Libs/JUCE_4.3.0/modules&#10;$(SRCROOT)/../../../BurstLib/Source&#10;$(SRCROOT)/../../../../../Libs/boost_1_67_0"/>
+                       headerPath="$(SRCROOT)/../../../../../Libs/JUCE_4.3.0/modules&#10;$(SRCROOT)/../../BurstLib/Source&#10;$(SRCROOT)/../../../../../Libs/boost_1_67_0&#10;$(SRCROOT)/../../../../../Libs/beast/include"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="BurstHotWallet"
-                       headerPath="$(SRCROOT)/../../../../../Libs/JUCE_4.3.0/modules&#10;$(SRCROOT)/../../../BurstLib/Source&#10;$(SRCROOT)/../../../../../Libs/boost_1_67_0"/>
+                       headerPath="$(SRCROOT)/../../../../../Libs/JUCE_4.3.0/modules&#10;$(SRCROOT)/../../BurstLib/Source&#10;$(SRCROOT)/../../../../../Libs/boost_1_67_0&#10;$(SRCROOT)/../../../../../Libs/beast/include"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../Libraries/JUCE_4.3.1/JUCE/modules"/>
@@ -71,10 +92,10 @@
             smallIcon="BGJyRW" bigIcon="BGJyRW">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
-                       isDebug="1" optimisation="1" targetName="BurstHotWallet" headerPath="E:\Libraries\boost_1_64_0&#10;..\..\..\..\..\BurstLib\trunk\Source"
+                       isDebug="1" optimisation="1" targetName="BurstHotWallet" headerPath="E:\Libraries\boost_1_64_0&#10;E:\Libraries\beast\include&#10;..\..\..\..\..\BurstLib\trunk\Source"
                        prebuildCommand="revision-update.bat &quot;$(ProjectDir)..\..\&quot;"/>
         <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
-                       isDebug="0" optimisation="2" targetName="BurstHotWallet" headerPath="E:\Libraries\boost_1_64_0&#10;..\..\..\..\..\BurstLib\trunk\Source"
+                       isDebug="0" optimisation="2" targetName="BurstHotWallet" headerPath="E:\Libraries\boost_1_64_0&#10;E:\Libraries\beast\include&#10;..\..\..\..\..\BurstLib\trunk\Source"
                        prebuildCommand="revision-update.bat &quot;$(ProjectDir)..\..\&quot;"
                        useRuntimeLibDLL="0"/>
       </CONFIGURATIONS>

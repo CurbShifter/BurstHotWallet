@@ -1,7 +1,6 @@
 #include "LookAndFeel.h"
 
 /*
-CloudBurst DAPP
 Copyright (C) 2018  CurbShifter
 
 This program is free software: you can redistribute it and/or modify
@@ -308,7 +307,7 @@ void CELookAndFeel::drawRoundThumb (Graphics& g, const float x, const float y,
     g.strokePath (p, PathStrokeType (outlineThickness));
 }
 
-void CELookAndFeel::drawButtonText(Graphics& g, TextButton& button, bool isMouseOverButton, bool isButtonDown)
+void CELookAndFeel::drawButtonText(Graphics& g, TextButton& button, bool /*isMouseOverButton*/, bool /*isButtonDown*/)
 {
 	{
 		float fontHeight = jmin<float>(button.getHeight() - 4.f, 16.f);
@@ -379,7 +378,7 @@ void CELookAndFeel::drawButtonBackground (Graphics& g, Button& button, const Col
 				{
 					if (!just)
 						g.drawHorizontalLine((int)(height - 3 + i), ((button.getWidth() - textWidth) / 2.f), ((button.getWidth() - textWidth) / 2.f) + textWidth); // center
-					else g.drawHorizontalLine((int)(height - 3 + i), (button.getWidth() - textWidth - 4), button.getWidth() - 4); // right
+					else g.drawHorizontalLine((int)(height - 3 + i), (button.getWidth() - textWidth - 4.f), button.getWidth() - 4.f); // right
 				}
 			}
 		}

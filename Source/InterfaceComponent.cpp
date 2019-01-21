@@ -159,15 +159,15 @@ InterfaceComponent::InterfaceComponent ()
 		addSendComponentListener(sendComponent);
 	}
 
-	String server;
-	GetAppValue("server", server);
-	if (server.isEmpty())
+	String node_server;
+	GetAppValue("server", node_server);
+	if (node_server.isEmpty())
 	{
-		server = "https://wallet.burst-team.us:2083/";
+		node_server = "https://wallet.burst-team.us:2083/";
 	}
-	burstExt.SetNode(server);
-	transactionsComponentListeners.call(&TransactionsComponentListener::SetNode, server);
-	serverComboBox->setText(server, dontSendNotification);
+	burstExt.SetNode(node_server);
+	transactionsComponentListeners.call(&TransactionsComponentListener::SetNode, node_server);
+	serverComboBox->setText(node_server, dontSendNotification);
 
 	wizlaf = new CELookAndFeel();
 	Typeface::Ptr typefacePtr = Typeface::createSystemTypefaceFor(BinaryData::NotoSansRegular_ttf, BinaryData::NotoSansRegular_ttfSize);
@@ -214,6 +214,13 @@ InterfaceComponent::InterfaceComponent ()
 
 	versionLabel->setText("v0.1." PROJECT_SVNRevision " (" + String(burstExt.GetBurstKitVersionNumber()) + ")", dontSendNotification);
 
+	//--
+	String websocketsStr;
+	GetAppValue("websockets", websocketsStr);
+	if (websocketsStr.getIntValue() > 0)
+		StartWebSocket();
+	//--
+
 	startTimer(INTERFACE_UPDATE_MS);
     //[/Constructor]
 }
@@ -221,7 +228,9 @@ InterfaceComponent::InterfaceComponent ()
 InterfaceComponent::~InterfaceComponent()
 {
     //[Destructor_pre]. You can add your own custom destruction code here..
-    //[/Destructor_pre]
+	CloseWebSocket();
+	server = nullptr;
+	//[/Destructor_pre]
 
     serverComboBox = nullptr;
     balanceLabel = nullptr;
@@ -290,9 +299,9 @@ void InterfaceComponent::resized()
 	*/
 	juce::Rectangle<float> r = getBounds().toFloat();
 
-	const int rowH = 30;
-	const int topH = rowH * 4;
-	const int w = r.getWidth();
+	const float rowH = 30.f;
+	const float topH = rowH * 4.f;
+	const int w = (int)r.getWidth();
 
 	settingsComponent->setBounds(r.withTrimmedTop(topH).toNearestInt());
 	sendComponent->setBounds(r.withTrimmedTop(topH).toNearestInt());
@@ -301,14 +310,14 @@ void InterfaceComponent::resized()
 	if (pinComponent) pinComponent->setBounds(r.toNearestInt());
 	aboutComponent->setBounds(r.toNearestInt());
 
-	serverComboBox->setBounds(r.withHeight(rowH).withTrimmedLeft(120).withTrimmedRight(70).reduced(3).toNearestInt());
-	versionLabel->setBounds(r.withHeight(rowH).withX(serverComboBox->getRight()).withWidth(70).reduced(3).toNearestInt());
+	serverComboBox->setBounds(r.withHeight(rowH).withTrimmedLeft(120.f).withTrimmedRight(70.f).reduced(3.f).toNearestInt());
+	versionLabel->setBounds(r.withHeight(rowH).withX((float)serverComboBox->getRight()).withWidth(70.f).reduced(3.f).toNearestInt());
 
-	accountButton->setBounds(0, rowH * 1.8, w / 2, rowH);
-	balanceLabel->setBounds(w / 2, rowH * 1.8, w / 2, rowH);
+	accountButton->setBounds(0, (int)(rowH * 1.8), w / 2, (int)rowH);
+	balanceLabel->setBounds(w / 2, (int)(rowH * 1.8), w / 2, (int)rowH);
 
-	historyButton->setBounds(0, rowH * 3, w / 2, rowH);
-	sendButton->setBounds(w / 2, rowH * 3, w / 2, rowH);
+	historyButton->setBounds(0, (int)(rowH * 3), w / 2, (int)rowH);
+	sendButton->setBounds(w / 2, (int)(rowH * 3), w / 2, (int)rowH);
     //[/UserResized]
 }
 
@@ -394,9 +403,9 @@ void InterfaceComponent::textEditorFocusLost(TextEditor &) //Called when the tex
 {
 }
 
-void InterfaceComponent::SetupTransaction(const String recipient, const String amountNQT, const String feeNQT, const String msg, const bool encrypted)
+void InterfaceComponent::SetupTransaction(const String requestHeader, const String recipient, const String amountNQT, const String feeNQT, const String msg, const bool encrypted)
 {
-	sendComponentListeners.call(&SendComponentListener::SetupTransaction, recipient, amountNQT, feeNQT, msg, encrypted);
+	sendComponentListeners.call(&SendComponentListener::SetupTransaction, requestHeader, recipient, amountNQT, feeNQT, msg, encrypted);
 	SetView(2);
 }
 
@@ -410,15 +419,15 @@ void InterfaceComponent::SendBurstcoin(const String recipient, const String amou
 	String balance;
 	UpdateBalance(balance);
 
-	if (amountNQT.getLargeIntValue() <= 0)
+	if (dispName.isEmpty() || dispName.compare("BURST-2222-2222-2222-22222") == 0)
+		errorStr = "Incorrect recipient address, Use a BURST-XXXX-XXXX-XXXX-XXXXX address, numeric ID or an existing alias.";
+	else if (amountNQT.getLargeIntValue() <= 0)
 		errorStr = "Incorrect amount ! use numeric values. Like 123.45";
 	else if (feeNQT.getLargeIntValue() <= 0)
 		errorStr = "Incorrect fee !";
 	else if (amountNQT.getLargeIntValue() + feeNQT.getLargeIntValue() > balance.getLargeIntValue())
 		errorStr = "Your balance is too low for this transaction !";
-	else if (dispName.isEmpty() || dispName.compare("BURST-2222-2222-2222-22222") == 0)
-		errorStr = "Incorrect recipient address, Use a BURST-XXXX-XXXX-XXXX-XXXXX address, numeric ID or an existing alias.";
-
+	
 	if (errorStr.isNotEmpty())
 		NativeMessageBox::showMessageBox(AlertWindow::InfoIcon, ProjectInfo::projectName, errorStr);
 	else
@@ -449,6 +458,23 @@ void InterfaceComponent::SendBurstcoin(const String recipient, const String amou
 					amounts.remove(amounts.size() - 1);
 				SetAppValue("amounts", amounts.joinIntoString(";"));
 				sendComponentListeners.call(&SendComponentListener::SetAmounts, amounts);
+
+				String message;
+				message = "{\"recipient\":\"";
+				message += recipient;
+				message += "\",\"amountNQT\":";
+				message += amountNQT;
+				message += ",\"feeNQT\":\"";
+				message += feeNQT;
+				message += "\",\"msg\":\"";
+				message += msg;
+				message += "\",\"encrypted\":";
+				message += encrypted;
+				message += ",\"transaction\":";
+				message += transactionID;
+				message += "}";
+
+				SendWebSocketMessage(message);
 
 				NativeMessageBox::showMessageBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "Transaction send successfully !");
 			}
@@ -724,7 +750,7 @@ void InterfaceComponent::timerCallback()
 	if (pinComponent->isVisible() == false)
 	{
 		{
-		//	systemTray->showInfoBubble(ProjectInfo::projectName, "New message(s)");
+		//	systemTray->showInfoBubble(ProjectInfo::projectName, "hi");
 			//systemTray->setIconTooltip("");
 		//	systemTray->setHighlighted(true);
 		}
@@ -761,6 +787,112 @@ void InterfaceComponent::SetCurrencyType(const String currency)
 	transactionsComponentListeners.call(&TransactionsComponentListener::SetCurrencyType, currency);
 	transactionsComponentListeners.call(&TransactionsComponentListener::Refresh);
 }
+
+/*********************************************************************************/
+void InterfaceComponent::StartWebSocket()
+{
+	if (!server)
+		server = new InterfaceSocketServer(*this);
+	OpenWebSocket("", 41137);
+}
+
+void InterfaceComponent::CloseWebSocket()
+{ // Just closes any connections that are currently open.
+	if (server)
+		server->stop();
+	activeConnections.clear();
+}
+
+void InterfaceComponent::SendWebSocketMessage(String data)
+{
+	MemoryBlock mem(data.getNumBytesAsUTF8());
+	mem.copyFrom(data.toRawUTF8(), 0, data.getNumBytesAsUTF8());
+	for (int i = 0; i < activeConnections.size(); i++)
+		activeConnections[i]->sendMessage(mem);
+}
+
+bool InterfaceComponent::OpenWebSocket(String host_address, int port)
+{
+	CloseWebSocket();
+	bool openedOk = false;
+
+	if (host_address.isNotEmpty())
+	{ // if we're connecting to an existing server, we can just create a connection object directly.
+		ScopedPointer<InterfaceWebSocket> newConnection(new InterfaceWebSocket(*this));
+		openedOk = newConnection->connectToSocket(host_address, port, 1000);
+		if (openedOk)
+		{
+			activeConnections.add(newConnection.release());
+			networkmessage.add(juce::String("Online (client)"));
+		}
+		if (!openedOk)
+		{ //	AlertWindow::showMessageBoxAsync (AlertWindow::WarningIcon, "", "Failed to open the socket...\nIs the  client running?\nMake sure any firewall allows the connection on this port.");
+			networkmessage.add(juce::String("Failed to connect socket (#1) firewall?"));
+		}
+	}
+	else
+	{
+	/*	Array< IPAddress > results;
+		IPAddress::findAllAddresses(results);
+		String hostname; // local ip print so we know where to connect
+		if (results.size() > 1)
+			hostname = (results[1].toString());
+		else if (results.size() > 0)
+			hostname = (results[0].toString());
+		else hostname = (SystemStats::getComputerName());*/
+		
+		// we're starting up a server, we need to tell the server to start waiting for
+		// clients to connect. It'll then create connection objects for us when clients arrive.
+		openedOk = server ? server->beginWaitingForSocket(port) : false;
+		if (!openedOk)
+		{
+			networkmessage.add(juce::String("Failed to open socket on this port (#2)"));
+		}
+	}
+	return openedOk;
+}
+
+bool InterfaceComponent::ProcessWebSocketMessage(int /*connectionNr*/, const MemoryBlock& message)
+{
+	if (message.getSize() > 0)
+	{
+		if (CharPointer_UTF8::isValidString((const char* const)message.getData(), message.getSize()) == false)
+			return false;
+		const String dataStr = message.toString();
+
+		var jsonStructure;
+		Result r = JSON::parse(dataStr, jsonStructure);
+		if (r.wasOk())
+		{
+			const String requestHeader = jsonStructure.getProperty("requestHeader", String::empty);
+			const String recipient = jsonStructure.getProperty("recipient", String::empty);
+			const String amountNQT = jsonStructure.getProperty("amountNQT", String::empty);
+			const String feeNQT = jsonStructure.getProperty("feeNQT", String::empty);
+			const String msg = jsonStructure.getProperty("msg", String::empty);
+			const bool encrypted = jsonStructure.getProperty("encrypted", false);
+
+			SetupTransaction(requestHeader, recipient, amountNQT, feeNQT, msg, encrypted);
+
+#ifdef JUCE_WINDOWS
+			FLASHWINFO fwi;
+			fwi.cbSize = sizeof(fwi);
+			fwi.hwnd = static_cast<HWND>(getWindowHandle());
+			fwi.dwFlags = FLASHW_TIMERNOFG | FLASHW_TRAY; // FLASHW_ALL
+			fwi.uCount = 10;
+			fwi.dwTimeout = 0;
+			FlashWindowEx(&fwi);
+#elif JUCE_MAC
+			MacOSUserNotification notifier;
+			notifier.Send(ProjectInfo::projectName, msg.toUTF8());
+#endif
+
+			return true;
+		}
+	}
+	return false;
+}
+
+
 //[/MiscUserCode]
 
 

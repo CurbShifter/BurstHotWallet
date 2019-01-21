@@ -2,12 +2,12 @@
 #ifndef __PROJECT_SubWCRev__
 #define __PROJECT_SubWCRev__
 
-#define PROJECT_SVNRevisionN 2
-#define PROJECT_SVNRevision "2"
+#define PROJECT_SVNRevisionN 3
+#define PROJECT_SVNRevision "3"
 #define PROJECT_SVNModified "Modified"
-#define PROJECT_SVNDate     "2019/01/11 13:11:07"
+#define PROJECT_SVNDate     "2019/01/15 21:41:22"
 #define PROJECT_SVNRange    "WCRANGE$"
-#define PROJECT_SVNMixed    "Not mixed"
+#define PROJECT_SVNMixed    "Mixed revision"
 #define PROJECT_SVNURL      "https://github.com/CurbShifter/BurstHotWallet.git/trunk"
 
 //#if 1

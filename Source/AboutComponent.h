@@ -60,6 +60,8 @@ public:
     static const int burstHotWalletlogo_svgSize;
     static const char* cryptoExtensionsLogo_svg;
     static const int cryptoExtensionsLogo_svgSize;
+    static const char* burst_logo_white_svg;
+    static const int burst_logo_white_svgSize;
 
 
 private:
@@ -73,6 +75,7 @@ private:
     ScopedPointer<TextButton> textButton2;
     ScopedPointer<Drawable> drawable1;
     ScopedPointer<Drawable> drawable2;
+    ScopedPointer<Drawable> drawable3;
 
 
     //==============================================================================

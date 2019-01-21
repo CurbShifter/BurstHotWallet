@@ -32,9 +32,17 @@ SendComponent::SendComponent ()
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
 
+    addAndMakeVisible (fixedMessageLabel = new Label ("fixedMessageLabel",
+                                                      TRANS("fixed message")));
+    fixedMessageLabel->setFont (Font (15.00f, Font::plain));
+    fixedMessageLabel->setJustificationType (Justification::centredLeft);
+    fixedMessageLabel->setEditable (false, false, false);
+    fixedMessageLabel->setColour (TextEditor::textColourId, Colours::black);
+    fixedMessageLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
     addAndMakeVisible (totalLabel = new Label ("totalLabel",
                                                TRANS("0. BURST")));
-    totalLabel->setFont (Font (15.00f, Font::plain));
+    totalLabel->setFont (Font (18.00f, Font::plain));
     totalLabel->setJustificationType (Justification::centred);
     totalLabel->setEditable (false, false, false);
     totalLabel->setColour (TextEditor::textColourId, Colours::black);
@@ -131,6 +139,36 @@ SendComponent::SendComponent ()
     amountComboBox->addItem (TRANS("1000"), 6);
     amountComboBox->addListener (this);
 
+    addAndMakeVisible (paymentLabel = new Label ("paymentLabel",
+                                                 TRANS("Payment request")));
+    paymentLabel->setFont (Font (16.00f, Font::plain));
+    paymentLabel->setJustificationType (Justification::centredLeft);
+    paymentLabel->setEditable (false, false, false);
+    paymentLabel->setColour (TextEditor::textColourId, Colours::black);
+    paymentLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
+    addAndMakeVisible (costLabel = new Label ("costLabel",
+                                              TRANS("Costs")));
+    costLabel->setFont (Font (16.00f, Font::plain));
+    costLabel->setJustificationType (Justification::centredRight);
+    costLabel->setEditable (false, false, false);
+    costLabel->setColour (TextEditor::textColourId, Colours::black);
+    costLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
+    addAndMakeVisible (cancelButton = new TextButton ("cancelButton"));
+    cancelButton->setButtonText (TRANS("cancel"));
+    cancelButton->addListener (this);
+    cancelButton->setColour (TextButton::buttonColourId, Colour (0xffc85c5c));
+    cancelButton->setColour (TextButton::buttonOnColourId, Colour (0xff77b517));
+
+    addAndMakeVisible (recipientFixedLabel = new Label ("recipientFixedLabel",
+                                                        TRANS("recipient")));
+    recipientFixedLabel->setFont (Font (15.00f, Font::plain));
+    recipientFixedLabel->setJustificationType (Justification::centredLeft);
+    recipientFixedLabel->setEditable (false, false, false);
+    recipientFixedLabel->setColour (TextEditor::textColourId, Colours::black);
+    recipientFixedLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
 
     //[UserPreSize]
 	//amountComboBox->setInputRestrictions(20, "0.123456789");
@@ -144,6 +182,8 @@ SendComponent::SendComponent ()
 	cheap = FEE_QUANT * 10;
 	normal = FEE_QUANT * 30;
 	priority = FEE_QUANT * 60;
+
+	SetView(0);
     //[/Constructor]
 }
 
@@ -152,6 +192,7 @@ SendComponent::~SendComponent()
     //[Destructor_pre]. You can add your own custom destruction code here..
     //[/Destructor_pre]
 
+    fixedMessageLabel = nullptr;
     totalLabel = nullptr;
     sendTextButton = nullptr;
     feeSlider = nullptr;
@@ -164,6 +205,10 @@ SendComponent::~SendComponent()
     feeComboBox = nullptr;
     recipientComboBox = nullptr;
     amountComboBox = nullptr;
+    paymentLabel = nullptr;
+    costLabel = nullptr;
+    cancelButton = nullptr;
+    recipientFixedLabel = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -179,6 +224,10 @@ void SendComponent::paint (Graphics& g)
     g.fillAll (Colour (0xfff0f0f0));
 
     //[UserPaint] Add your own custom painting code here..
+
+	if (paymentLabel->isVisible())
+		g.fillAll(Colour(0x7f77b517));
+
     //[/UserPaint]
 }
 
@@ -188,6 +237,7 @@ void SendComponent::resized()
 	/*
     //[/UserPreResize]
 
+    fixedMessageLabel->setBounds (376, 176, 288, 48);
     totalLabel->setBounds (200, 120, 150, 24);
     sendTextButton->setBounds (16, 301, 328, 24);
     feeSlider->setBounds (104, 72, 136, 24);
@@ -200,10 +250,14 @@ void SendComponent::resized()
     feeComboBox->setBounds (248, 72, 96, 24);
     recipientComboBox->setBounds (136, 8, 150, 24);
     amountComboBox->setBounds (136, 40, 150, 24);
+    paymentLabel->setBounds (376, 24, 288, 48);
+    costLabel->setBounds (376, 112, 288, 56);
+    cancelButton->setBounds (368, 336, 296, 24);
+    recipientFixedLabel->setBounds (376, 80, 288, 24);
     //[UserResized] Add your own custom resize handling here..
 	*/
-	const int rowH = 30;
-	juce::Rectangle<float> r = getBounds().withZeroOrigin().reduced(rowH * 1.5).toFloat();
+	const float rowH = 30.f;
+	juce::Rectangle<float> r = getBounds().withZeroOrigin().reduced((int)(rowH * 3 / 2)).toFloat();
 
 	if (r.getWidth() > 400)
 		r = r.withSizeKeepingCentre(400, r.getHeight());
@@ -221,9 +275,18 @@ void SendComponent::resized()
 	messageLabel->setBounds(r.withTrimmedTop(rowH * 7).withHeight(rowH).toNearestInt());
 	messageTextEditor->setBounds(r.withTrimmedTop(rowH * 8).withHeight(r.getHeight() - (rowH * 11)).toNearestInt());
 	encryptToggleButton->setBounds(r.withTrimmedTop(r.getHeight() - (rowH * 3)).withHeight(rowH).withWidth(100).toNearestInt());
-	sendTextButton->setBounds(r.withTrimmedTop(r.getHeight() - (rowH * 2)).withTrimmedBottom(rowH).toNearestInt());
+	sendTextButton->setBounds(r.withTrimmedTop(r.getHeight() - (rowH * 2)).withHeight(rowH).withTrimmedLeft(r.getWidth() / 2).toNearestInt());
 
-	totalLabel->setBounds(r.withTrimmedTop(r.getHeight() - rowH).toNearestInt()); //(r.withTrimmedTop(rowH * 6).withHeight(rowH).translated(r.getWidth() / 2, 0).withWidth(r.getWidth() / 2).toNearestInt());
+	totalLabel->setBounds(r.withTrimmedTop(r.getHeight() - (rowH * 1)).withHeight(rowH).toNearestInt()); //(r.withTrimmedTop(rowH * 6).withHeight(rowH).translated(r.getWidth() / 2, 0).withWidth(r.getWidth() / 2).toNearestInt());
+
+
+
+	paymentLabel->setBounds(r.withTrimmedTop(rowH * 0).withHeight(rowH * 2).toNearestInt());
+	recipientFixedLabel->setBounds(r.withTrimmedTop(rowH * 2).withHeight(rowH).toNearestInt());
+	costLabel->setBounds(r.withTrimmedTop(rowH * 3).withHeight(rowH).toNearestInt());
+	fixedMessageLabel->setBounds(r.withTrimmedTop(rowH * 6).withHeight(rowH).toNearestInt());
+
+	cancelButton->setBounds(r.withTrimmedTop(r.getHeight() - (rowH * 2)).withHeight(rowH).withWidth(r.getWidth() / 2).toNearestInt());
     //[/UserResized]
 }
 
@@ -243,6 +306,12 @@ void SendComponent::buttonClicked (Button* buttonThatWasClicked)
         //[UserButtonCode_encryptToggleButton] -- add your button handler code here..
         //[/UserButtonCode_encryptToggleButton]
     }
+    else if (buttonThatWasClicked == cancelButton)
+    {
+        //[UserButtonCode_cancelButton] -- add your button handler code here..
+		SetView(0);
+        //[/UserButtonCode_cancelButton]
+    }
 
     //[UserbuttonClicked_Post]
     //[/UserbuttonClicked_Post]
@@ -256,7 +325,7 @@ void SendComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     if (sliderThatWasMoved == feeSlider)
     {
         //[UserSliderCode_feeSlider] -- add your slider handling code here..
-		uint64 fee = sliderThatWasMoved->getValue() * 100000000L;
+		uint64 fee = (uint64)(sliderThatWasMoved->getValue() * 100000000L);
 		if (fee <= cheap)
 			feeComboBox->setSelectedItemIndex(0, dontSendNotification);
 		else if (fee <= normal)
@@ -264,7 +333,7 @@ void SendComponent::sliderValueChanged (Slider* sliderThatWasMoved)
 		else if (fee <= priority)
 			feeComboBox->setSelectedItemIndex(2, dontSendNotification);
 
-		UpdateTotalLabel();
+		UpdateTotalLabel(amountComboBox->getText(), String(feeSlider->getValue()));
         //[/UserSliderCode_feeSlider]
     }
 
@@ -287,7 +356,7 @@ void SendComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 		else if (feeComboBox->getSelectedItemIndex() == 2)
 			feeSlider->setValue(priority / 100000000., dontSendNotification);
 
-		UpdateTotalLabel();
+		UpdateTotalLabel(amountComboBox->getText(), String(feeSlider->getValue()));
         //[/UserComboBoxCode_feeComboBox]
     }
     else if (comboBoxThatHasChanged == recipientComboBox)
@@ -298,7 +367,7 @@ void SendComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     else if (comboBoxThatHasChanged == amountComboBox)
     {
         //[UserComboBoxCode_amountComboBox] -- add your combo box handling code here..
-		UpdateTotalLabel();
+		UpdateTotalLabel(amountComboBox->getText(), String(feeSlider->getValue()));
         //[/UserComboBoxCode_amountComboBox]
     }
 
@@ -309,29 +378,45 @@ void SendComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
-void SendComponent::SetupTransaction(const String recipient, const String amount, const String fee, const String msg, const bool encrypted)
+void SendComponent::SetupTransaction(const String requestHeader, const String recipient, const String amountNQT, const String feeNQT, const String msg, const bool encrypted)
 {
 	recipientComboBox->setText(recipient, dontSendNotification);
-	amountComboBox->setText(amount, dontSendNotification);
-	if (fee.containsOnly("0.123456789"))
+	amountComboBox->setText(NQT2Burst(amountNQT), dontSendNotification);
+
+	paymentLabel->setText(requestHeader, dontSendNotification);
+	recipientFixedLabel->setText("Recipient: " + recipient, dontSendNotification);
+	costLabel->setText(NQT2Burst(amountNQT) + " BURST", dontSendNotification);
+
+	String feeStr;
+	if (feeNQT.containsOnly("0123456789"))
 	{
-		feeSlider->setValue(NQT2Burst(fee).getFloatValue(), sendNotification);
+		feeSlider->setValue(NQT2Burst(feeNQT).getFloatValue(), sendNotification);
 	}
 	else
 	{
 		int feeSuggestIdx = 1;// normal = default
 		for (int i = 0; i < feeComboBox->getNumItems(); i++)
 		{
-			if (fee.compare(feeComboBox->getItemText(i)) == 0)
+			if (feeNQT.compare(feeComboBox->getItemText(i)) == 0)
 			{
 				feeSuggestIdx = i;
 			}
 		}
+		if (feeSuggestIdx == 0)
+			feeSlider->setValue(cheap / 100000000., dontSendNotification);
+		else if (feeSuggestIdx == 1)
+			feeSlider->setValue(normal / 100000000., dontSendNotification);
+		else if (feeSuggestIdx == 2)
+			feeSlider->setValue(priority / 100000000., dontSendNotification);
 		feeComboBox->setSelectedItemIndex(feeSuggestIdx, sendNotification);
 	}
-	messageTextEditor->setText(msg, dontSendNotification);
+	messageTextEditor->setText("", dontSendNotification);
+	fixedMessageLabel->setText(msg, dontSendNotification);
 	encryptToggleButton->setToggleState(encrypted, dontSendNotification);
-	UpdateTotalLabel();
+
+	UpdateTotalLabel(NQT2Burst(amountNQT), String(feeSlider->getValue()));
+
+	SetView(1);
 }
 
 void SendComponent::SetRecipients(StringArray recipients)
@@ -405,15 +490,19 @@ String SendComponent::Burst2NQT(const String value)
 	return String(amountNQT);
 }
 
-void SendComponent::UpdateTotalLabel()
+void SendComponent::UpdateTotalLabel(const String amount, const String fee)
 {
-	int64 amountNQT = Burst2NQT(amountComboBox->getText()).getLargeIntValue();
-	int64 feeNQT = Burst2NQT(String(feeSlider->getValue())).getLargeIntValue();
+	int64 amountNQT = Burst2NQT(amount).getLargeIntValue();
+	int64 feeNQT = Burst2NQT(fee).getLargeIntValue();
 	String totalNQT(amountNQT + feeNQT);
 
 	String balance_t(NQT2Burst(totalNQT) + " BURST");
 	String balance_t_ext;
-	if (currency.compare("BTC") == 0)
+	if (currency.compare("BURST") == 0)
+	{
+
+	}
+	else if (currency.compare("BTC") == 0)
 	{ // coin market cap conversion
 		String priceINT = price.upToFirstOccurrenceOf(".", false, true) + price.fromFirstOccurrenceOf(".", false, true).substring(0, 8); // convert to integer / 0.000001043106736701768 -> 104
 		uint64 priceSAT = priceINT.getLargeIntValue();
@@ -428,7 +517,7 @@ void SendComponent::UpdateTotalLabel()
 		convertedBTCstr += ".";
 		convertedBTCstr += convertedSATstr.getLastCharacters(8).paddedLeft('0', 8);
 
-		balance_t_ext = convertedBTCstr + " BTC)";
+		balance_t_ext = " (" + convertedBTCstr + " BTC)";
 	}
 	else
 	{ // coin market cap conversion
@@ -444,22 +533,56 @@ void SendComponent::UpdateTotalLabel()
 		convertedSATstr = convertedSATstr.paddedLeft('0', 9);
 		String convertedStr = convertedSATstr.substring(0, convertedSATstr.length() - 8) + "." + convertedSATstr.substring(convertedSATstr.length() - 8, convertedSATstr.length() - 6);
 
-		balance_t_ext = (convertedStr + " " + currency + ")");
+		balance_t_ext = (" (" + convertedStr + " " + currency + ")");
 	}
-	totalLabel->setText("total: " + balance_t + " (" + balance_t_ext, dontSendNotification);
+	totalLabel->setText("total: " + balance_t + balance_t_ext, dontSendNotification);
 }
 
 void SendComponent::SendBurst()
 {
-	{
-		String recipient = recipientComboBox->getText().trim();
-		String amount = Burst2NQT(amountComboBox->getText());
-		String fee = Burst2NQT(String(feeSlider->getValue()));
-		String message = messageTextEditor->getText();
-		bool encrypt = encryptToggleButton->getToggleState();
+	String recipient = recipientComboBox->getText().trim();
+	String amount = Burst2NQT(amountComboBox->getText());
+	String fee = Burst2NQT(String(feeSlider->getValue()));
+	String message = fixedMessageLabel->getText() + " " + messageTextEditor->getText();
+	if (message.length() >= 1000)
+		message = message.substring(0, 999);
+	bool encrypt = encryptToggleButton->getToggleState();
 
-		listeners.call(&InterfaceListener::SendBurstcoin, recipient, amount, fee, message, encrypt);
+	listeners.call(&InterfaceListener::SendBurstcoin, recipient, amount, fee, message, encrypt);
+
+	SetView(0);
+}
+
+void SendComponent::SetView(int v)
+{
+	if (v == 0)
+	{
+		recipientComboBox->setText("", dontSendNotification);
+		amountComboBox->setText("", dontSendNotification);
+
+		messageTextEditor->setText("", dontSendNotification);
+
+		encryptToggleButton->setToggleState(false, dontSendNotification);
+		totalLabel->setText("", dontSendNotification);
+
+		fixedMessageLabel->setText("", dontSendNotification);
+		paymentLabel->setText("", dontSendNotification);
+		recipientFixedLabel->setText("", dontSendNotification);
+		costLabel->setText("", dontSendNotification);
 	}
+	recipientLabel->setVisible(v == 0);
+	recipientComboBox->setVisible(v == 0);
+
+	amountLabel->setVisible(v == 0);
+	amountComboBox->setVisible(v == 0);
+	
+	fixedMessageLabel->setVisible(v == 1);
+	paymentLabel->setVisible(v == 1);
+	recipientFixedLabel->setVisible(v == 1);
+	costLabel->setVisible(v == 1);
+	cancelButton->setVisible(v == 1);
+
+	repaint();
 }
 
 //[/MiscUserCode]
@@ -480,10 +603,15 @@ BEGIN_JUCER_METADATA
                  snapShown="1" overlayOpacity="0.330" fixedSize="0" initialWidth="600"
                  initialHeight="400">
   <BACKGROUND backgroundColour="fff0f0f0"/>
+  <LABEL name="fixedMessageLabel" id="589ae50bad9367bf" memberName="fixedMessageLabel"
+         virtualName="" explicitFocusOrder="0" pos="376 176 288 48" edTextCol="ff000000"
+         edBkgCol="0" labelText="fixed message" editableSingleClick="0"
+         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
+         fontsize="15" bold="0" italic="0" justification="33"/>
   <LABEL name="totalLabel" id="5312c992397fcb41" memberName="totalLabel"
          virtualName="" explicitFocusOrder="0" pos="200 120 150 24" edTextCol="ff000000"
          edBkgCol="0" labelText="0. BURST" editableSingleClick="0" editableDoubleClick="0"
-         focusDiscardsChanges="0" fontname="Default font" fontsize="15"
+         focusDiscardsChanges="0" fontname="Default font" fontsize="18"
          bold="0" italic="0" justification="36"/>
   <TEXTBUTTON name="sendTextButton" id="6294916aabe7c7c6" memberName="sendTextButton"
               virtualName="" explicitFocusOrder="0" pos="16 301 328 24" bgColOff="ff77b517"
@@ -534,6 +662,25 @@ BEGIN_JUCER_METADATA
             virtualName="" explicitFocusOrder="0" pos="136 40 150 24" editable="1"
             layout="34" items="0.25&#10;0.5&#10;1.0&#10;10&#10;100&#10;1000"
             textWhenNonSelected="0." textWhenNoItems="(no choices)"/>
+  <LABEL name="paymentLabel" id="ef391b61d67d67f5" memberName="paymentLabel"
+         virtualName="" explicitFocusOrder="0" pos="376 24 288 48" edTextCol="ff000000"
+         edBkgCol="0" labelText="Payment request" editableSingleClick="0"
+         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
+         fontsize="16" bold="0" italic="0" justification="33"/>
+  <LABEL name="costLabel" id="aebadc24726ea68e" memberName="costLabel"
+         virtualName="" explicitFocusOrder="0" pos="376 112 288 56" edTextCol="ff000000"
+         edBkgCol="0" labelText="Costs" editableSingleClick="0" editableDoubleClick="0"
+         focusDiscardsChanges="0" fontname="Default font" fontsize="16"
+         bold="0" italic="0" justification="34"/>
+  <TEXTBUTTON name="cancelButton" id="fff7bbb1ed04a85f" memberName="cancelButton"
+              virtualName="" explicitFocusOrder="0" pos="368 336 296 24" bgColOff="ffc85c5c"
+              bgColOn="ff77b517" buttonText="cancel" connectedEdges="0" needsCallback="1"
+              radioGroupId="0"/>
+  <LABEL name="recipientFixedLabel" id="7e9074d7cd45f10f" memberName="recipientFixedLabel"
+         virtualName="" explicitFocusOrder="0" pos="376 80 288 24" edTextCol="ff000000"
+         edBkgCol="0" labelText="recipient" editableSingleClick="0" editableDoubleClick="0"
+         focusDiscardsChanges="0" fontname="Default font" fontsize="15"
+         bold="0" italic="0" justification="33"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

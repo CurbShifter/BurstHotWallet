@@ -4,7 +4,6 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 
 /*
-CloudBurst DAPP
 Copyright (C) 2018  CurbShifter
 
 This program is free software: you can redistribute it and/or modify

@@ -80,6 +80,15 @@ SettingsComponent::SettingsComponent ()
     cmcTextEditor->setPopupMenuEnabled (true);
     cmcTextEditor->setText (String());
 
+    addAndMakeVisible (websocketButton = new TextButton ("websocketButton"));
+    websocketButton->setTooltip (TRANS("Pop-up menu with pay request options"));
+    websocketButton->setButtonText (TRANS("Browser requests"));
+    websocketButton->addListener (this);
+    websocketButton->setColour (TextButton::buttonColourId, Colours::white);
+    websocketButton->setColour (TextButton::buttonOnColourId, Colours::white);
+    websocketButton->setColour (TextButton::textColourOffId, Colours::black);
+    websocketButton->setColour (TextButton::textColourOnId, Colours::black);
+
 
     //[UserPreSize]
 	passPhraseTextEditor->setMultiLine(false);
@@ -118,6 +127,7 @@ SettingsComponent::~SettingsComponent()
     myPassPhraseButton = nullptr;
     cmcButton = nullptr;
     cmcTextEditor = nullptr;
+    websocketButton = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -150,9 +160,9 @@ void SettingsComponent::resized()
     myPassPhraseButton->setBounds (8, 72, 120, 24);
     cmcButton->setBounds (8, 104, 120, 24);
     cmcTextEditor->setBounds (136, 104, 360, 24);
+    websocketButton->setBounds (8, 136, 120, 24);
     //[UserResized] Add your own custom resize handling here..
 	*/
-	const int col = 140;
 	const int rowH = 22;
 	const int pad = 15;
 	Rectangle<int> r = getBounds().withPosition(0, 0).reduced(pad);
@@ -160,11 +170,13 @@ void SettingsComponent::resized()
 	Rectangle<int> r1 = r.withHeight(rowH);
 	Rectangle<int> r2 = r1.translated(0, rowH + 3);
 	Rectangle<int> r3 = r2.translated(0, rowH + 3);
+	Rectangle<int> r4 = r3.translated(0, rowH + 3);
 
 	const int bw = 150;
 	lockButton->setBounds(r1.withWidth(bw));
 	myPassPhraseButton->setBounds(r2.withWidth(bw));
 	cmcButton->setBounds(r3.withWidth(bw));
+	websocketButton->setBounds(r4.withWidth(bw));
 
 	passPhraseTextEditor->setBounds(r2.withTrimmedLeft(bw + 5));
 	cmcTextEditor->setBounds(r3.withTrimmedLeft(bw + 5));
@@ -249,7 +261,7 @@ void SettingsComponent::buttonClicked (Button* buttonThatWasClicked)
 			contextSubMenu->addItem(6, "GBP", true, currencyType == 4);
 		}
 		contextMenu->addSubMenu("Display currency", *contextSubMenu, true);
-		
+
 		int result = contextMenu->show();
 		if (result == 1)
 		{
@@ -268,6 +280,42 @@ void SettingsComponent::buttonClicked (Button* buttonThatWasClicked)
 		contextMenu = nullptr;
 		contextSubMenu = nullptr;
         //[/UserButtonCode_cmcButton]
+    }
+    else if (buttonThatWasClicked == websocketButton)
+    {
+        //[UserButtonCode_websocketButton] -- add your button handler code here..
+		String websocketsStr;
+		interfaceListeners.call(&InterfaceListener::GetAppValue, "websockets", websocketsStr);
+		bool websockets = websocketsStr.getIntValue() > 0;
+
+		ScopedPointer<PopupMenu> contextMenu;
+		contextMenu = new PopupMenu;
+
+		contextMenu->addItem(1, "Allow browser requests", true, websockets);
+		contextMenu->addItem(2, "Show browser request example page", true);
+		int result = contextMenu->show();
+		if (result == 1)
+		{
+			if (!websockets)
+			{
+				if (NativeMessageBox::showOkCancelBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "Allow external pay requests?\nIt will need local networking on port 41137"))
+				{
+					interfaceListeners.call(&InterfaceListener::SetAppValue, "websockets", String(1));
+					interfaceListeners.call(&InterfaceListener::StartWebSocket);
+				}
+			}
+			else
+			{
+				interfaceListeners.call(&InterfaceListener::SetAppValue, "websockets", String(0));
+				interfaceListeners.call(&InterfaceListener::CloseWebSocket);
+			}
+		}
+		else if (result == 2)
+		{
+			URL url("https://curbshifter.github.io/BurstHotWallet/PayButtonDemo.html");
+			url.launchInDefaultBrowser();
+		}
+		//[/UserButtonCode_websocketButton]
     }
 
     //[UserbuttonClicked_Post]
@@ -305,7 +353,7 @@ void SettingsComponent::textEditorReturnKeyPressed(TextEditor &editor) //Called 
 void SettingsComponent::textEditorEscapeKeyPressed(TextEditor &/*editor*/) //Called when the user presses the escape key.
 {
 }
-void SettingsComponent::textEditorFocusLost(TextEditor &editor) //Called when the text editor loses focus.
+void SettingsComponent::textEditorFocusLost(TextEditor &/*editor*/) //Called when the text editor loses focus.
 {
 }
 
@@ -468,6 +516,11 @@ BEGIN_JUCER_METADATA
               virtualName="" explicitFocusOrder="0" pos="136 104 360 24" tooltip="Enter your coinmarketcap.com API key to view the amounts in other currency values."
               initialText="" multiline="0" retKeyStartsLine="0" readonly="0"
               scrollbars="0" caret="1" popupmenu="1"/>
+  <TEXTBUTTON name="websocketButton" id="b79df861c06c00ce" memberName="websocketButton"
+              virtualName="" explicitFocusOrder="0" pos="8 136 120 24" tooltip="Pop-up menu with pay request options"
+              bgColOff="ffffffff" bgColOn="ffffffff" textCol="ff000000" textColOn="ff000000"
+              buttonText="Browser requests" connectedEdges="0" needsCallback="1"
+              radioGroupId="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

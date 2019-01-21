@@ -29,8 +29,8 @@ public:
 	virtual void GetAppValue(const String, String &) {};
 	virtual void SetAppValue(const String, const String) {};
 
-	virtual void SetupTransaction(const String recipient, const String amount, const String fee, const String msg, const bool encrypted) {};
-	virtual void SendBurstcoin(const String recipient, const String amount, const String fee, const String msg, const bool encrypted) {};
+	virtual void SetupTransaction(const String requestHeader, const String recipient, const String amount, const String fee, const String msg, const bool /*encrypted*/) {};
+	virtual void SendBurstcoin(const String recipient, const String amount, const String fee, const String msg, const bool /*encrypted*/) {};
 	virtual void GetAccountDisplayName(const uint64, const String, String &) {};
 	virtual void UpdateBalance(String &) {};
 	
@@ -43,6 +43,11 @@ public:
 	virtual void SetCMCkey(const String key) {};
 	virtual void SetCurrencyType(const String currency) {};
 	virtual void SetPrice(String currency, String price) {};
+
+	virtual void StartWebSocket() {};
+	virtual void CloseWebSocket() {};
+
+	virtual void SendWebSocketMessage(String data) {};
 };
 
 class SettingsListener
@@ -75,10 +80,10 @@ class SendComponentListener
 public:
 	SendComponentListener() {};
 	virtual ~SendComponentListener() {};
-	virtual void SetupTransaction(const String recipient, const String amount, const String fee, const String msg, const bool encrypted) {};
+	virtual void SetupTransaction(const String requestHeader, const String recipient, const String amount, const String fee, const String msg, const bool /*encrypted*/) {};
 	virtual void SetRecipients(StringArray recipients) {};
 	virtual void SetAmounts(StringArray amounts) {};
-	virtual void SetSuggestedFees(uint64 cheap, uint64 normal, uint64 priority) {};
+	virtual void SetSuggestedFees(uint64 /*cheap*/, uint64 /*normal*/, uint64 /*priority*/) {};
 	virtual void SetPrice(String currency, String price) {};
 };
 

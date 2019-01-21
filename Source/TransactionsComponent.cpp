@@ -1,11 +1,21 @@
 /*
-  ==============================================================================
+==============================================================================
+Copyright (C) 2019  CurbShifter
 
-    TransactionsComponent.cpp
-    Created: 5 Jan 2019 11:12:58am
-    Author:  Jorn
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-  ==============================================================================
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+==============================================================================
 */
 
 #include "../JuceLibraryCode/JuceHeader.h"
@@ -49,7 +59,7 @@ TransactionsComponent::TransactionsComponent() : Thread("Transactions")
 TransactionsComponent::~TransactionsComponent()
 {
 	stopTimer();
-	stopThread(1000);
+	stopThread(10000);
 
 	txlog = nullptr;
 }
@@ -111,17 +121,17 @@ int TransactionsComponent::getNumRows()
 	return GetCacheSize();
 }
 
-void TransactionsComponent::paintRowBackground(Graphics &g, int rowNumber, int width, int height, bool rowIsSelected)
+void TransactionsComponent::paintRowBackground(Graphics &g, int rowNumber, int /*width*/, int /*height*/, bool /*rowIsSelected*/)
 {
 	const TransactionsComponent::txDetails txd = GetCache(getIndexOfSorted(rowNumber));
 	int64 blockHeight = jmax<int64>(numberOfBlocks - txd.value[9].toString().getLargeIntValue(), 0);
 	float neededConfirmations = 10.f;
 	if (blockHeight > neededConfirmations)
 		g.fillAll(Colours::white);
-	else g.fillAll(Colours::white.darker((1. - (blockHeight / neededConfirmations)) * 0.5));
+	else g.fillAll(Colours::white.darker((1.f - (blockHeight / neededConfirmations)) * 0.5f));
 }
 
-void TransactionsComponent::paintCell(Graphics &g, int rowNumber, int columnId, int width, int height, bool rowIsSelected)
+void TransactionsComponent::paintCell(Graphics &g, int rowNumber, int columnId, int width, int height, bool /*rowIsSelected*/)
 {
 	g.setColour(Colours::black);
 	const TransactionsComponent::txDetails txd = GetCache(getIndexOfSorted(rowNumber));
@@ -161,12 +171,12 @@ void TransactionsComponent::paintCell(Graphics &g, int rowNumber, int columnId, 
 	}
 }
 
-Component* TransactionsComponent::refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, Component* existingComponentToUpdate)
+Component* TransactionsComponent::refreshComponentForCell(int /*rowNumber*/, int /*columnId*/, bool /*isRowSelected*/, Component* /*existingComponentToUpdate*/)
 {
 	return nullptr;
 }
 
-void TransactionsComponent::cellClicked(int rowNumber, int columnId, const MouseEvent &e)
+void TransactionsComponent::cellClicked(int rowNumber, int /*columnId*/, const MouseEvent &e)
 {
 	if (e.mods.isRightButtonDown())
 	{
@@ -174,7 +184,7 @@ void TransactionsComponent::cellClicked(int rowNumber, int columnId, const Mouse
 	}
 }
 
-void TransactionsComponent::cellDoubleClicked(int rowNumber, int columnId, const MouseEvent&)
+void TransactionsComponent::cellDoubleClicked(int rowNumber, int /*columnId*/, const MouseEvent&)
 {
 	ShowPopupMenu(rowNumber);
 }
@@ -286,7 +296,6 @@ int TransactionsComponent::getColumnAutoSizeWidth(int columnId)
 	case 5: return 350; break;
 	default: return 100; break;
 	}
-	return 100;
 }
 
 String TransactionsComponent::getCellTooltip(int rowNumber, int columnId)
@@ -307,15 +316,15 @@ String TransactionsComponent::getCellTooltip(int rowNumber, int columnId)
 	return String::empty;
 }
 
-void TransactionsComponent::selectedRowsChanged(int lastRowSelected)
+void TransactionsComponent::selectedRowsChanged(int /*lastRowSelected*/)
 {
 }
 
-void TransactionsComponent::deleteKeyPressed(int lastRowSelected)
+void TransactionsComponent::deleteKeyPressed(int /*lastRowSelected*/)
 {
 }
 
-void TransactionsComponent::returnKeyPressed(int lastRowSelected)
+void TransactionsComponent::returnKeyPressed(int /*lastRowSelected*/)
 {
 }
 
@@ -323,7 +332,7 @@ void TransactionsComponent::listWasScrolled()
 {
 }
 
-bool TransactionsComponent::keyPressed(const KeyPress &key, Component *originatingComponent)
+bool TransactionsComponent::keyPressed(const KeyPress &/*key*/, Component * /*originatingComponent*/)
 {
 	return false;
 }
@@ -407,11 +416,11 @@ void TransactionsComponent::run()
 	int64 calculatedBalance = 0;
 	Array<String> knownTx;
 	Array<TransactionsComponent::txDetails> txds;
-	if (txlog && txlog->getLogFile().existsAsFile())
+	if (txlog && txlog->getLogFile().existsAsFile() && !threadShouldExit())
 	{ // load cache
 		StringArray lines;
 		txlog->getLogFile().readLines(lines);
-		for (int i = 0; i < lines.size(); i++)
+		for (int i = 0; i < lines.size() && !threadShouldExit(); i++)
 		{
 			var cacheRowJSON;
 			const String line = lines[i];
@@ -443,6 +452,7 @@ void TransactionsComponent::run()
 	if (cachedTimestamp > 0)
 		timestamp = String(timestamp);
 	
+	if (!threadShouldExit())
 	{ // set current numberOfBlocks
 		String state = burstKit.getState("true");
 		var stateJSON;
@@ -454,7 +464,7 @@ void TransactionsComponent::run()
 	var accountTransactionIdsJSON;
 	juce::Result r = JSON::parse(accountTransactionIds, accountTransactionIdsJSON);
 	var transactionIdsJSON = accountTransactionIdsJSON.getProperty("transactionIds", String::empty);
-	if (transactionIdsJSON.isArray())
+	if (transactionIdsJSON.isArray() && !threadShouldExit())
 	{
 		for (int i = 0; i < transactionIdsJSON.size(); i++)
 		{
@@ -488,9 +498,9 @@ void TransactionsComponent::run()
 	const String myAccountID = burstKit.GetAccountID();
 	const String balanceStr = burstKit.getBalance(myAccountID);
 	const String balanceNQTStr = burstKit.GetJSONvalue(balanceStr, "balanceNQT");
-	const uint64 balanceNQT = balanceNQTStr.getLargeIntValue();
+	const int64 balanceNQT = balanceNQTStr.getLargeIntValue();
 
-	if (balanceNQT > calculatedBalance)
+	if (balanceNQT > calculatedBalance && !threadShouldExit())
 	{
 		// difference in balance is probably due to multiouts
 		// create a dummy tx with balance diff
@@ -510,7 +520,7 @@ void TransactionsComponent::run()
 	const String unconfirmedTransactionIdsStr = burstKit.getUnconfirmedTransactionsIds();
 	var unconfirmedTransactionIdsJSON;
 	juce::Result r2 = JSON::parse(unconfirmedTransactionIdsStr, unconfirmedTransactionIdsJSON);
-	if (r2.wasOk())
+	if (r2.wasOk() && !threadShouldExit())
 	{
 		var unconfirmedTransactionIdsArray = unconfirmedTransactionIdsJSON.getProperty("unconfirmedTransactionIds", String::empty);
 		if (unconfirmedTransactionIdsArray.isArray())
@@ -520,35 +530,40 @@ void TransactionsComponent::run()
 				const String txid = unconfirmedTransactionIdsArray[i];
 				const String txIdDetails = burstKit.getTransaction(txid);
 				const txDetails txd = FillTxStruct(txIdDetails);
-				txds.add(txd);
+				if (txd.value[0].toString().getLargeIntValue() > 0)
+					txds.add(txd);
 			}
 		}
 	}
 
 	// coinmarketcap / sandbox / pro-api
-	String cmcAPIkey_t;
-	String currencyType;
-	GetCurrency(cmcAPIkey_t, currencyType);
-	int64 timestampLimit = (Time::currentTimeMillis() / 1000) - 60;
-	if (cmcAPIkey_t.isNotEmpty() && (timestampLimit > latestCMCtimestamp || currentCurrencyType.compare(currencyType) != 0)) // once a minute max
+	if (!threadShouldExit())
 	{
-		if (currencyType.compare("BURST") != 0)
+		String cmcAPIkey_t;
+		String currencyType;
+		GetCurrency(cmcAPIkey_t, currencyType);
+		int64 timestampLimit = (Time::currentTimeMillis() / 1000) - 60;
+		if (cmcAPIkey_t.isNotEmpty() && (timestampLimit > latestCMCtimestamp || currentCurrencyType.compare(currencyType) != 0)) // once a minute max
 		{
-			String cmcURLstr("https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?id=573&convert=" + currencyType + "&CMC_PRO_API_KEY=" + cmcAPIkey_t);
-			URL cmcURL(cmcURLstr);
+			if (currencyType.compare("BURST") != 0)
+			{
+				String cmcURLstr("https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?id=573&convert=" + currencyType + "&CMC_PRO_API_KEY=" + cmcAPIkey_t);
+				URL cmcURL(cmcURLstr);
 
-			const String cmcOutput = cmcURL.readEntireTextStream();
-			String price = cmcOutput.fromFirstOccurrenceOf("\"quote\"", false, true).fromFirstOccurrenceOf("\"price\":", false, true).upToFirstOccurrenceOf(",", false, true).trim(); // "price": 0.0000010425304733232973,
-			SetPrice(currencyType, price);
+				const String cmcOutput = cmcURL.readEntireTextStream();
+				String price = cmcOutput.fromFirstOccurrenceOf("\"quote\"", false, true).fromFirstOccurrenceOf("\"price\":", false, true).upToFirstOccurrenceOf(",", false, true).trim(); // "price": 0.0000010425304733232973,
+				SetPrice(currencyType, price);
+			}
+			else SetPrice(currencyType, "1.");
+
+			currentCurrencyType = currencyType;
 		}
-		else SetPrice(currencyType, "1.");
-
-		currentCurrencyType = currencyType;
 	}
-
-	SetCache(txds);
-	sortOrderChanged(sortColumnId, sortIsForwards);
-
+	if (!threadShouldExit())
+	{
+		SetCache(txds);
+		sortOrderChanged(sortColumnId, sortIsForwards);
+	}
 }
 
 TransactionsComponent::txDetails TransactionsComponent::FillTxStruct(String txDetailsStr)

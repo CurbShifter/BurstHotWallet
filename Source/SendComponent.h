@@ -52,16 +52,18 @@ public:
 	void removeInterfaceListener(InterfaceListener* const l)   { listeners.remove(l); };
 	ListenerList <InterfaceListener> listeners;
 
-	void SetupTransaction(const String recipient, const String amountNQT, const String feeNQT, const String msg, const bool encrypted);
-	void SetRecipients(StringArray recipients);
-	void SetAmounts(StringArray amounts);
-	void SetSuggestedFees(uint64 cheap, uint64 normal, uint64 priority);
-	void SetPrice(String currency, String price);
+	void SetupTransaction(const String requestHeader, const String recipient, const String amountNQT, const String feeNQT, const String msg, const bool encrypted) override;
+	void SetRecipients(StringArray recipients) override;
+	void SetAmounts(StringArray amounts) override;
+	void SetSuggestedFees(uint64 cheap, uint64 normal, uint64 priority) override;
+	void SetPrice(String currency, String price) override;
 
 	String NQT2Burst(const String value);
 	String Burst2NQT(const String value);
-	void UpdateTotalLabel();
+	void UpdateTotalLabel(const String amount, const String fee);
 	void SendBurst();
+	void SetView(int v);
+
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -83,6 +85,7 @@ private:
     //[/UserVariables]
 
     //==============================================================================
+    ScopedPointer<Label> fixedMessageLabel;
     ScopedPointer<Label> totalLabel;
     ScopedPointer<TextButton> sendTextButton;
     ScopedPointer<Slider> feeSlider;
@@ -95,6 +98,10 @@ private:
     ScopedPointer<ComboBox> feeComboBox;
     ScopedPointer<ComboBox> recipientComboBox;
     ScopedPointer<ComboBox> amountComboBox;
+    ScopedPointer<Label> paymentLabel;
+    ScopedPointer<Label> costLabel;
+    ScopedPointer<TextButton> cancelButton;
+    ScopedPointer<Label> recipientFixedLabel;
 
 
     //==============================================================================

@@ -31,6 +31,9 @@
 #include "AboutComponent.h"
 #include "Listeners.h"
 
+#include "websockets\WebSocketServer.h"
+#include "websockets\WebSocket.h"
+
 #define INTERFACE_UPDATE_MS 1000
 //[/Headers]
 
@@ -63,9 +66,10 @@ public:
 	void textEditorEscapeKeyPressed(TextEditor &editor); //Called when the user presses the escape key.
 	void textEditorFocusLost(TextEditor &editor); //Called when the text editor loses focus.
 
-	void SetupTransaction(const String recipient, const String amountNQT, const String feeNQT, const String msg, const bool encrypted);
-	void SendBurstcoin(const String recipient, const String amount, const String fee, const String msg, const bool encrypted);
-	void GetAccountDisplayName(const uint64 account, const String accountRS, String &displayName);
+	void SetupTransaction(const String requestHeader, const String recipient, const String amountNQT, const String feeNQT, const String msg, const bool encrypted) override;
+	void SendBurstcoin(const String recipient, const String amount, const String fee, const String msg, const bool encrypted) override;
+	void GetAccountDisplayName(const uint64 account, const String accountRS, String &displayName) override;
+	void UpdateBalance(String &balance) override;
 
 	String Encrypt(String input, String pin);
 	String Decrypt(String input, String pin);
@@ -73,20 +77,27 @@ public:
 	ApplicationProperties appProp;
 	PropertiesFile::Options options;
 	String GetAppValue(const String type);
-	void GetAppValue(const String type, String &value);
-	void SetAppValue(const String type, const String value);
+	void GetAppValue(const String type, String &value) override;
+	void SetAppValue(const String type, const String value) override;
 
-	void SavePassPhraseWithNewPIN(const String passphrase);
-	void SavePassPhrase(String passphrase, String pin);
-	void LoadPassPhrase();
-	void UnloadPassPhrase();
-	void LoadPassPhraseReturn(String pin);
+	void SavePassPhraseWithNewPIN(const String passphrase) override;
+	void SavePassPhrase(String passphrase, String pin) override;
+	void LoadPassPhrase() override;
+	void UnloadPassPhrase() override;
+	void LoadPassPhraseReturn(String pin) override;
 
-	void SetCMCkey(const String key);
-	void SetCurrencyType(const String currency);
-	void UpdateBalance(String &balance);
-	void SetPrice(String currency, String price);
-    //[/UserMethods]
+	void SetCMCkey(const String key) override;
+	void SetCurrencyType(const String currency) override;
+	void SetPrice(String currency, String price) override;
+   
+	void StartWebSocket() override;
+	void CloseWebSocket() override;
+
+	void SendWebSocketMessage(String data) override;
+
+	bool OpenWebSocket(String host_address, int port);
+	bool ProcessWebSocketMessage(int connectionNr, const MemoryBlock& message);
+	//[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
@@ -137,10 +148,67 @@ private:
 	void log(String message);
 	ScopedPointer<CELookAndFeel> wizlaf;
 
-	//ScopedPointer<SystemTrayIconComponent> systemTray;
 	int autoRefreshCounter;
 	String currency;
 	String price;
+	//ScopedPointer<SystemTrayIconComponent> systemTray;
+
+	class InterfaceWebSocket : public WebSocket
+	{
+	public:
+		InterfaceWebSocket(InterfaceComponent& owner_)
+			: WebSocket(true),
+			owner(owner_)
+		{
+			static int totalConnections = 0;
+			ourNumber = ++totalConnections;
+		}
+		void connectionMade()
+		{
+			MemoryBlock message;
+			owner.ProcessWebSocketMessage (ourNumber, message);
+		}
+		void connectionLost()
+		{
+			ourNumber = ourNumber;
+			MemoryBlock message;
+			owner.ProcessWebSocketMessage (ourNumber, message);
+		}
+		void messageReceived(const MemoryBlock& message)
+		{
+			owner.ProcessWebSocketMessage(ourNumber, message);
+		}
+
+	private:
+		InterfaceComponent& owner;
+		int ourNumber;
+	};
+
+	//==============================================================================
+	class InterfaceSocketServer : public WebSocketServer
+	{
+	public:
+		InterfaceSocketServer(InterfaceComponent& owner_)
+			: owner(owner_)
+		{
+		}
+
+		WebSocket* createConnectionObject()
+		{
+			InterfaceWebSocket* newConnection = new InterfaceWebSocket(owner);
+			owner.activeConnections.add(newConnection);
+			return (WebSocket*)newConnection;
+		}
+
+	private:
+		InterfaceComponent& owner;
+	};
+
+
+	juce::Array<juce::String> networkmessage;
+	OwnedArray <InterfaceWebSocket, CriticalSection> activeConnections;
+	ScopedPointer<InterfaceSocketServer> server;
+
     //[/UserVariables]
 
     //==============================================================================
