@@ -31,9 +31,6 @@
 #include "AboutComponent.h"
 #include "Listeners.h"
 
-#include "websockets\WebSocketServer.h"
-#include "websockets\WebSocket.h"
-
 #define INTERFACE_UPDATE_MS 1000
 //[/Headers]
 
@@ -89,14 +86,12 @@ public:
 	void SetCMCkey(const String key) override;
 	void SetCurrencyType(const String currency) override;
 	void SetPrice(String currency, String price) override;
-   
-	void StartWebSocket() override;
-	void CloseWebSocket() override;
 
-	void SendWebSocketMessage(String data) override;
-
-	bool OpenWebSocket(String host_address, int port);
-	bool ProcessWebSocketMessage(int connectionNr, const MemoryBlock& message);
+#if ALLOW_EXT_REQ == 1
+	void OpenHttpSocket(const String host_address, const int port, bool &ok) override;
+	void CloseHttpSocket() override;
+	bool ProcessHttpSocketMessage(const MemoryBlock& message);
+#endif
 	//[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -152,63 +147,10 @@ private:
 	String currency;
 	String price;
 	//ScopedPointer<SystemTrayIconComponent> systemTray;
-
-	class InterfaceWebSocket : public WebSocket
-	{
-	public:
-		InterfaceWebSocket(InterfaceComponent& owner_)
-			: WebSocket(true),
-			owner(owner_)
-		{
-			static int totalConnections = 0;
-			ourNumber = ++totalConnections;
-		}
-		void connectionMade()
-		{
-			MemoryBlock message;
-			owner.ProcessWebSocketMessage (ourNumber, message);
-		}
-		void connectionLost()
-		{
-			ourNumber = ourNumber;
-			MemoryBlock message;
-			owner.ProcessWebSocketMessage (ourNumber, message);
-		}
-		void messageReceived(const MemoryBlock& message)
-		{
-			owner.ProcessWebSocketMessage(ourNumber, message);
-		}
-
-	private:
-		InterfaceComponent& owner;
-		int ourNumber;
-	};
-
-	//==============================================================================
-	class InterfaceSocketServer : public WebSocketServer
-	{
-	public:
-		InterfaceSocketServer(InterfaceComponent& owner_)
-			: owner(owner_)
-		{
-		}
-
-		WebSocket* createConnectionObject()
-		{
-			InterfaceWebSocket* newConnection = new InterfaceWebSocket(owner);
-			owner.activeConnections.add(newConnection);
-			return (WebSocket*)newConnection;
-		}
-
-	private:
-		InterfaceComponent& owner;
-	};
-
-
-	juce::Array<juce::String> networkmessage;
-	OwnedArray <InterfaceWebSocket, CriticalSection> activeConnections;
-	ScopedPointer<InterfaceSocketServer> server;
-
+#if ALLOW_EXT_REQ == 1
+	ScopedPointer<StreamingSocket> streamingSocket;
+	ScopedPointer<MemoryBlock> socketMessageData;
+#endif
     //[/UserVariables]
 
     //==============================================================================

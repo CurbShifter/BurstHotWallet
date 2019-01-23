@@ -485,7 +485,7 @@ String SendComponent::Burst2NQT(const String value)
 	else
 	{
 		amountNQT = amount.substring(0, point).getLargeIntValue() * 100000000L;
-		amountNQT += amount.substring(point + 1, amount.length()).retainCharacters("0123456789").paddedRight('0', 8).getLargeIntValue();
+		amountNQT += amount.substring(point + 1, amount.length()).retainCharacters("0123456789").paddedRight('0', 8).substring(0, 8).getLargeIntValue();
 	}
 	return String(amountNQT);
 }

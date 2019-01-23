@@ -180,7 +180,10 @@ void SettingsComponent::resized()
 
 	passPhraseTextEditor->setBounds(r2.withTrimmedLeft(bw + 5));
 	cmcTextEditor->setBounds(r3.withTrimmedLeft(bw + 5));
-
+	
+#if ALLOW_EXT_REQ != 1
+	websocketButton->setVisible(false);
+#endif
     //[/UserResized]
 }
 
@@ -284,8 +287,9 @@ void SettingsComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == websocketButton)
     {
         //[UserButtonCode_websocketButton] -- add your button handler code here..
+#if ALLOW_EXT_REQ == 1
 		String websocketsStr;
-		interfaceListeners.call(&InterfaceListener::GetAppValue, "websockets", websocketsStr);
+		interfaceListeners.call(&InterfaceListener::GetAppValue, "httpsocket", websocketsStr);
 		bool websockets = websocketsStr.getIntValue() > 0;
 
 		ScopedPointer<PopupMenu> contextMenu;
@@ -300,14 +304,15 @@ void SettingsComponent::buttonClicked (Button* buttonThatWasClicked)
 			{
 				if (NativeMessageBox::showOkCancelBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "Allow external pay requests?\nIt will need local networking on port 41137"))
 				{
-					interfaceListeners.call(&InterfaceListener::SetAppValue, "websockets", String(1));
-					interfaceListeners.call(&InterfaceListener::StartWebSocket);
+					interfaceListeners.call(&InterfaceListener::SetAppValue, "httpsocket", String(1));
+					bool ok = false;
+					interfaceListeners.call(&InterfaceListener::OpenHttpSocket, "127.0.0.1", 8080, ok);
 				}
 			}
 			else
 			{
-				interfaceListeners.call(&InterfaceListener::SetAppValue, "websockets", String(0));
-				interfaceListeners.call(&InterfaceListener::CloseWebSocket);
+				interfaceListeners.call(&InterfaceListener::SetAppValue, "httpsocket", String(0));
+				interfaceListeners.call(&InterfaceListener::CloseHttpSocket);
 			}
 		}
 		else if (result == 2)
@@ -315,6 +320,7 @@ void SettingsComponent::buttonClicked (Button* buttonThatWasClicked)
 			URL url("https://curbshifter.github.io/BurstHotWallet/PayButtonDemo.html");
 			url.launchInDefaultBrowser();
 		}
+#endif
 		//[/UserButtonCode_websocketButton]
     }
 

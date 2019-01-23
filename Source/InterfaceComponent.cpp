@@ -24,10 +24,11 @@
 
 
 //[MiscUserDefs] You can add your own user definitions and misc code here...
-#include "Logger.h"
-#include "SettingsComponent.h"
 #include "BurstLib-source.cpp"
+#include "Logger.h"
 #include "Version.h"
+
+#define REQ_PORT 41137
 
 void InterfaceComponent::log(String message)
 {
@@ -214,12 +215,18 @@ InterfaceComponent::InterfaceComponent ()
 
 	versionLabel->setText("v0.1." PROJECT_SVNRevision " (" + String(burstExt.GetBurstKitVersionNumber()) + ")", dontSendNotification);
 
-	//--
-	String websocketsStr;
-	GetAppValue("websockets", websocketsStr);
-	if (websocketsStr.getIntValue() > 0)
-		StartWebSocket();
-	//--
+#if ALLOW_EXT_REQ == 1
+	String httpsocketStr;
+	GetAppValue("httpsocket", httpsocketStr);
+	if (httpsocketStr.getIntValue() > 0)
+	{
+		bool ok = false;
+		OpenHttpSocket("127.0.0.1", REQ_PORT, ok);
+	}
+#endif
+	//systemTray->showInfoBubble(ProjectInfo::projectName, "hi");
+	//systemTray->setIconTooltip("");
+	//systemTray->setHighlighted(true);
 
 	startTimer(INTERFACE_UPDATE_MS);
     //[/Constructor]
@@ -228,8 +235,10 @@ InterfaceComponent::InterfaceComponent ()
 InterfaceComponent::~InterfaceComponent()
 {
     //[Destructor_pre]. You can add your own custom destruction code here..
-	CloseWebSocket();
-	server = nullptr;
+#if ALLOW_EXT_REQ == 1
+	CloseHttpSocket();
+	streamingSocket = nullptr;
+#endif
 	//[/Destructor_pre]
 
     serverComboBox = nullptr;
@@ -459,7 +468,8 @@ void InterfaceComponent::SendBurstcoin(const String recipient, const String amou
 				SetAppValue("amounts", amounts.joinIntoString(";"));
 				sendComponentListeners.call(&SendComponentListener::SetAmounts, amounts);
 
-				String message;
+#if ALLOW_EXT_REQ == 1
+			/*	String message;
 				message = "{\"recipient\":\"";
 				message += recipient;
 				message += "\",\"amountNQT\":";
@@ -473,8 +483,8 @@ void InterfaceComponent::SendBurstcoin(const String recipient, const String amou
 				message += ",\"transaction\":";
 				message += transactionID;
 				message += "}";
-
-				SendWebSocketMessage(message);
+				SendWebSocketMessage(message);*/
+#endif
 
 				NativeMessageBox::showMessageBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "Transaction send successfully !");
 			}
@@ -740,21 +750,34 @@ String InterfaceComponent::Burst2NQT(const String value)
 	else
 	{
 		amountNQT = amount.substring(0, point).getLargeIntValue() * 100000000L;
-		amountNQT += amount.substring(point + 1, amount.length()).retainCharacters("0123456789").paddedRight('0', 8).getLargeIntValue();
+		amountNQT += amount.substring(point + 1, amount.length()).retainCharacters("0123456789").paddedRight('0', 8).substring(0, 8).getLargeIntValue();
 	}
 	return String(amountNQT);
 }
 
 void InterfaceComponent::timerCallback()
 {
-	if (pinComponent->isVisible() == false)
+#if ALLOW_EXT_REQ == 1
+	if (streamingSocket && streamingSocket->waitUntilReady(true, 100) == 1)
 	{
-		{
-		//	systemTray->showInfoBubble(ProjectInfo::projectName, "hi");
-			//systemTray->setIconTooltip("");
-		//	systemTray->setHighlighted(true);
-		}
+		if (socketMessageData == nullptr)
+			socketMessageData = new MemoryBlock(1024);
+
+		int bytesRead = streamingSocket->read(static_cast <char*> (socketMessageData->getData()), 1024, false);
+
+		ProcessHttpSocketMessage(*socketMessageData);
+
+		juce::StreamingSocket* connection = streamingSocket->waitForNextConnection();
+		char response[] = "HTTP/1.1 200 OK\r\n"
+			"Connection: close\r\n"
+			"Access-Control-Allow-Origin: *\r\n"
+			"Content-Type: text/plain; charset=UTF-8\r\n\r\n"
+			"<xml></xml>"
+			;
+		int bytesWritten = connection->write(response, strlen(response));
+		connection->close();
 	}
+#endif
 
 	if (autoRefreshCounter++ > ((1 * 60 * 1000) / jmax<int>(1, Timer::getTimerInterval())))
 	{
@@ -789,70 +812,26 @@ void InterfaceComponent::SetCurrencyType(const String currency)
 }
 
 /*********************************************************************************/
-void InterfaceComponent::StartWebSocket()
+#if ALLOW_EXT_REQ == 1
+// implement this using secure websockets (boost+beast)
+void InterfaceComponent::OpenHttpSocket(const String host_address, const int port, bool &ok)
 {
-	if (!server)
-		server = new InterfaceSocketServer(*this);
-	OpenWebSocket("", 41137);
-}
-
-void InterfaceComponent::CloseWebSocket()
-{ // Just closes any connections that are currently open.
-	if (server)
-		server->stop();
-	activeConnections.clear();
-}
-
-void InterfaceComponent::SendWebSocketMessage(String data)
-{
-	MemoryBlock mem(data.getNumBytesAsUTF8());
-	mem.copyFrom(data.toRawUTF8(), 0, data.getNumBytesAsUTF8());
-	for (int i = 0; i < activeConnections.size(); i++)
-		activeConnections[i]->sendMessage(mem);
-}
-
-bool InterfaceComponent::OpenWebSocket(String host_address, int port)
-{
-	CloseWebSocket();
-	bool openedOk = false;
-
-	if (host_address.isNotEmpty())
-	{ // if we're connecting to an existing server, we can just create a connection object directly.
-		ScopedPointer<InterfaceWebSocket> newConnection(new InterfaceWebSocket(*this));
-		openedOk = newConnection->connectToSocket(host_address, port, 1000);
-		if (openedOk)
-		{
-			activeConnections.add(newConnection.release());
-			networkmessage.add(juce::String("Online (client)"));
-		}
-		if (!openedOk)
-		{ //	AlertWindow::showMessageBoxAsync (AlertWindow::WarningIcon, "", "Failed to open the socket...\nIs the  client running?\nMake sure any firewall allows the connection on this port.");
-			networkmessage.add(juce::String("Failed to connect socket (#1) firewall?"));
-		}
-	}
-	else
+	CloseHttpSocket();
+	
+	if (streamingSocket == nullptr)
 	{
-	/*	Array< IPAddress > results;
-		IPAddress::findAllAddresses(results);
-		String hostname; // local ip print so we know where to connect
-		if (results.size() > 1)
-			hostname = (results[1].toString());
-		else if (results.size() > 0)
-			hostname = (results[0].toString());
-		else hostname = (SystemStats::getComputerName());*/
-		
-		// we're starting up a server, we need to tell the server to start waiting for
-		// clients to connect. It'll then create connection objects for us when clients arrive.
-		openedOk = server ? server->beginWaitingForSocket(port) : false;
-		if (!openedOk)
-		{
-			networkmessage.add(juce::String("Failed to open socket on this port (#2)"));
-		}
+		streamingSocket = new juce::StreamingSocket();
+		ok = streamingSocket->createListener(port, host_address);
 	}
-	return openedOk;
 }
 
-bool InterfaceComponent::ProcessWebSocketMessage(int /*connectionNr*/, const MemoryBlock& message)
+void InterfaceComponent::CloseHttpSocket()
+{
+	if (streamingSocket)
+		streamingSocket->close();
+}
+
+bool InterfaceComponent::ProcessHttpSocketMessage(const MemoryBlock& message)
 {
 	if (message.getSize() > 0)
 	{
@@ -891,7 +870,7 @@ bool InterfaceComponent::ProcessWebSocketMessage(int /*connectionNr*/, const Mem
 	}
 	return false;
 }
-
+#endif
 
 //[/MiscUserCode]
 

@@ -43,11 +43,10 @@ public:
 	virtual void SetCMCkey(const String key) {};
 	virtual void SetCurrencyType(const String currency) {};
 	virtual void SetPrice(String currency, String price) {};
-
-	virtual void StartWebSocket() {};
-	virtual void CloseWebSocket() {};
-
-	virtual void SendWebSocketMessage(String data) {};
+#if ALLOW_EXT_REQ == 1
+	virtual void OpenHttpSocket(const String host_address, const int port, bool &ok) {};
+	virtual void CloseHttpSocket() {};
+#endif
 };
 
 class SettingsListener
