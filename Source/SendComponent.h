@@ -82,6 +82,7 @@ private:
 
 	String currency;
 	String price;
+	String notifierURL;
     //[/UserVariables]
 
     //==============================================================================

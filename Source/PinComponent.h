@@ -50,6 +50,7 @@ public:
     //[UserMethods]     -- You can add your own custom methods in this section.
 	void addInterfaceListener(InterfaceListener* const l)      { interfaceListeners.add(l); };
 	void removeInterfaceListener(InterfaceListener* const l)   { interfaceListeners.remove(l); };
+	ListenerList <InterfaceListener> interfaceListeners;
 
 	void textEditorTextChanged(TextEditor &editor); //Called when the user changes the text in some way.
 	void textEditorReturnKeyPressed(TextEditor &editor); //Called when the user presses the return key.
@@ -70,7 +71,6 @@ public:
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
-	ListenerList <InterfaceListener> interfaceListeners;
 	String passPhrase;
     //[/UserVariables]
 

@@ -24,6 +24,7 @@
 
 
 //[MiscUserDefs] You can add your own user definitions and misc code here...
+//#include "HttpServer.h"
 #include "BurstLib-source.cpp"
 #include "Logger.h"
 #include "Version.h"
@@ -164,7 +165,7 @@ InterfaceComponent::InterfaceComponent ()
 	GetAppValue("server", node_server);
 	if (node_server.isEmpty())
 	{
-		node_server = "https://wallet.burst-team.us:2083/";
+		node_server = "https://wallet1.burst-team.us:2083/";
 	}
 	burstExt.SetNode(node_server);
 	transactionsComponentListeners.call(&TransactionsComponentListener::SetNode, node_server);
@@ -227,6 +228,7 @@ InterfaceComponent::InterfaceComponent ()
 	//systemTray->showInfoBubble(ProjectInfo::projectName, "hi");
 	//systemTray->setIconTooltip("");
 	//systemTray->setHighlighted(true);
+	StartHttpServer();
 
 	startTimer(INTERFACE_UPDATE_MS);
     //[/Constructor]
@@ -239,6 +241,8 @@ InterfaceComponent::~InterfaceComponent()
 	CloseHttpSocket();
 	streamingSocket = nullptr;
 #endif
+	StopHttpServer();
+	
 	//[/Destructor_pre]
 
     serverComboBox = nullptr;
@@ -413,9 +417,14 @@ void InterfaceComponent::textEditorFocusLost(TextEditor &) //Called when the tex
 }
 
 void InterfaceComponent::SetupTransaction(const String requestHeader, const String recipient, const String amountNQT, const String feeNQT, const String msg, const bool encrypted)
-{
-	sendComponentListeners.call(&SendComponentListener::SetupTransaction, requestHeader, recipient, amountNQT, feeNQT, msg, encrypted);
-	SetView(2);
+{ // async
+	setupTX = true;
+	setupTX_requestHeader = requestHeader;
+	setupTX_recipient = recipient;
+	setupTX_amountNQT = amountNQT;
+	setupTX_feeNQT = feeNQT;
+	setupTX_msg = msg;
+	setupTX_encrypted = encrypted;
 }
 
 void InterfaceComponent::SendBurstcoin(const String recipient, const String amountNQT, const String feeNQT, const String msg, const bool encrypted)
@@ -778,7 +787,12 @@ void InterfaceComponent::timerCallback()
 		connection->close();
 	}
 #endif
-
+	if (setupTX)
+	{
+		setupTX = false;
+		sendComponentListeners.call(&SendComponentListener::SetupTransaction, setupTX_requestHeader, setupTX_recipient, setupTX_amountNQT, setupTX_feeNQT, setupTX_msg, setupTX_encrypted);
+		SetView(2);
+	}
 	if (autoRefreshCounter++ > ((1 * 60 * 1000) / jmax<int>(1, Timer::getTimerInterval())))
 	{
 		autoRefreshCounter = 0;
@@ -787,10 +801,10 @@ void InterfaceComponent::timerCallback()
 	}
 }
 
-void InterfaceComponent::SetPrice(String currency, String price)
+void InterfaceComponent::SetPrice(String currency_, String price_)
 {
-	this->currency = currency;
-	this->price = price;
+	this->currency = currency_;
+	this->price = price_;
 
 	String bal;
 	UpdateBalance(bal);
@@ -804,10 +818,10 @@ void InterfaceComponent::SetCMCkey(const String key)
 	transactionsComponentListeners.call(&TransactionsComponentListener::SetCMCkey, key);
 }
 
-void InterfaceComponent::SetCurrencyType(const String currency)
+void InterfaceComponent::SetCurrencyType(const String currency_)
 {
-	SetAppValue("CurrencyType", currency);
-	transactionsComponentListeners.call(&TransactionsComponentListener::SetCurrencyType, currency);
+	SetAppValue("CurrencyType", currency_);
+	transactionsComponentListeners.call(&TransactionsComponentListener::SetCurrencyType, currency_);
 	transactionsComponentListeners.call(&TransactionsComponentListener::Refresh);
 }
 

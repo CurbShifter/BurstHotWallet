@@ -416,6 +416,8 @@ void SendComponent::SetupTransaction(const String requestHeader, const String re
 
 	UpdateTotalLabel(NQT2Burst(amountNQT), String(feeSlider->getValue()));
 
+	this->notifierURL = notifierURL;
+
 	SetView(1);
 }
 
@@ -498,42 +500,41 @@ void SendComponent::UpdateTotalLabel(const String amount, const String fee)
 
 	String balance_t(NQT2Burst(totalNQT) + " BURST");
 	String balance_t_ext;
-	if (currency.compare("BURST") == 0)
+	//if (amountNQT > 0)
 	{
+		if (currency.compare("BTC") == 0)
+		{ // coin market cap conversion
+			String priceINT = price.upToFirstOccurrenceOf(".", false, true) + price.fromFirstOccurrenceOf(".", false, true).substring(0, 8); // convert to integer / 0.000001043106736701768 -> 104
+			uint64 priceSAT = priceINT.getLargeIntValue();
+			uint64 balanceNQT = totalNQT.getLargeIntValue();
 
-	}
-	else if (currency.compare("BTC") == 0)
-	{ // coin market cap conversion
-		String priceINT = price.upToFirstOccurrenceOf(".", false, true) + price.fromFirstOccurrenceOf(".", false, true).substring(0, 8); // convert to integer / 0.000001043106736701768 -> 104
-		uint64 priceSAT = priceINT.getLargeIntValue();
-		uint64 balanceNQT = totalNQT.getLargeIntValue();
+			// multiply priceINT by amount of BURST
+			uint64 convertedSAT_NQT = priceSAT * balanceNQT;
+			uint64 convertedSAT = convertedSAT_NQT / 100000000; // convert the NQT/SAT back
 
-		// multiply priceINT by amount of BURST
-		uint64 convertedSAT_NQT = priceSAT * balanceNQT;
-		uint64 convertedSAT = convertedSAT_NQT / 100000000; // convert the NQT/SAT back
+			String convertedSATstr(convertedSAT);
+			String convertedBTCstr = convertedSATstr.length() > 8 ? convertedSATstr.substring(0, 8) : "0";
+			convertedBTCstr += ".";
+			convertedBTCstr += convertedSATstr.getLastCharacters(8).paddedLeft('0', 8);
 
-		String convertedSATstr(convertedSAT);
-		String convertedBTCstr = convertedSATstr.length() > 8 ? convertedSATstr.substring(0, 8) : "0";
-		convertedBTCstr += ".";
-		convertedBTCstr += convertedSATstr.getLastCharacters(8).paddedLeft('0', 8);
+			balance_t_ext = " (" + convertedBTCstr + " BTC)";
+		}
+		else if (currency.isNotEmpty())
+		{ // coin market cap conversion
+			String priceINT = price.upToFirstOccurrenceOf(".", false, true) + price.fromFirstOccurrenceOf(".", false, true).substring(0, 8); // convert to integer / 0.000001043106736701768 -> 104
+			uint64 priceSAT = priceINT.getLargeIntValue();
+			uint64 balanceNQT = totalNQT.getLargeIntValue();
 
-		balance_t_ext = " (" + convertedBTCstr + " BTC)";
-	}
-	else
-	{ // coin market cap conversion
-		String priceINT = price.upToFirstOccurrenceOf(".", false, true) + price.fromFirstOccurrenceOf(".", false, true).substring(0, 8); // convert to integer / 0.000001043106736701768 -> 104
-		uint64 priceSAT = priceINT.getLargeIntValue();
-		uint64 balanceNQT = totalNQT.getLargeIntValue();
+			// multiply priceINT by amount of BURST
+			uint64 convertedSAT_NQT = priceSAT * balanceNQT;
+			uint64 convertedSAT = convertedSAT_NQT / 100000000; // convert the NQT/SAT back
 
-		// multiply priceINT by amount of BURST
-		uint64 convertedSAT_NQT = priceSAT * balanceNQT;
-		uint64 convertedSAT = convertedSAT_NQT / 100000000; // convert the NQT/SAT back
+			String convertedSATstr(convertedSAT);
+			convertedSATstr = convertedSATstr.paddedLeft('0', 9);
+			String convertedStr = convertedSATstr.substring(0, convertedSATstr.length() - 8) + "." + convertedSATstr.substring(convertedSATstr.length() - 8, convertedSATstr.length() - 6);
 
-		String convertedSATstr(convertedSAT);
-		convertedSATstr = convertedSATstr.paddedLeft('0', 9);
-		String convertedStr = convertedSATstr.substring(0, convertedSATstr.length() - 8) + "." + convertedSATstr.substring(convertedSATstr.length() - 8, convertedSATstr.length() - 6);
-
-		balance_t_ext = (" (" + convertedStr + " " + currency + ")");
+			balance_t_ext = (" (" + convertedStr + " " + currency + ")");
+		}
 	}
 	totalLabel->setText("total: " + balance_t + balance_t_ext, dontSendNotification);
 }
@@ -550,6 +551,11 @@ void SendComponent::SendBurst()
 
 	listeners.call(&InterfaceListener::SendBurstcoin, recipient, amount, fee, message, encrypt);
 
+/*	URL url(notifierURL);
+	if (url.isWellFormed())
+	{
+		String resultNotify = url.readEntireTextStream();
+	}*/
 	SetView(0);
 }
 
@@ -569,6 +575,7 @@ void SendComponent::SetView(int v)
 		paymentLabel->setText("", dontSendNotification);
 		recipientFixedLabel->setText("", dontSendNotification);
 		costLabel->setText("", dontSendNotification);
+		notifierURL = String::empty;
 	}
 	recipientLabel->setVisible(v == 0);
 	recipientComboBox->setVisible(v == 0);

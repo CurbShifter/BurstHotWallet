@@ -59,7 +59,7 @@ TransactionsComponent::TransactionsComponent() : Thread("Transactions")
 TransactionsComponent::~TransactionsComponent()
 {
 	stopTimer();
-	stopThread(10000);
+	stopThread(20000);
 
 	txlog = nullptr;
 }
@@ -67,9 +67,16 @@ TransactionsComponent::~TransactionsComponent()
 void TransactionsComponent::paint (Graphics& g)
 {
     g.fillAll (Colours::white);   // clear the background
-
+	/*
     g.setColour (Colours::grey);
-    g.drawRect (getLocalBounds(), 30);   // draw an outline around the component
+	g.drawRect(getLocalBounds(), 30);   // draw an outline around the component
+
+	//	if (isThreadRunning())
+	{
+		g.setColour(Colours::black);
+		g.drawText("Loading...", Rectangle<int>(0, 0, getWidth(), getHeight()), Justification::centred, false);
+	}
+	*/
 }
 
 void TransactionsComponent::resized()
@@ -118,21 +125,32 @@ void TransactionsComponent::Refresh()
 
 int TransactionsComponent::getNumRows()
 {
-	return GetCacheSize();
+	return jmax<int>(1, GetCacheSize());
 }
 
-void TransactionsComponent::paintRowBackground(Graphics &g, int rowNumber, int /*width*/, int /*height*/, bool /*rowIsSelected*/)
+void TransactionsComponent::paintRowBackground(Graphics &g, int rowNumber, int width, int height, bool /*rowIsSelected*/)
 {
-	const TransactionsComponent::txDetails txd = GetCache(getIndexOfSorted(rowNumber));
-	int64 blockHeight = jmax<int64>(numberOfBlocks - txd.value[9].toString().getLargeIntValue(), 0);
-	float neededConfirmations = 10.f;
-	if (blockHeight > neededConfirmations)
-		g.fillAll(Colours::white);
-	else g.fillAll(Colours::white.darker((1.f - (blockHeight / neededConfirmations)) * 0.5f));
+	if (GetCacheSize() > rowNumber)
+	{
+		const TransactionsComponent::txDetails txd = GetCache(getIndexOfSorted(rowNumber));
+		int64 blockHeight = jmax<int64>(numberOfBlocks - txd.value[9].toString().getLargeIntValue(), 0);
+		float neededConfirmations = 10.f;
+		if (blockHeight > neededConfirmations)
+			g.fillAll(Colours::white);
+		else g.fillAll(Colours::white.darker((1.f - (blockHeight / neededConfirmations)) * 0.5f));
+	}
+	else if (isThreadRunning())
+	{
+		g.setColour(Colours::black);
+		g.drawText("Loading...", Rectangle<int>(10, 2, width-10, height-2), Justification::left, false);
+	}
 }
 
 void TransactionsComponent::paintCell(Graphics &g, int rowNumber, int columnId, int width, int height, bool /*rowIsSelected*/)
 {
+	if (GetCacheSize() <= rowNumber)
+		return;
+
 	g.setColour(Colours::black);
 	const TransactionsComponent::txDetails txd = GetCache(getIndexOfSorted(rowNumber));
 	String txt = txd.value[columnId - 1].toString();
@@ -429,7 +447,7 @@ void TransactionsComponent::run()
 				juce::Result r = JSON::parse(lines[i], cacheRowJSON);
 
 				txDetails txDetail = FillTxStruct(line);
-				if (txDetail.value[0].toString().isNotEmpty())
+				if (knownTx.contains(txDetail.value[6].toString()) == false && txDetail.value[0].toString().isNotEmpty())
 				{
 					const String amountNQTstr = txDetail.value[2].toString();
 					bool minus = amountNQTstr.startsWithChar('-');
@@ -440,7 +458,7 @@ void TransactionsComponent::run()
 						int64 feeNQT = txDetail.value[3].toString().getLargeIntValue();
 						calculatedBalance -= feeNQT;
 					}
-
+					
 					txds.add(txDetail);
 					knownTx.add(txDetail.value[6].toString()); // save tx id
 				}
@@ -517,7 +535,8 @@ void TransactionsComponent::run()
 		txlog->logMessage(txIdDetails);
 	}
 
-	const String unconfirmedTransactionIdsStr = burstKit.getUnconfirmedTransactionsIds();
+	const String accountID = burstKit.GetAccountID();
+	const String unconfirmedTransactionIdsStr = burstKit.getUnconfirmedTransactionsIds(accountID);
 	var unconfirmedTransactionIdsJSON;
 	juce::Result r2 = JSON::parse(unconfirmedTransactionIdsStr, unconfirmedTransactionIdsJSON);
 	if (r2.wasOk() && !threadShouldExit())
@@ -525,11 +544,20 @@ void TransactionsComponent::run()
 		var unconfirmedTransactionIdsArray = unconfirmedTransactionIdsJSON.getProperty("unconfirmedTransactionIds", String::empty);
 		if (unconfirmedTransactionIdsArray.isArray())
 		{
-			for (int i = 0; i < unconfirmedTransactionIdsArray.size(); i++)
+			for (int i = 0; i < unconfirmedTransactionIdsArray.size() && !threadShouldExit(); i++)
 			{
 				const String txid = unconfirmedTransactionIdsArray[i];
-				const String txIdDetails = burstKit.getTransaction(txid);
-				const txDetails txd = FillTxStruct(txIdDetails);
+				txDetails txd;
+				if (txMap.contains(txid) == false)
+				{
+					const String txIdDetails = burstKit.getTransaction(txid);
+					if (txMap.size() > 0xFFFF)
+						txMap.clear();
+					txMap.set(txid, txIdDetails);
+					txd = FillTxStruct(txIdDetails);
+				}
+				else txd = FillTxStruct(txMap[txid]);
+
 				if (txd.value[0].toString().getLargeIntValue() > 0)
 					txds.add(txd);
 			}

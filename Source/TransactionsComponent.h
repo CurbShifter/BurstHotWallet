@@ -123,6 +123,7 @@ private:
 
 	String currency_cache;
 	String price_cache;
+	HashMap<String, String> txMap;
 
 
 	Array<txDetails> txDetailArrayCache;

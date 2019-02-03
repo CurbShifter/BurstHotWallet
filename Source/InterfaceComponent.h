@@ -31,6 +31,17 @@
 #include "AboutComponent.h"
 #include "Listeners.h"
 
+#include "HttpServer.h"
+/* MSVC 2017
+needs a mod in boost line 50 of config.hpp
+
+#if defined(__has_cpp_attribute)
+becomes:
+#if defined(__clang__) && defined(__has_cpp_attribute)
+
+*/
+
+
 #define INTERFACE_UPDATE_MS 1000
 //[/Headers]
 
@@ -151,7 +162,68 @@ private:
 	ScopedPointer<StreamingSocket> streamingSocket;
 	ScopedPointer<MemoryBlock> socketMessageData;
 #endif
-    //[/UserVariables]
+	ScopedPointer<HttpServer> httpServer;
+	bool setupTX;
+	String setupTX_requestHeader;
+	String setupTX_recipient;
+	String setupTX_amountNQT;
+	String setupTX_feeNQT;
+	String setupTX_msg;
+	bool setupTX_encrypted;
+
+/*	std::shared_ptr<http_connection> connection;
+	void http_server(boost::asio::ip::tcp::acceptor& acceptor, boost::asio::ip::tcp::socket& socket)
+	{
+		acceptor.async_accept(socket, [&](boost::beast::error_code ec)
+		{
+			if (!ec)
+			{
+				//std::make_shared<http_connection>(std::move(socket))->start();
+				connection = std::make_shared<http_connection>(std::move(socket));
+
+				connection->addInterfaceListener(this);
+				connection->start();
+			}
+			http_server(acceptor, socket);
+		});
+	}*/
+	void StopHttpServer()
+	{
+		httpServer = nullptr;
+//		if (connection)
+	//		connection->start();
+	}
+	void StartHttpServer()
+	{
+		setupTX = false;
+		httpServer = new HttpServer();
+
+		if (httpServer)
+			httpServer->addInterfaceListener(this);
+
+		httpServer->startThread();
+	/*	try
+		{
+			//auto const address = net::ip::make_address("0.0.0.0");// (argv[1]);
+			auto const address = boost::asio::ip::make_address("0.0.0.0");
+			unsigned short port = 80;// static_cast<unsigned short>(80); // std::atoi(argv[2])
+
+			boost::asio::io_context ioc{ 1 };
+
+			boost::asio::ip::tcp::acceptor acceptor{ ioc, {address, port} };
+			boost::asio::ip::tcp::socket socket{ ioc };
+			http_server(acceptor, socket);
+
+			ioc.run();
+		}
+		catch (std::exception const& e)
+		{
+			//std::cerr << "Error: " << e.what() << std::endl;
+		//	returnValue = EXIT_FAILURE;
+		}*/
+	}
+
+	//[/UserVariables]
 
     //==============================================================================
     ScopedPointer<ComboBox> serverComboBox;

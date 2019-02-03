@@ -102,75 +102,59 @@ button:hover {
 				<p>Open your <a href="http://hotwallet.cash">HotWallet Desktop App</a>. And use the button below to show a transfer request.</p>
 				<hr>
 				<div class="clearfix">
-					<button type="button" onclick="Donate()" class="signupbtn">Send 1000 Burstcoin to CurbShifter</button>
+					<button type="button" onclick="Donate()" class="signupbtn">Fund HotWallet development (1000 Burstcoin)</button>
 					<p class="error_msg" id="result_output"></p>
 				</div>
 				</br>
 				<p class="copyright">© CurbShifter 2019<br>released under GNU General Public License v3.<br><a href="https://github.com/CurbShifter">https://github.com/CurbShifter</a></p>
-				<p class="underwriting">Simply use the code from this single static page to make your own pay request buttons. HotWallet.cash makes it easy to send and request Burstcoin !</p>
+				<p class="underwriting">You can use the button from this page to make your own pay request buttons. HotWallet.cash makes it easy !</p>
 			</div>
 		</form>
 		<script>
 		// To make your own buttons copy and mod these 2 functions below
 		function Donate()
 		{
-			// START POINT
 			// This example will make a request to send 1000 Burstcoin to CurbShifter
-			var requestHeader = "Please confirm this this donation to fund development :)"; // describe the payment request. It will be shown in hotwallet
+			var requestHeader = "Send a donation to fund further development and get my eternal gratitude !"; // describe the payment request. It will be shown in hotwallet
 			var recipient = "Curbshifter"; // the recipient can be an alias or BURST address (RS or numeric).
 			var amountNQT = "100000000000"; // the amount is in planck. 1 burst coin is 100000000 planck.
 			var feeNQT = "normal"; // the fee is in planck, or the currently suggested fee "cheap" "normal" or "priority". Using "normal" is recommened.
 			var msg = "Donation !"; // the message has a max length of 1000. this can describe the item/service that will be payed for.
 			var encrypted = false; // the last argument can be set to true to encrypt the payment message.
+			var notifierURL = "notify"
 			
-			RequestPaymentHotWallet(requestHeader, recipient, amountNQT, feeNQT, msg, encrypted);
-		};
+			// example URL:
+			// http://localhost:41137/hotwallet?requestHeader=test&recipient=Curbshifter&amountNQT=100&feeNQT=normal&msg=message&encrypted=false&notifierURL=bla
 
-		function RequestPaymentHotWallet(requestHeader, recipient, amountNQT, feeNQT, msg, encrypted) {
-			window.WebSocket = window.WebSocket || window.MozWebSocket; // if mozilla use built-in WebSocket
-			var connection = new WebSocket('ws://127.0.0.1:41137'); // the connection is local and therefor not secured
-			
-			connection.onopen = function () {	
-				document.getElementById("result_output").innerHTML = "please confirm the transaction in your hotwallet";
-				
-				var requestJSON = "{\"requestHeader\":\"";
-				requestJSON += requestHeader;
-				requestJSON += "\",\"recipient\":\"";
-				requestJSON += recipient;
-				requestJSON += "\",\"amountNQT\":\"";
-				requestJSON += amountNQT;
-				requestJSON += "\",\"feeNQT\":\"";
-				requestJSON += feeNQT;
-				requestJSON += "\",\"msg\":\"";
-				requestJSON += msg;
-				requestJSON += "\",\"encrypted\":";
-				requestJSON += encrypted;
-				requestJSON += "}";				
-				connection.send(requestJSON);
-			};
-			connection.onclose = function (error) {
-				document.getElementById("result_output").innerHTML = "No connection.</br></br>Make sure HotWallet running and 'Browser requests' is enabled";
-			}
-			connection.onerror = function (error) {
-				document.getElementById("result_output").innerHTML = "Error sending transaction request.</br></br>Make sure HotWallet running and 'Browser requests' is enabled";
-			};
-			connection.onmessage = function (message) {		
-				try {
-					var json = JSON.parse(message.data);			
-					if (json["transaction"] > 0)
-					{
-						// END POINT
-						// When the transaction is made in the hotwallet you can check the return data here
-						// the transaction number allows you to check if it is valid on a burstcoin node. and continue the buy process
-						console.log("payment JSON " + message.data);
-						document.getElementById("result_output").innerHTML = "Success !</br>transaction ID " + json["transaction"];
+			var url = ("http://localhost:41137/hotwallet?requestHeader=" + requestHeader + 
+								"&recipient=" + recipient +
+								"&amountNQT=" + amountNQT +
+								"&feeNQT=" + feeNQT +
+								"&msg=" + msg +
+								"&encrypted=" + encrypted);
+
+			var xhr = new XMLHttpRequest();
+			xhr.open("GET", url, true);
+			xhr.onload = function (e) {
+				if (xhr.readyState === 4) {
+					if (xhr.status === 200) {
+						console.log(xhr.responseText);
+						var json = JSON.parse(xhr.responseText);			
+						if (json["response"] == "OK")
+							alert("Request send successful.\nFinish the payment in your HotWallet");
+						else alert("Request failed !\nDoes HotWallet have network access?");
+					} 
+					else {
+						console.error(xhr.statusText);
+						alert("Request failed ! " + xhr.statusText);
 					}
-				} catch (e) {
-					console.log('This doesn\'t look like a valid JSON: ',
-					message.data);
-					return;
 				}
 			};
+			xhr.onerror = function (e) {
+			  console.error(xhr.statusText);
+			  alert("Request failed !\nNo HotWallet found");
+			};
+			xhr.send(null);
 		};
 		</script>
 	</body>

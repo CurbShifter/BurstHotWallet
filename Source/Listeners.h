@@ -99,4 +99,11 @@ public:
 	virtual void SetCurrencyType(const String currency) {};
 };
 
+class HttpServerListener
+{
+public:
+	HttpServerListener() {};
+	virtual ~HttpServerListener() {};
+};
+
 #endif //__LISTENERS__

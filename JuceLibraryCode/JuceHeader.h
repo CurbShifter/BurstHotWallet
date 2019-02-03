@@ -30,6 +30,7 @@
 #include <juce_video/juce_video.h>
 
 #include "BinaryData.h"
+#include "Version.h"
 
 #if ! DONT_SET_USING_JUCE_NAMESPACE
  // If your code uses a lot of JUCE classes, then this will obviously save you
@@ -41,8 +42,8 @@
 namespace ProjectInfo
 {
     const char* const  projectName    = "BurstHotWallet";
-    const char* const  versionString  = "1.0.0";
-    const int          versionNumber  = 0x10000;
+    const char* const  versionString  = "1.0." PROJECT_SVNRevision;
+    const int          versionNumber  = 0x10000 + PROJECT_SVNRevisionN;
 }
 #endif
 
