@@ -123,8 +123,7 @@ button:hover {
 			var encrypted = false; // the last argument can be set to true to encrypt the payment message.
 			var notifierURL = "notify"
 			
-			// example URL:
-			// http://localhost:41137/hotwallet?requestHeader=test&recipient=Curbshifter&amountNQT=100&feeNQT=normal&msg=message&encrypted=false&notifierURL=bla
+			// example URL:  http://localhost:41137/hotwallet?requestHeader=test&recipient=Curbshifter&amountNQT=100&feeNQT=normal&msg=message&encrypted=false
 
 			var url = ("http://localhost:41137/hotwallet?requestHeader=" + requestHeader + 
 								"&recipient=" + recipient +
@@ -132,7 +131,16 @@ button:hover {
 								"&feeNQT=" + feeNQT +
 								"&msg=" + msg +
 								"&encrypted=" + encrypted);
-
+			
+			openInNewTab(url);
+			//MakeHttpRequest(url); // prettier, but not allowed on OSX when called from a https page (SSL)
+		};
+		function openInNewTab(url) {
+			var win = window.open(url, '_blank');
+			win.focus();
+		}
+		function MakeHttpRequest(url)
+		{
 			var xhr = new XMLHttpRequest();
 			xhr.open("GET", url, true);
 			xhr.onload = function (e) {
@@ -155,7 +163,7 @@ button:hover {
 			  alert("Request failed !\nNo HotWallet found");
 			};
 			xhr.send(null);
-		};
+		}
 		</script>
 	</body>
 </html>

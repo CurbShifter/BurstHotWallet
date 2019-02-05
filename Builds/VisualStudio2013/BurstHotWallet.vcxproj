@@ -56,7 +56,7 @@
       <Optimization>Disabled</Optimization>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <AdditionalIncludeDirectories>..\..\JuceLibraryCode;..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules;E:\Libraries\boost_1_64_0;E:\Libraries\beast\include;..\..\..\..\..\BurstLib\trunk\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_WINDOWS;DEBUG;_DEBUG;JUCER_VS2013_78A5020=1;JUCE_APP_VERSION=1.0.0;JUCE_APP_VERSION_HEX=0x10000;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NO_BEAST=1;ALLOW_EXT_REQ=0;_CRT_SECURE_NO_WARNINGS;WIN32;_WINDOWS;DEBUG;_DEBUG;JUCER_VS2013_78A5020=1;JUCE_APP_VERSION=1.0.0;JUCE_APP_VERSION_HEX=0x10000;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <PrecompiledHeader />
@@ -101,7 +101,7 @@
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <AdditionalIncludeDirectories>..\..\JuceLibraryCode;..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules;E:\Libraries\boost_1_64_0;E:\Libraries\beast\include;..\..\..\..\..\BurstLib\trunk\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_WINDOWS;NDEBUG;JUCER_VS2013_78A5020=1;JUCE_APP_VERSION=1.0.0;JUCE_APP_VERSION_HEX=0x10000;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NO_BEAST=1;_CRT_SECURE_NO_WARNINGS;WIN32;_WINDOWS;NDEBUG;JUCER_VS2013_78A5020=1;JUCE_APP_VERSION=1.0.0;JUCE_APP_VERSION_HEX=0x10000;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <PrecompiledHeader />
@@ -137,12 +137,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source\websockets\Base64.cpp" />
-    <ClCompile Include="..\..\Source\websockets\hl_sha1.cpp" />
-    <ClCompile Include="..\..\Source\websockets\hl_sha1wrapper.cpp" />
-    <ClCompile Include="..\..\Source\websockets\StreamingWebSocket.cpp" />
-    <ClCompile Include="..\..\Source\websockets\WebSocket.cpp" />
-    <ClCompile Include="..\..\Source\websockets\WebSocketServer.cpp" />
+    <ClCompile Include="..\..\Source\HttpServer.cpp" />
     <ClCompile Include="..\..\Source\TransactionsComponent.cpp" />
     <ClCompile Include="..\..\Source\AboutComponent.cpp" />
     <ClCompile Include="..\..\Source\HistoryComponent.cpp" />
@@ -232,13 +227,7 @@
     <ClCompile Include="..\..\JuceLibraryCode\juce_video.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source\websockets\Base64.h" />
-    <ClInclude Include="..\..\Source\websockets\hl_hashwrapper.h" />
-    <ClInclude Include="..\..\Source\websockets\hl_sha1.h" />
-    <ClInclude Include="..\..\Source\websockets\hl_sha1wrapper.h" />
-    <ClInclude Include="..\..\Source\websockets\StreamingWebSocket.h" />
-    <ClInclude Include="..\..\Source\websockets\WebSocket.h" />
-    <ClInclude Include="..\..\Source\websockets\WebSocketServer.h" />
+    <ClInclude Include="..\..\Source\HttpServer.h" />
     <ClInclude Include="..\..\Source\TransactionsComponent.h" />
     <ClInclude Include="..\..\Source\AboutComponent.h" />
     <ClInclude Include="..\..\Source\HistoryComponent.h" />

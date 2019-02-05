@@ -7,9 +7,6 @@
     <Filter Include="BurstHotWallet\Source">
       <UniqueIdentifier>{44B86C64-670D-14E2-D197-670A3BFF4D38}</UniqueIdentifier>
     </Filter>
-    <Filter Include="BurstHotWallet\Source\websockets">
-      <UniqueIdentifier>{F4658ECA-74B8-C608-AA96-A8F27B94753A}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Juce Modules">
       <UniqueIdentifier>{422C46B7-0467-2DB0-BF3C-16DFCAFD69AC}</UniqueIdentifier>
     </Filter>
@@ -33,21 +30,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source\websockets\Base64.cpp">
-      <Filter>BurstHotWallet\Source\websockets</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\websockets\hl_sha1.cpp">
-      <Filter>BurstHotWallet\Source\websockets</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\websockets\hl_sha1wrapper.cpp">
-      <Filter>BurstHotWallet\Source\websockets</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\websockets\WebSocket.cpp">
-      <Filter>BurstHotWallet\Source\websockets</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\websockets\WebSocketServer.cpp">
-      <Filter>BurstHotWallet\Source\websockets</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\TransactionsComponent.cpp">
       <Filter>BurstHotWallet\Source</Filter>
     </ClCompile>
@@ -183,29 +165,11 @@
     <ClCompile Include="..\..\JuceLibraryCode\juce_video.cpp">
       <Filter>Juce Library Code</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\websockets\StreamingWebSocket.cpp">
-      <Filter>BurstHotWallet\Source\websockets</Filter>
+    <ClCompile Include="..\..\Source\HttpServer.cpp">
+      <Filter>BurstHotWallet\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source\websockets\Base64.h">
-      <Filter>BurstHotWallet\Source\websockets</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\websockets\hl_hashwrapper.h">
-      <Filter>BurstHotWallet\Source\websockets</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\websockets\hl_sha1.h">
-      <Filter>BurstHotWallet\Source\websockets</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\websockets\hl_sha1wrapper.h">
-      <Filter>BurstHotWallet\Source\websockets</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\websockets\WebSocket.h">
-      <Filter>BurstHotWallet\Source\websockets</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\websockets\WebSocketServer.h">
-      <Filter>BurstHotWallet\Source\websockets</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source\TransactionsComponent.h">
       <Filter>BurstHotWallet\Source</Filter>
     </ClInclude>
@@ -282,8 +246,9 @@
       <Filter>Juce Library Code</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.h" />
-    <ClInclude Include="..\..\Source\websockets\StreamingWebSocket.h">
-      <Filter>BurstHotWallet\Source\websockets</Filter>
+    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.h" />
+    <ClInclude Include="..\..\Source\HttpServer.h">
+      <Filter>BurstHotWallet\Source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

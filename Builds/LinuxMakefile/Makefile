@@ -64,12 +64,6 @@ ifeq ($(CONFIG),Release)
 endif
 
 OBJECTS := \
-  $(JUCE_OBJDIR)/Base64_366bd7d3.o \
-  $(JUCE_OBJDIR)/hl_sha1_eaf4f4c6.o \
-  $(JUCE_OBJDIR)/hl_sha1wrapper_7e6b9e97.o \
-  $(JUCE_OBJDIR)/Socket_9e16a7f7.o \
-  $(JUCE_OBJDIR)/WebSocket_62f2a16d.o \
-  $(JUCE_OBJDIR)/WebSocketServer_6dc16950.o \
   $(JUCE_OBJDIR)/TransactionsComponent_6938289.o \
   $(JUCE_OBJDIR)/AboutComponent_ebbe5b79.o \
   $(JUCE_OBJDIR)/HistoryComponent_4b30d8d2.o \
@@ -115,36 +109,6 @@ clean:
 strip:
 	@echo Stripping BurstHotWallet
 	-@$(STRIP) --strip-unneeded $(JUCE_OUTDIR)/$(TARGET)
-
-$(JUCE_OBJDIR)/Base64_366bd7d3.o: ../../Source/websockets/Base64.cpp
-	-@mkdir -p $(JUCE_OBJDIR)
-	@echo "Compiling Base64.cpp"
-	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
-
-$(JUCE_OBJDIR)/hl_sha1_eaf4f4c6.o: ../../Source/websockets/hl_sha1.cpp
-	-@mkdir -p $(JUCE_OBJDIR)
-	@echo "Compiling hl_sha1.cpp"
-	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
-
-$(JUCE_OBJDIR)/hl_sha1wrapper_7e6b9e97.o: ../../Source/websockets/hl_sha1wrapper.cpp
-	-@mkdir -p $(JUCE_OBJDIR)
-	@echo "Compiling hl_sha1wrapper.cpp"
-	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
-
-$(JUCE_OBJDIR)/Socket_9e16a7f7.o: ../../Source/websockets/Socket.cpp
-	-@mkdir -p $(JUCE_OBJDIR)
-	@echo "Compiling Socket.cpp"
-	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
-
-$(JUCE_OBJDIR)/WebSocket_62f2a16d.o: ../../Source/websockets/WebSocket.cpp
-	-@mkdir -p $(JUCE_OBJDIR)
-	@echo "Compiling WebSocket.cpp"
-	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
-
-$(JUCE_OBJDIR)/WebSocketServer_6dc16950.o: ../../Source/websockets/WebSocketServer.cpp
-	-@mkdir -p $(JUCE_OBJDIR)
-	@echo "Compiling WebSocketServer.cpp"
-	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
 
 $(JUCE_OBJDIR)/TransactionsComponent_6938289.o: ../../Source/TransactionsComponent.cpp
 	-@mkdir -p $(JUCE_OBJDIR)

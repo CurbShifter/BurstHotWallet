@@ -162,7 +162,7 @@ private:
 	ScopedPointer<StreamingSocket> streamingSocket;
 	ScopedPointer<MemoryBlock> socketMessageData;
 #endif
-	ScopedPointer<HttpServer> httpServer;
+
 	bool setupTX;
 	String setupTX_requestHeader;
 	String setupTX_recipient;
@@ -171,56 +171,26 @@ private:
 	String setupTX_msg;
 	bool setupTX_encrypted;
 
-/*	std::shared_ptr<http_connection> connection;
-	void http_server(boost::asio::ip::tcp::acceptor& acceptor, boost::asio::ip::tcp::socket& socket)
-	{
-		acceptor.async_accept(socket, [&](boost::beast::error_code ec)
-		{
-			if (!ec)
-			{
-				//std::make_shared<http_connection>(std::move(socket))->start();
-				connection = std::make_shared<http_connection>(std::move(socket));
-
-				connection->addInterfaceListener(this);
-				connection->start();
-			}
-			http_server(acceptor, socket);
-		});
-	}*/
+#if NO_BEAST != 1
+	ScopedPointer<HttpServer> httpServer;
+#endif
 	void StopHttpServer()
 	{
+#if NO_BEAST != 1
 		httpServer = nullptr;
-//		if (connection)
-	//		connection->start();
+#endif
 	}
 	void StartHttpServer()
 	{
 		setupTX = false;
+#if NO_BEAST != 1
 		httpServer = new HttpServer();
 
 		if (httpServer)
 			httpServer->addInterfaceListener(this);
 
 		httpServer->startThread();
-	/*	try
-		{
-			//auto const address = net::ip::make_address("0.0.0.0");// (argv[1]);
-			auto const address = boost::asio::ip::make_address("0.0.0.0");
-			unsigned short port = 80;// static_cast<unsigned short>(80); // std::atoi(argv[2])
-
-			boost::asio::io_context ioc{ 1 };
-
-			boost::asio::ip::tcp::acceptor acceptor{ ioc, {address, port} };
-			boost::asio::ip::tcp::socket socket{ ioc };
-			http_server(acceptor, socket);
-
-			ioc.run();
-		}
-		catch (std::exception const& e)
-		{
-			//std::cerr << "Error: " << e.what() << std::endl;
-		//	returnValue = EXIT_FAILURE;
-		}*/
+#endif
 	}
 
 	//[/UserVariables]

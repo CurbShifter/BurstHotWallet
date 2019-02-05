@@ -55,31 +55,31 @@ public:
 	ListenerList <InterfaceListener> listeners;
 
 	// TableListBoxModel
-	int getNumRows();
-	void paintRowBackground(Graphics&, int rowNumber, int width, int height, bool rowIsSelected);
-	void paintCell(Graphics&, int rowNumber, int columnId, int width, int height, bool rowIsSelected);
-	Component* refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, Component* existingComponentToUpdate);
-	void cellClicked(int rowNumber, int columnId, const MouseEvent&);
-	void cellDoubleClicked(int rowNumber, int columnId, const MouseEvent&);
-	void backgroundClicked(const MouseEvent&);
-	void sortOrderChanged(int newSortColumnId, bool isForwards);
-	int getColumnAutoSizeWidth(int columnId);
-	String getCellTooltip(int rowNumber, int columnId);
-	void selectedRowsChanged(int lastRowSelected);
-	void deleteKeyPressed(int lastRowSelected);
-	void returnKeyPressed(int lastRowSelected);
-	void listWasScrolled();
+	int getNumRows() override;
+	void paintRowBackground(Graphics&, int rowNumber, int width, int height, bool rowIsSelected) override;
+	void paintCell(Graphics&, int rowNumber, int columnId, int width, int height, bool rowIsSelected) override;
+	Component* refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, Component* existingComponentToUpdate) override;
+	void cellClicked(int rowNumber, int columnId, const MouseEvent&) override;
+	void cellDoubleClicked(int rowNumber, int columnId, const MouseEvent&) override;
+	void backgroundClicked(const MouseEvent&) override;
+	void sortOrderChanged(int newSortColumnId, bool isForwards) override;
+	int getColumnAutoSizeWidth(int columnId) override;
+	String getCellTooltip(int rowNumber, int columnId) override;
+	void selectedRowsChanged(int lastRowSelected) override;
+	void deleteKeyPressed(int lastRowSelected) override;
+	void returnKeyPressed(int lastRowSelected) override;
+	void listWasScrolled() override;
 
 	int getIndexWhenSorted(const int idx); // als je wil weten wat de index is van de sorted row zelf  idx == sortedRowIndex[i]
 	int getIndexOfSorted(const int idx);
 
 	// KeyListener
-	bool keyPressed(const KeyPress &key, Component *originatingComponent);
-	bool keyStateChanged(bool /*isKeyDown*/, Component * /*originatingComponent*/);
+	bool keyPressed(const KeyPress &key, Component *originatingComponent) override;
+	bool keyStateChanged(bool /*isKeyDown*/, Component * /*originatingComponent*/) override;
 
 	// Timer
-	void timerCallback();
-	void run();
+	void timerCallback() override;
+	void run() override;
 
 	struct txDetails
 	{

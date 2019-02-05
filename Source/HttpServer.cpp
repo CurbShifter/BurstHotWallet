@@ -5,6 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 // Official repository: https://github.com/boostorg/beast
 
+#if NO_BEAST != 1
+
 #include "HttpServer.h"
 
 namespace beast = boost::beast;         // from <boost/beast.hpp>
@@ -180,3 +182,5 @@ void HttpServer::run()
 		returnValue = EXIT_FAILURE;
 	}
 }
+
+#endif //NO_BEAST

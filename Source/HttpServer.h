@@ -12,6 +12,9 @@
 // Example: HTTP server, small
 //
 //------------------------------------------------------------------------------
+
+#if NO_BEAST != 1
+
 //#include <boost/beast.hpp>
 //#include <boost/container/detail/workaround.hpp>
 #include "../JuceLibraryCode/JuceHeader.h"
@@ -104,3 +107,4 @@ private:
 	}
 };
 
+#endif // NO_BEAST
