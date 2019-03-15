@@ -5,8 +5,19 @@
               jucerVersion="4.3.1" companyName="CryptoExtensions">
   <MAINGROUP id="OXzctD" name="BurstHotWallet">
     <GROUP id="{D85C0C04-C916-D7B6-1C02-82BD1D0BBF3E}" name="Source">
-      <FILE id="BGJyRW" name="BurstHotWallet-icon.svg" compile="0" resource="1"
-            file="Source/BurstHotWallet-icon.svg"/>
+      <GROUP id="{D3E28483-5FF4-E9F5-6DF0-C6F5F2075EBC}" name="img">
+        <FILE id="BGJyRW" name="BurstHotWallet-icon.svg" compile="0" resource="1"
+              file="Source/BurstHotWallet-icon.svg"/>
+        <FILE id="Kr4bW9" name="cog.svg" compile="0" resource="1" file="Source/img/cog.svg"/>
+      </GROUP>
+      <FILE id="fHOLdA" name="BalanceComponent.cpp" compile="1" resource="0"
+            file="Source/BalanceComponent.cpp"/>
+      <FILE id="uqoPrU" name="BalanceComponent.h" compile="0" resource="0"
+            file="Source/BalanceComponent.h"/>
+      <FILE id="qSepvi" name="ShoutComponent.cpp" compile="1" resource="0"
+            file="Source/ShoutComponent.cpp"/>
+      <FILE id="Nc2cHS" name="ShoutComponent.h" compile="0" resource="0"
+            file="Source/ShoutComponent.h"/>
       <FILE id="Uc0DyG" name="TransactionsComponent.cpp" compile="1" resource="0"
             file="Source/TransactionsComponent.cpp"/>
       <FILE id="VO6TiQ" name="TransactionsComponent.h" compile="0" resource="0"
@@ -40,6 +51,8 @@
             file="Source/SettingsComponent.cpp"/>
       <FILE id="Um98eE" name="SettingsComponent.h" compile="0" resource="0"
             file="Source/SettingsComponent.h"/>
+      <FILE id="Pifim6" name="HttpServer.cpp" compile="1" resource="0" file="Source/HttpServer.cpp"/>
+      <FILE id="jJDs4J" name="HttpServer.h" compile="0" resource="0" file="Source/HttpServer.h"/>
       <FILE id="dfHF2d" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
     </GROUP>
   </MAINGROUP>
@@ -73,11 +86,12 @@
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
                        isDebug="1" optimisation="1" targetName="BurstHotWallet" headerPath="E:\Libraries\boost_1_64_0&#10;E:\Libraries\beast\include&#10;..\..\..\..\..\BurstLib\trunk\Source"
-                       prebuildCommand="revision-update.bat &quot;$(ProjectDir)..\..\&quot;"/>
+                       prebuildCommand="revision-update.bat &quot;$(ProjectDir)..\..\&quot;"
+                       defines="NO_BEAST=1" userNotes="beast need cpp11 - msvc2015 pack 3"/>
         <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
                        isDebug="0" optimisation="2" targetName="BurstHotWallet" headerPath="E:\Libraries\boost_1_64_0&#10;E:\Libraries\beast\include&#10;..\..\..\..\..\BurstLib\trunk\Source"
                        prebuildCommand="revision-update.bat &quot;$(ProjectDir)..\..\&quot;"
-                       useRuntimeLibDLL="0"/>
+                       useRuntimeLibDLL="0" defines="NO_BEAST=1" userNotes="beast need cpp11 - msvc2015 pack 3"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Libraries/JUCE_4.3.1/JUCE/modules"/>

@@ -17,12 +17,13 @@
   ==============================================================================
 */
 
-#ifndef __JUCE_HEADER_DA4CDAE989181B92__
-#define __JUCE_HEADER_DA4CDAE989181B92__
+#ifndef __JUCE_HEADER_D17F15E9BE0252AA__
+#define __JUCE_HEADER_D17F15E9BE0252AA__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "TransactionsComponent.h"
+#include "Listeners.h"
+#include "BurstExt.h"
 //[/Headers]
 
 
@@ -35,51 +36,69 @@
     Describe your class and how it works here!
                                                                     //[/Comments]
 */
-class HistoryComponent  : public Component,
-                          public HistoryComponentListener,
+class BalanceComponent  : public Component,
+                          public Thread,
+                          public Timer,
+                          public BalanceComponentListener,
                           public ButtonListener
 {
 public:
     //==============================================================================
-    HistoryComponent ();
-    ~HistoryComponent();
+    BalanceComponent ();
+    ~BalanceComponent();
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-	TransactionsComponent *getTransactionComponent() { return transactionsComponent; };
-	void ShowSecureAccount(const bool show, const String pubKey_b64, const bool isPro) override;
+	void addInterfaceListener(InterfaceListener* const l)      { interfaceListeners.add(l); };
+	void removeInterfaceListener(InterfaceListener* const l)   { interfaceListeners.remove(l); };
+	void run();
+	void timerCallback();
+	void SetNode(const String address) override;
+	void SetSecretPhrase(const String str) override;
+	void SetForceSSL_TSL(const bool forceSSLOn) override;
+	void SetNodeHop(const bool hopOn) override;
+	void SetPrice(String currency, double price) override;
+	void UpdateBalance();
+	void UpdateBalanceRun();
     //[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
     void buttonClicked (Button* buttonThatWasClicked) override;
 
-    // Binary resources:
-    static const char* twitter_svg;
-    static const int twitter_svgSize;
 
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
-	bool showSecureAccount;
-	String pubKey_b64SecureAccount;
+	ListenerList <InterfaceListener> interfaceListeners;
+	CriticalSection burstExtLock;
+	BurstExt burstExt; // used to securely temp store the pass phrase in mem
+	
+	String balance;
+	String balance_converted;
+	String myBurstRS;
+	bool hasPubKey;
+	String pubKey_b64;
+	String currency;
+	double price;
+	bool isPro;
+	String assetID;
+	int64 assetIDNumberOfAccounts;
+	int64 timerDelay;
 
-
+	String NQT2Burst(const String value);
     //[/UserVariables]
 
     //==============================================================================
-    ScopedPointer<TextEditor> copyTextEditor;
-    ScopedPointer<Label> secureHeaderLabel;
-    ScopedPointer<TextButton> twitterButton;
-    ScopedPointer<TransactionsComponent> transactionsComponent;
-    ScopedPointer<Drawable> drawable1;
+    ScopedPointer<Label> balanceLabel;
+    ScopedPointer<TextButton> accountButton;
 
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HistoryComponent)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BalanceComponent)
 };
 
 //[EndFile] You can add extra defines here...
 //[/EndFile]
 
-#endif   // __JUCE_HEADER_DA4CDAE989181B92__
+#endif   // __JUCE_HEADER_D17F15E9BE0252AA__

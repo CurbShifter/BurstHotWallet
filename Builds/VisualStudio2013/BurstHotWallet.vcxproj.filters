@@ -1,4 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
+
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="BurstHotWallet">
@@ -6,6 +7,9 @@
     </Filter>
     <Filter Include="BurstHotWallet\Source">
       <UniqueIdentifier>{44B86C64-670D-14E2-D197-670A3BFF4D38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BurstHotWallet\Source\img">
+      <UniqueIdentifier>{AE870B2E-EE3F-E39C-9E5A-716D8A0DE5F9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Juce Modules">
       <UniqueIdentifier>{422C46B7-0467-2DB0-BF3C-16DFCAFD69AC}</UniqueIdentifier>
@@ -30,6 +34,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\BalanceComponent.cpp">
+      <Filter>BurstHotWallet\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\ShoutComponent.cpp">
+      <Filter>BurstHotWallet\Source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\TransactionsComponent.cpp">
       <Filter>BurstHotWallet\Source</Filter>
     </ClCompile>
@@ -55,6 +65,9 @@
       <Filter>BurstHotWallet\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\SettingsComponent.cpp">
+      <Filter>BurstHotWallet\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\HttpServer.cpp">
       <Filter>BurstHotWallet\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Main.cpp">
@@ -123,6 +136,9 @@
     <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.cpp">
       <Filter>Juce Modules\juce_audio_devices</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.mm">
+      <Filter>Juce Modules\juce_audio_devices</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\JuceLibraryCode\BinaryData.cpp">
       <Filter>Juce Library Code</Filter>
     </ClCompile>
@@ -165,11 +181,14 @@
     <ClCompile Include="..\..\JuceLibraryCode\juce_video.cpp">
       <Filter>Juce Library Code</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\HttpServer.cpp">
-      <Filter>BurstHotWallet\Source</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\BalanceComponent.h">
+      <Filter>BurstHotWallet\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\ShoutComponent.h">
+      <Filter>BurstHotWallet\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\TransactionsComponent.h">
       <Filter>BurstHotWallet\Source</Filter>
     </ClInclude>
@@ -198,6 +217,9 @@
       <Filter>BurstHotWallet\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\SettingsComponent.h">
+      <Filter>BurstHotWallet\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\HttpServer.h">
       <Filter>BurstHotWallet\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\audio_io\juce_AudioDeviceManager.h">
@@ -245,15 +267,13 @@
     <ClInclude Include="..\..\JuceLibraryCode\JuceHeader.h">
       <Filter>Juce Library Code</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.h" />
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.h" />
-    <ClInclude Include="..\..\Source\HttpServer.h">
-      <Filter>BurstHotWallet\Source</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Source\BurstHotWallet-icon.svg">
-      <Filter>BurstHotWallet\Source</Filter>
+      <Filter>BurstHotWallet\Source\img</Filter>
+    </None>
+    <None Include="..\..\Source\img\cog.svg">
+      <Filter>BurstHotWallet\Source\img</Filter>
     </None>
     <None Include="..\..\Source\NotoSans-Regular.ttf">
       <Filter>BurstHotWallet\Source</Filter>

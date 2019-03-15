@@ -29,6 +29,8 @@
 #include "HistoryComponent.h"
 #include "PinComponent.h"
 #include "AboutComponent.h"
+#include "ShoutComponent.h"
+#include "BalanceComponent.h"
 #include "Listeners.h"
 
 #include "HttpServer.h"
@@ -59,7 +61,6 @@ class InterfaceComponent  : public Component,
                             public TextEditorListener,
                             public Timer,
                             public InterfaceListener,
-                            public ComboBoxListener,
                             public ButtonListener
 {
 public:
@@ -69,15 +70,15 @@ public:
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
+	void run();
+
 	void textEditorTextChanged(TextEditor &editor); //Called when the user changes the text in some way.
 	void textEditorReturnKeyPressed(TextEditor &editor); //Called when the user presses the return key.
 	void textEditorEscapeKeyPressed(TextEditor &editor); //Called when the user presses the escape key.
 	void textEditorFocusLost(TextEditor &editor); //Called when the text editor loses focus.
 
 	void SetupTransaction(const String requestHeader, const String recipient, const String amountNQT, const String feeNQT, const String msg, const bool encrypted) override;
-	void SendBurstcoin(const String recipient, const String amount, const String fee, const String msg, const bool encrypted) override;
-	void GetAccountDisplayName(const uint64 account, const String accountRS, String &displayName) override;
-	void UpdateBalance(String &balance) override;
+
 
 	String Encrypt(String input, String pin);
 	String Decrypt(String input, String pin);
@@ -88,6 +89,7 @@ public:
 	void GetAppValue(const String type, String &value) override;
 	void SetAppValue(const String type, const String value) override;
 
+	void CreateWallet() override;
 	void SavePassPhraseWithNewPIN(const String passphrase) override;
 	void SavePassPhrase(String passphrase, String pin) override;
 	void LoadPassPhrase() override;
@@ -96,24 +98,29 @@ public:
 
 	void SetCMCkey(const String key) override;
 	void SetCurrencyType(const String currency) override;
-	void SetPrice(String currency, String price) override;
+	void SetPrice(String currency, double price) override;
 
+	void WalletPubKeyToClipboard(const int PC_index) override;
 #if ALLOW_EXT_REQ == 1
 	void OpenHttpSocket(const String host_address, const int port, bool &ok) override;
 	void CloseHttpSocket() override;
 	bool ProcessHttpSocketMessage(const MemoryBlock& message);
 #endif
-	//[/UserMethods]
+	StringArray LimitedTokenList(String tokenlist, String newItem, const int maxItems);
+    //[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
-    void comboBoxChanged (ComboBox* comboBoxThatHasChanged) override;
     void buttonClicked (Button* buttonThatWasClicked) override;
     void mouseUp (const MouseEvent& e) override;
+    bool keyPressed (const KeyPress& key) override;
+    bool keyStateChanged (bool isKeyDown) override;
 
     // Binary resources:
     static const char* burstHotWalletlogo_svg;
     static const int burstHotWalletlogo_svgSize;
+    static const char* burstHotWalletPrologo_svg;
+    static const int burstHotWalletPrologo_svgSize;
 
 
 private:
@@ -133,6 +140,18 @@ private:
 	void addTransactionsComponentListener(TransactionsComponentListener* const l)      { transactionsComponentListeners.add(l); };
 	void removeTransactionsComponentListener(TransactionsComponentListener* const l)   { transactionsComponentListeners.remove(l); };
 	ListenerList <TransactionsComponentListener> transactionsComponentListeners;
+
+	void addShoutComponentListener(ShoutComponentListener* const l)      { shoutComponentListeners.add(l); };
+	void removeShoutComponentListener(ShoutComponentListener* const l)   { shoutComponentListeners.remove(l); };
+	ListenerList <ShoutComponentListener> shoutComponentListeners;
+
+	void addHistoryComponentListener(HistoryComponentListener* const l)      { historyComponentListeners.add(l); };
+	void removeHistoryComponentListener(HistoryComponentListener* const l)   { historyComponentListeners.remove(l); };
+	ListenerList <HistoryComponentListener> historyComponentListeners;
+
+	void addBalanceComponentListener(BalanceComponentListener* const l)      { balanceComponentListeners.add(l); };
+	void removeBalanceComponentListener(BalanceComponentListener* const l)   { balanceComponentListeners.remove(l); };
+	ListenerList <BalanceComponentListener> balanceComponentListeners;
 
 	String NQT2Burst(const String value);
 	String Burst2NQT(const String value);
@@ -155,13 +174,14 @@ private:
 	ScopedPointer<CELookAndFeel> wizlaf;
 
 	int autoRefreshCounter;
-	String currency;
-	String price;
 	//ScopedPointer<SystemTrayIconComponent> systemTray;
 #if ALLOW_EXT_REQ == 1
 	ScopedPointer<StreamingSocket> streamingSocket;
 	ScopedPointer<MemoryBlock> socketMessageData;
 #endif
+	bool isPro;
+	String assetID;
+	int64 assetIDNumberOfAccounts;
 
 	bool setupTX;
 	String setupTX_requestHeader;
@@ -193,12 +213,25 @@ private:
 #endif
 	}
 
-	//[/UserVariables]
+	void Broke(const bool show, const String pubKey_b64, const bool isPro) override;
+
+	// calls to burstExt
+	void SetNode(const String value);
+	void SetForceSSL_TSL(const bool forceSSLOn) override;
+	void SetNodeHop(const bool hopOn) override;
+	void MakeCoupon(couponArgs args) override;
+	void SendBurstcoin(const String recipient, const String amount, const String fee, const String msg, const bool encrypted) override;
+	void SendHotWalletLicense(const String recipient) override;
+	//void UpdateBalance(String &balance) override;
+	void GetAccountDisplayName(const uint64 account, const String accountRS, String &displayName) override;
+	void SetupSendView();
+
+    //[/UserVariables]
 
     //==============================================================================
-    ScopedPointer<ComboBox> serverComboBox;
-    ScopedPointer<Label> balanceLabel;
-    ScopedPointer<TextButton> accountButton;
+    ScopedPointer<BalanceComponent> balanceComponent;
+    ScopedPointer<TextButton> settingsButton;
+    ScopedPointer<ShoutComponent> shoutComponent;
     ScopedPointer<SendComponent> sendComponent;
     ScopedPointer<TextButton> historyButton;
     ScopedPointer<TextButton> sendButton;
@@ -208,6 +241,7 @@ private:
     ScopedPointer<PinComponent> pinComponent;
     ScopedPointer<AboutComponent> aboutComponent;
     ScopedPointer<Drawable> drawable1;
+    ScopedPointer<Drawable> drawable2;
 
 
     //==============================================================================

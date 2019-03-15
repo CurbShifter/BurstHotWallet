@@ -56,7 +56,7 @@ public:
 	void SetRecipients(StringArray recipients) override;
 	void SetAmounts(StringArray amounts) override;
 	void SetSuggestedFees(uint64 cheap, uint64 normal, uint64 priority) override;
-	void SetPrice(String currency, String price) override;
+	void SetPrice(String currency, double price) override;
 
 	String NQT2Burst(const String value);
 	String Burst2NQT(const String value);
@@ -81,7 +81,7 @@ private:
 	uint64 priority;
 
 	String currency;
-	String price;
+	double price;
 	String notifierURL;
     //[/UserVariables]
 
@@ -103,6 +103,10 @@ private:
     ScopedPointer<Label> costLabel;
     ScopedPointer<TextButton> cancelButton;
     ScopedPointer<Label> recipientFixedLabel;
+    ScopedPointer<TextEditor> passwordTextEditor;
+    ScopedPointer<ToggleButton> couponToggleButton;
+    ScopedPointer<Slider> minSlider;
+    ScopedPointer<Label> minLabel;
 
 
     //==============================================================================

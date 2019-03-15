@@ -39,10 +39,10 @@ void CELookAndFeel::Init()
 
 	setColour(Label::textColourId, Colour(0xff14181A));
 
-	setColour(juce::TextButton::buttonOnColourId, Colour(0xFF77B517)); // 7f00579d
-	setColour(juce::TextButton::buttonColourId, Colour(0xFF77B517));
-	setColour(juce::TextButton::textColourOnId, Colour(0xffffffff));
-	setColour(juce::TextButton::textColourOffId, Colour(0xffffffff));
+//	setColour(juce::TextButton::buttonOnColourId, Colour(0xFF77B517)); // 7f00579d
+//	setColour(juce::TextButton::buttonColourId, Colour(0xFF77B517));
+/*	setColour(juce::TextButton::textColourOnId, Colour(0xffffffff));
+	setColour(juce::TextButton::textColourOffId, Colour(0xffffffff));*/
 
 	setColour(ProgressBar::foregroundColourId, Colour(0xfface1ef));
 		
@@ -53,8 +53,15 @@ void CELookAndFeel::Init()
 
 	setColour(ProgressBar::backgroundColourId, Colour(0xbefdfdfd));
 	setColour(ProgressBar::foregroundColourId, Colour(0xff4d90fe));
+	//setColour(Slider::ColourIds::, Colour(0xff4d90fe));
 
 	setColour(TabbedButtonBar::ColourIds::tabOutlineColourId, Colours::transparentWhite);
+
+	{
+		ScopedPointer<XmlElement> svg(XmlDocument::parse(BinaryData::cog_svg));
+		cogDrawableComposite = dynamic_cast<DrawableComposite*>(Drawable::createFromSVG(*svg));
+		cogDrawableComposite->replaceColour(Colours::black, Colours::whitesmoke);
+	}
 
 }
 void CELookAndFeel::setFont(Font f)
@@ -320,8 +327,16 @@ void CELookAndFeel::drawButtonText(Graphics& g, TextButton& button, bool /*isMou
 		String txt = button.getButtonText();
 		String name = button.getName();
 
-		bool just = (button.getName().compare("testname") == 0);
-		g.drawFittedText(txt, 4, 0, button.getWidth() - 8, button.getHeight(), just ? Justification::right : Justification::centred, 2);
+		if (txt.compare("cog") == 0)
+		{
+			float iconSpacer = 10.f;
+			cogDrawableComposite->drawWithin(g, juce::Rectangle<float>(iconSpacer, iconSpacer, button.getHeight() - (iconSpacer * 2), button.getHeight() - (iconSpacer * 2)), juce::RectanglePlacement(RectanglePlacement::Flags::centred), 1.f);
+		}
+		else
+		{
+			bool just = (button.getName().compare("testname") == 0) || (button.getName().compare("accountButton") == 0);
+			g.drawFittedText(txt, 4, 0, button.getWidth() - 8, button.getHeight(), just ? Justification::right : Justification::centred, 2);
+		}
 	}
 }
 
@@ -330,6 +345,9 @@ void CELookAndFeel::drawButtonBackground (Graphics& g, Button& button, const Col
 //	const Colour mainColour(button.findColour(button.getToggleState() ? TextButton::buttonOnColourId : TextButton::buttonColourId));
 //	Colour baseColour(mainColour.withMultipliedSaturation(button.hasKeyboardFocus(true) ? 1.3f : 0.9f).withMultipliedAlpha (button.isEnabled() ? 0.9f : 0.5f));
 	Colour baseColour(backgroundColour.withMultipliedSaturation(button.hasKeyboardFocus(true) ? 1.3f : 0.9f).withMultipliedAlpha(button.isEnabled() ? 0.9f : 0.5f));
+
+	if (button.getButtonText().compare("+") == 0 || button.getButtonText().compare("-") == 0)
+		baseColour = Colour(0xFF77B517);
 
 	if ((isButtonDown || isMouseOverButton) && baseColour.getAlpha() > 0)
         baseColour = baseColour.contrasting (isButtonDown ? 0.2f : 0.1f);
@@ -372,6 +390,7 @@ void CELookAndFeel::drawButtonBackground (Graphics& g, Button& button, const Col
 				bool just = (button.getName().compare("slotFeeButton") == 0) ||
 					(button.getName().compare("myAccount_") == 0) ||
 					(button.getName().compare("balanceButton") == 0) ||
+					(button.getName().compare("accountButton") == 0) ||
 					(button.getName().compare("addressButton") == 0);
 
 				for (int i = 0; i < (button.getToggleState() ? 2 : 1); i++)
@@ -499,12 +518,12 @@ void CELookAndFeel::drawLinearSlider (Graphics& g, int x, int y, int width, int 
         drawLinearSliderThumb (g, x, y, width, height, sliderPos, minSliderPos, maxSliderPos, style, slider);
     }
 }
-
+/*
 void CELookAndFeel::drawLinearSliderBackground (Graphics& g, int x, int y, int width, int height,
-                                    float /*sliderPos*/,
-                                    float /*minSliderPos*/,
-                                    float /*maxSliderPos*/,
-                                    const Slider::SliderStyle /*style*/, Slider& slider)
+                                    float sliderPos,
+                                    float minSliderPos,
+                                    float maxSliderPos,
+                                    const Slider::SliderStyle style, Slider& slider)
 {
     const float sliderRadius = getSliderThumbRadius (slider) - 5.0f;
     Path on, off;
@@ -534,7 +553,7 @@ void CELookAndFeel::drawLinearSliderBackground (Graphics& g, int x, int y, int w
     g.setColour (slider.findColour (Slider::trackColourId));
     g.fillPath (off);
 }
-
+*/
 void CELookAndFeel::drawRotarySlider (Graphics& g, int x, int y, int width, int height, float sliderPos,
                         float rotaryStartAngle, float rotaryEndAngle, Slider& slider)
 {

@@ -43,7 +43,7 @@ struct CELookAndFeel    : public LookAndFeel_V3
 	void drawTickBox(Graphics& g, Component& component, float x, float y, float w, float h, bool ticked, bool isEnabled, bool isMouseOverButton, bool isButtonDown);
 	void drawLinearSliderThumb(Graphics& g, int x, int y, int width, int height, float sliderPos, float minSliderPos, float maxSliderPos, const Slider::SliderStyle style, Slider& slider);
 	void drawLinearSlider(Graphics& g, int x, int y, int width, int height, float sliderPos, float minSliderPos, float maxSliderPos, const Slider::SliderStyle style, Slider& slider);
-	void drawLinearSliderBackground(Graphics& g, int x, int y, int width, int height, float sliderPos, float minSliderPos, float maxSliderPos, const Slider::SliderStyle style, Slider& slider);
+	//void drawLinearSliderBackground(Graphics& g, int x, int y, int width, int height, float sliderPos, float minSliderPos, float maxSliderPos, const Slider::SliderStyle style, Slider& slider);
 	void drawRotarySlider(Graphics& g, int x, int y, int width, int height, float sliderPos, float rotaryStartAngle, float rotaryEndAngle, Slider& slider);
 	void drawTableHeaderBackground(Graphics& g, TableHeaderComponent& header);
 	void drawTableHeaderColumn(Graphics& g, const String& columnName, int columnId, int width, int height, bool isMouseOver, bool isMouseDown, int columnFlags);
@@ -84,6 +84,7 @@ struct CELookAndFeel    : public LookAndFeel_V3
 	Font brFontBold;
 	Font brFontAlt;
 
+	ScopedPointer<DrawableComposite> cogDrawableComposite;
 	ScopedPointer<Drawable> icon;
 };
 

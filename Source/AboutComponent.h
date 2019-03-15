@@ -58,10 +58,10 @@ public:
     // Binary resources:
     static const char* burstHotWalletlogo_svg;
     static const int burstHotWalletlogo_svgSize;
-    static const char* cryptoExtensionsLogo_svg;
-    static const int cryptoExtensionsLogo_svgSize;
     static const char* burst_logo_white_svg;
     static const int burst_logo_white_svgSize;
+    static const char* cryptoExtensionsLogoelectricblue_svg;
+    static const int cryptoExtensionsLogoelectricblue_svgSize;
 
 
 private:

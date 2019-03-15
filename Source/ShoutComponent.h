@@ -17,12 +17,13 @@
   ==============================================================================
 */
 
-#ifndef __JUCE_HEADER_DA4CDAE989181B92__
-#define __JUCE_HEADER_DA4CDAE989181B92__
+#ifndef __JUCE_HEADER_7800AAD7EC678F74__
+#define __JUCE_HEADER_7800AAD7EC678F74__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "TransactionsComponent.h"
+#include "Listeners.h"
+#include "BurstExt.h"
 //[/Headers]
 
 
@@ -35,51 +36,67 @@
     Describe your class and how it works here!
                                                                     //[/Comments]
 */
-class HistoryComponent  : public Component,
-                          public HistoryComponentListener,
-                          public ButtonListener
+class ShoutComponent  : public Component,
+                        public Thread,
+                        public Timer,
+                        public ShoutComponentListener,
+                        public ButtonListener
 {
 public:
     //==============================================================================
-    HistoryComponent ();
-    ~HistoryComponent();
+    ShoutComponent ();
+    ~ShoutComponent();
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-	TransactionsComponent *getTransactionComponent() { return transactionsComponent; };
-	void ShowSecureAccount(const bool show, const String pubKey_b64, const bool isPro) override;
+	void addInterfaceListener(InterfaceListener* const l)      { interfaceListeners.add(l); };
+	void removeInterfaceListener(InterfaceListener* const l)   { interfaceListeners.remove(l); };
+	void run();
+	void timerCallback();
+
+	void SetNode(const String address) override;
+	void SetForceSSL_TSL(const bool forceSSLOn) override;
+	void SetNodeHop(const bool hopOn) override;
+
+	struct shout
+	{
+		String message;
+		uint64 alivetime;
+		uint64 amountNQT;
+		float showtime;
+	};
     //[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
     void buttonClicked (Button* buttonThatWasClicked) override;
+    bool hitTest (int x, int y) override;
 
-    // Binary resources:
-    static const char* twitter_svg;
-    static const int twitter_svgSize;
 
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
-	bool showSecureAccount;
-	String pubKey_b64SecureAccount;
+	ListenerList <InterfaceListener> interfaceListeners;
+	CriticalSection burstExtLock;
+	BurstExt burstExt; // used to securely temp store the pass phrase in mem
 
-
+	CriticalSection shoutsLock;
+	Array<shout> shouts;
+	unsigned int timerDelay;
+	int totalShowTimeLoop;
+	int totalShowTime;
+	uint64 totalAmountNQTs;
     //[/UserVariables]
 
     //==============================================================================
-    ScopedPointer<TextEditor> copyTextEditor;
-    ScopedPointer<Label> secureHeaderLabel;
-    ScopedPointer<TextButton> twitterButton;
-    ScopedPointer<TransactionsComponent> transactionsComponent;
-    ScopedPointer<Drawable> drawable1;
+    ScopedPointer<TextButton> textButton;
 
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HistoryComponent)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ShoutComponent)
 };
 
 //[EndFile] You can add extra defines here...
 //[/EndFile]
 
-#endif   // __JUCE_HEADER_DA4CDAE989181B92__
+#endif   // __JUCE_HEADER_7800AAD7EC678F74__

@@ -64,6 +64,8 @@ ifeq ($(CONFIG),Release)
 endif
 
 OBJECTS := \
+  $(JUCE_OBJDIR)/BalanceComponent_48b9438a.o \
+  $(JUCE_OBJDIR)/ShoutComponent_a1fb75ad.o \
   $(JUCE_OBJDIR)/TransactionsComponent_6938289.o \
   $(JUCE_OBJDIR)/AboutComponent_ebbe5b79.o \
   $(JUCE_OBJDIR)/HistoryComponent_4b30d8d2.o \
@@ -73,6 +75,7 @@ OBJECTS := \
   $(JUCE_OBJDIR)/Logger_4907cd19.o \
   $(JUCE_OBJDIR)/LookAndFeel_40552bdf.o \
   $(JUCE_OBJDIR)/SettingsComponent_119b047b.o \
+  $(JUCE_OBJDIR)/HttpServer_369145f4.o \
   $(JUCE_OBJDIR)/Main_90ebc5c2.o \
   $(JUCE_OBJDIR)/BinaryData_ce4232d4.o \
   $(JUCE_OBJDIR)/juce_audio_basics_6b797ca1.o \
@@ -109,6 +112,16 @@ clean:
 strip:
 	@echo Stripping BurstHotWallet
 	-@$(STRIP) --strip-unneeded $(JUCE_OUTDIR)/$(TARGET)
+
+$(JUCE_OBJDIR)/BalanceComponent_48b9438a.o: ../../Source/BalanceComponent.cpp
+	-@mkdir -p $(JUCE_OBJDIR)
+	@echo "Compiling BalanceComponent.cpp"
+	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
+
+$(JUCE_OBJDIR)/ShoutComponent_a1fb75ad.o: ../../Source/ShoutComponent.cpp
+	-@mkdir -p $(JUCE_OBJDIR)
+	@echo "Compiling ShoutComponent.cpp"
+	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
 
 $(JUCE_OBJDIR)/TransactionsComponent_6938289.o: ../../Source/TransactionsComponent.cpp
 	-@mkdir -p $(JUCE_OBJDIR)
@@ -153,6 +166,11 @@ $(JUCE_OBJDIR)/LookAndFeel_40552bdf.o: ../../Source/LookAndFeel.cpp
 $(JUCE_OBJDIR)/SettingsComponent_119b047b.o: ../../Source/SettingsComponent.cpp
 	-@mkdir -p $(JUCE_OBJDIR)
 	@echo "Compiling SettingsComponent.cpp"
+	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
+
+$(JUCE_OBJDIR)/HttpServer_369145f4.o: ../../Source/HttpServer.cpp
+	-@mkdir -p $(JUCE_OBJDIR)
+	@echo "Compiling HttpServer.cpp"
 	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
 
 $(JUCE_OBJDIR)/Main_90ebc5c2.o: ../../Source/Main.cpp

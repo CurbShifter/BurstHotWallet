@@ -171,8 +171,36 @@ static const unsigned char temp_binary_data_0[] =
 
 const char* BurstHotWalleticon_svg = (const char*) temp_binary_data_0;
 
-//================== NotoSans-Regular.ttf ==================
+//================== cog.svg ==================
 static const unsigned char temp_binary_data_1[] =
+"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\r\n"
+"<svg xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:cc=\"http://creativecommons.org/ns#\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" xmlns:svg=\"http://www.w3.org/2000/svg\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:sodipodi=\"ht"
+"tp://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd\" xmlns:inkscape=\"http://www.inkscape.org/namespaces/inkscape\" viewBox=\"0 -256 1792 1792\" id=\"svg3025\" version=\"1.1\" inkscape:version=\"0.48.3.1 r9886\" width=\"100%\" height=\"100%\" sodipodi:"
+"docname=\"cog_font_awesome.svg\">\r\n"
+"  <metadata id=\"metadata3035\">\r\n"
+"    <rdf:RDF>\r\n"
+"      <cc:Work rdf:about=\"\">\r\n"
+"        <dc:format>image/svg+xml</dc:format>\r\n"
+"        <dc:type rdf:resource=\"http://purl.org/dc/dcmitype/StillImage\"/>\r\n"
+"      </cc:Work>\r\n"
+"    </rdf:RDF>\r\n"
+"  </metadata>\r\n"
+"  <defs id=\"defs3033\"/>\r\n"
+"  <sodipodi:namedview pagecolor=\"#ffffff\" bordercolor=\"#666666\" borderopacity=\"1\" objecttolerance=\"10\" gridtolerance=\"10\" guidetolerance=\"10\" inkscape:pageopacity=\"0\" inkscape:pageshadow=\"2\" inkscape:window-width=\"640\" inkscape:wind"
+"ow-height=\"480\" id=\"namedview3031\" showgrid=\"false\" inkscape:zoom=\"0.13169643\" inkscape:cx=\"896\" inkscape:cy=\"896\" inkscape:window-x=\"0\" inkscape:window-y=\"25\" inkscape:window-maximized=\"0\" inkscape:current-layer=\"svg3025\"/>\r\n"
+"  <g transform=\"matrix(1,0,0,-1,121.49153,1285.4237)\" id=\"g3027\">\r\n"
+"    <path d=\"m 1024,640 q 0,106 -75,181 -75,75 -181,75 -106,0 -181,-75 -75,-75 -75,-181 0,-106 75,-181 75,-75 181,-75 106,0 181,75 75,75 75,181 z m 512,109 V 527 q 0,-12 -8,-23 -8,-11 -20,-13 l -185,-28 q -19,-54 -39,-91 35,-50 107,-138 10,-12 10,-2"
+"5 0,-13 -9,-23 -27,-37 -99,-108 -72,-71 -94,-71 -12,0 -26,9 l -138,108 q -44,-23 -91,-38 -16,-136 -29,-186 -7,-28 -36,-28 H 657 q -14,0 -24.5,8.5 Q 622,-111 621,-98 L 593,86 q -49,16 -90,37 L 362,16 Q 352,7 337,7 323,7 312,18 186,132 147,186 q -7,10 "
+"-7,23 0,12 8,23 15,21 51,66.5 36,45.5 54,70.5 -27,50 -41,99 L 29,495 Q 16,497 8,507.5 0,518 0,531 v 222 q 0,12 8,23 8,11 19,13 l 186,28 q 14,46 39,92 -40,57 -107,138 -10,12 -10,24 0,10 9,23 26,36 98.5,107.5 72.5,71.5 94.5,71.5 13,0 26,-10 l 138,-107 "
+"q 44,23 91,38 16,136 29,186 7,28 36,28 h 222 q 14,0 24.5,-8.5 Q 914,1391 915,1378 l 28,-184 q 49,-16 90,-37 l 142,107 q 9,9 24,9 13,0 25,-10 129,-119 165,-170 7,-8 7,-22 0,-12 -8,-23 -15,-21 -51,-66.5 -36,-45.5 -54,-70.5 26,-50 41,-98 l 183,-28 q 13,"
+"-2 21,-12.5 8,-10.5 8,-23.5 z\" id=\"path3029\" inkscape:connector-curvature=\"0\" style=\"fill:currentColor\"/>\r\n"
+"  </g>\r\n"
+"</svg>";
+
+const char* cog_svg = (const char*) temp_binary_data_1;
+
+//================== NotoSans-Regular.ttf ==================
+static const unsigned char temp_binary_data_2[] =
 { 0,1,0,0,0,13,0,128,0,3,0,80,71,68,69,70,240,215,221,231,0,3,192,224,0,0,5,192,71,80,79,83,158,153,186,40,0,3,198,160,0,0,234,24,71,83,85,66,68,55,234,106,0,4,176,184,0,0,22,128,79,83,47,50,108,16,134,85,0,0,1,88,0,0,0,96,99,109,97,112,194,159,254,228,
 0,0,52,84,0,0,10,46,103,108,121,102,82,202,124,2,0,0,113,64,0,2,192,210,104,101,97,100,16,145,1,198,0,0,0,220,0,0,0,54,104,104,101,97,12,179,20,40,0,0,1,20,0,0,0,36,104,109,116,120,0,45,51,86,0,0,1,184,0,0,50,156,108,111,99,97,17,78,146,57,0,0,62,132,
 0,0,50,188,109,97,120,112,12,228,1,235,0,0,1,56,0,0,0,32,110,97,109,101,146,25,187,85,0,3,50,20,0,0,6,52,112,111,115,116,177,245,7,170,0,3,56,72,0,0,136,149,0,1,0,0,0,2,0,0,37,231,39,179,95,15,60,245,0,3,3,232,0,0,0,0,211,14,122,127,0,0,0,0,213,231,67,
@@ -3763,7 +3791,7 @@ static const unsigned char temp_binary_data_1[] =
 252,1,254,2,0,2,19,2,20,2,21,3,97,11,129,11,130,11,131,11,132,11,133,11,134,11,135,11,136,11,137,11,138,11,139,11,167,0,1,0,0,0,1,0,8,0,2,0,66,0,30,9,239,9,240,9,241,9,242,9,243,9,244,9,245,9,246,9,247,9,248,9,239,9,240,9,241,9,242,9,243,9,244,9,245,
 9,246,9,247,9,248,9,239,9,240,9,241,9,242,9,243,9,244,9,245,9,246,9,247,9,248,0,2,0,3,0,19,0,28,0,0,9,249,10,2,0,10,10,4,10,13,0,20,0,1,0,0,0,1,0,8,0,1,0,6,1,188,0,1,0,1,10,215,0,1,0,0,0,1,0,8,0,1,0,6,9,240,0,1,0,1,0,19,0,0 };
 
-const char* NotoSansRegular_ttf = (const char*) temp_binary_data_1;
+const char* NotoSansRegular_ttf = (const char*) temp_binary_data_2;
 
 
 const char* getNamedResource (const char*, int&) throw();
@@ -3777,6 +3805,7 @@ const char* getNamedResource (const char* resourceNameUTF8, int& numBytes) throw
     switch (hash)
     {
         case 0xd7014d24:  numBytes = 9351; return BurstHotWalleticon_svg;
+        case 0x384b39a0:  numBytes = 2479; return cog_svg;
         case 0x19711874:  numBytes = 313144; return NotoSansRegular_ttf;
         default: break;
     }
@@ -3788,6 +3817,7 @@ const char* getNamedResource (const char* resourceNameUTF8, int& numBytes) throw
 const char* namedResourceList[] =
 {
     "BurstHotWalleticon_svg",
+    "cog_svg",
     "NotoSansRegular_ttf"
 };
 

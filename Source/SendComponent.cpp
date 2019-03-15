@@ -18,6 +18,7 @@
 */
 
 //[Headers] You can add your own extra header files here...
+#include <string>
 //[/Headers]
 
 #include "SendComponent.h"
@@ -55,11 +56,15 @@ SendComponent::SendComponent ()
     sendTextButton->setColour (TextButton::buttonOnColourId, Colour (0xff77b517));
 
     addAndMakeVisible (feeSlider = new Slider ("feeSlider"));
+    feeSlider->setTooltip (TRANS("the fee that goes to the miner that adds your transaction to the blockchain"));
     feeSlider->setRange (0.00735, 73.5, 0.00735);
-    feeSlider->setSliderStyle (Slider::IncDecButtons);
+    feeSlider->setSliderStyle (Slider::LinearHorizontal);
     feeSlider->setTextBoxStyle (Slider::TextBoxLeft, false, 80, 20);
+    feeSlider->setColour (Slider::backgroundColourId, Colour (0x00595959));
     feeSlider->setColour (Slider::thumbColourId, Colour (0xff77b517));
+    feeSlider->setColour (Slider::trackColourId, Colours::white);
     feeSlider->setColour (Slider::rotarySliderFillColourId, Colour (0xff77b517));
+    feeSlider->setColour (Slider::rotarySliderOutlineColourId, Colours::black);
     feeSlider->setColour (Slider::textBoxHighlightColourId, Colour (0xff77b517));
     feeSlider->addListener (this);
 
@@ -73,6 +78,7 @@ SendComponent::SendComponent ()
     messageTextEditor->setText (String());
 
     addAndMakeVisible (encryptToggleButton = new ToggleButton ("encryptToggleButton"));
+    encryptToggleButton->setTooltip (TRANS("encrypt to make the message only visible to the recipient"));
     encryptToggleButton->setButtonText (TRANS("encrypt"));
     encryptToggleButton->addListener (this);
 
@@ -109,19 +115,20 @@ SendComponent::SendComponent ()
     feeLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (feeComboBox = new ComboBox ("feeComboBox"));
+    feeComboBox->setTooltip (TRANS("the suggested fees that goes to the miner that adds your transaction to the blockchain."));
     feeComboBox->setEditableText (false);
     feeComboBox->setJustificationType (Justification::centredLeft);
-    feeComboBox->setTextWhenNothingSelected (TRANS("normal"));
+    feeComboBox->setTextWhenNothingSelected (TRANS("standard"));
     feeComboBox->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
     feeComboBox->addItem (TRANS("cheap"), 1);
-    feeComboBox->addItem (TRANS("normal"), 2);
+    feeComboBox->addItem (TRANS("standard"), 2);
     feeComboBox->addItem (TRANS("priority"), 3);
     feeComboBox->addListener (this);
 
     addAndMakeVisible (recipientComboBox = new ComboBox ("recipientComboBox"));
     recipientComboBox->setEditableText (true);
     recipientComboBox->setJustificationType (Justification::centredLeft);
-    recipientComboBox->setTextWhenNothingSelected (TRANS("BURST address or alias"));
+    recipientComboBox->setTextWhenNothingSelected (TRANS("BURST address, alias, numerical or public key"));
     recipientComboBox->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
     recipientComboBox->addItem (TRANS("@CurbShifter"), 1);
     recipientComboBox->addListener (this);
@@ -169,10 +176,49 @@ SendComponent::SendComponent ()
     recipientFixedLabel->setColour (TextEditor::textColourId, Colours::black);
     recipientFixedLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
+    addAndMakeVisible (passwordTextEditor = new TextEditor ("passwordTextEditor"));
+    passwordTextEditor->setTooltip (TRANS("the new coupon password"));
+    passwordTextEditor->setMultiLine (false);
+    passwordTextEditor->setReturnKeyStartsNewLine (false);
+    passwordTextEditor->setReadOnly (false);
+    passwordTextEditor->setScrollbarsShown (true);
+    passwordTextEditor->setCaretVisible (true);
+    passwordTextEditor->setPopupMenuEnabled (true);
+    passwordTextEditor->setText (String());
+
+    addAndMakeVisible (couponToggleButton = new ToggleButton ("couponToggleButton"));
+    couponToggleButton->setTooltip (TRANS("send the transaction as a coupon to be claimed later"));
+    couponToggleButton->setButtonText (TRANS("as coupon"));
+    couponToggleButton->addListener (this);
+
+    addAndMakeVisible (minSlider = new Slider ("minSlider"));
+    minSlider->setTooltip (TRANS("the minutes when this coupon expires since it\'s made"));
+    minSlider->setRange (8, 1440, 4);
+    minSlider->setSliderStyle (Slider::IncDecButtons);
+    minSlider->setTextBoxStyle (Slider::TextBoxLeft, false, 80, 20);
+    minSlider->addListener (this);
+
+    addAndMakeVisible (minLabel = new Label ("minLabel",
+                                             TRANS("min")));
+    minLabel->setTooltip (TRANS("the minutes when this coupon expires since it\'s made"));
+    minLabel->setFont (Font (15.00f, Font::plain));
+    minLabel->setJustificationType (Justification::centredLeft);
+    minLabel->setEditable (false, false, false);
+    minLabel->setColour (TextEditor::textColourId, Colours::black);
+    minLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
 
     //[UserPreSize]
 	//amountComboBox->setInputRestrictions(20, "0.123456789");
 	messageTextEditor->setInputRestrictions(999);
+
+	passwordTextEditor->setTextToShowWhenEmpty("the coupon password", Colours::darkred);
+	passwordTextEditor->setVisible(false);
+
+	minSlider->setVisible(false);
+	minLabel->setVisible(false);
+
+	minSlider->setValue(1440, dontSendNotification);
     //[/UserPreSize]
 
     setSize (600, 400);
@@ -209,6 +255,10 @@ SendComponent::~SendComponent()
     costLabel = nullptr;
     cancelButton = nullptr;
     recipientFixedLabel = nullptr;
+    passwordTextEditor = nullptr;
+    couponToggleButton = nullptr;
+    minSlider = nullptr;
+    minLabel = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -239,10 +289,10 @@ void SendComponent::resized()
 
     fixedMessageLabel->setBounds (376, 176, 288, 48);
     totalLabel->setBounds (200, 120, 150, 24);
-    sendTextButton->setBounds (16, 301, 328, 24);
+    sendTextButton->setBounds (328, 368, 328, 24);
     feeSlider->setBounds (104, 72, 136, 24);
     messageTextEditor->setBounds (101, 205, 248, 59);
-    encryptToggleButton->setBounds (104, 272, 80, 24);
+    encryptToggleButton->setBounds (16, 264, 80, 24);
     messageLabel->setBounds (13, 205, 78, 24);
     recipientLabel->setBounds (16, 8, 78, 24);
     amountLabel->setBounds (24, 40, 71, 24);
@@ -252,11 +302,15 @@ void SendComponent::resized()
     amountComboBox->setBounds (136, 40, 150, 24);
     paymentLabel->setBounds (376, 24, 288, 48);
     costLabel->setBounds (376, 112, 288, 56);
-    cancelButton->setBounds (368, 336, 296, 24);
+    cancelButton->setBounds (24, 368, 296, 24);
     recipientFixedLabel->setBounds (376, 80, 288, 24);
+    passwordTextEditor->setBounds (120, 296, 296, 24);
+    couponToggleButton->setBounds (16, 296, 96, 24);
+    minSlider->setBounds (424, 296, 80, 24);
+    minLabel->setBounds (512, 296, 118, 24);
     //[UserResized] Add your own custom resize handling here..
 	*/
-	const float rowH = 30.f;
+	const float rowH = 28.f;
 	juce::Rectangle<float> r = getBounds().withZeroOrigin().reduced((int)(rowH * 3 / 2)).toFloat();
 
 	if (r.getWidth() > 400)
@@ -269,12 +323,18 @@ void SendComponent::resized()
 	amountComboBox->setBounds(r.withTrimmedTop(rowH * 3).withHeight(rowH).toNearestInt());
 
 	feeLabel->setBounds(r.withTrimmedTop(rowH * 4).withHeight(rowH).toNearestInt());
-	feeSlider->setBounds(r.withTrimmedTop(rowH * 5).withHeight(rowH).withWidth(r.getWidth() / 2).toNearestInt());
-	feeComboBox->setBounds(r.withTrimmedTop(rowH * 5).withHeight(rowH).translated(r.getWidth() / 2, 0).withWidth(r.getWidth() / 2).toNearestInt());
+	feeSlider->setBounds(r.withTrimmedTop(rowH * 5).withHeight(rowH).withWidth(r.getWidth() / 3 * 2).toNearestInt());
+	feeComboBox->setBounds(r.withTrimmedTop(rowH * 5).withHeight(rowH).translated(r.getWidth() / 3 * 2, 0).withWidth(r.getWidth() / 3).toNearestInt());
 
 	messageLabel->setBounds(r.withTrimmedTop(rowH * 7).withHeight(rowH).toNearestInt());
-	messageTextEditor->setBounds(r.withTrimmedTop(rowH * 8).withHeight(r.getHeight() - (rowH * 11)).toNearestInt());
-	encryptToggleButton->setBounds(r.withTrimmedTop(r.getHeight() - (rowH * 3)).withHeight(rowH).withWidth(100).toNearestInt());
+	messageTextEditor->setBounds(r.withTrimmedTop(rowH * 8).withHeight(r.getHeight() - (rowH * 12)).toNearestInt());
+	encryptToggleButton->setBounds(r.withTrimmedTop(r.getHeight() - (rowH * 4)).withHeight(rowH).withWidth(100).toNearestInt());
+
+	couponToggleButton->setBounds(r.withTrimmedTop(r.getHeight() - (rowH * 3)).withHeight(rowH).withTrimmedRight(r.getWidth() - 90).toNearestInt());
+	passwordTextEditor->setBounds(r.withTrimmedTop(r.getHeight() - (rowH * 3)).withHeight(rowH).withTrimmedLeft(90).withTrimmedRight(r.getWidth() / 3).toNearestInt().reduced(2));
+	minSlider->setBounds(r.withTrimmedTop(r.getHeight() - (rowH * 3)).withHeight(rowH).withTrimmedLeft(r.getWidth() / 3 * 2).withTrimmedRight(r.getWidth() / 12).toNearestInt().reduced(3));
+	minLabel->setBounds(r.withTrimmedTop(r.getHeight() - (rowH * 3)).withHeight(rowH).withTrimmedLeft(r.getWidth() / 12 * 11).toNearestInt());
+
 	sendTextButton->setBounds(r.withTrimmedTop(r.getHeight() - (rowH * 2)).withHeight(rowH).withTrimmedLeft(r.getWidth() / 2).toNearestInt());
 
 	totalLabel->setBounds(r.withTrimmedTop(r.getHeight() - (rowH * 1)).withHeight(rowH).toNearestInt()); //(r.withTrimmedTop(rowH * 6).withHeight(rowH).translated(r.getWidth() / 2, 0).withWidth(r.getWidth() / 2).toNearestInt());
@@ -312,6 +372,18 @@ void SendComponent::buttonClicked (Button* buttonThatWasClicked)
 		SetView(0);
         //[/UserButtonCode_cancelButton]
     }
+    else if (buttonThatWasClicked == couponToggleButton)
+    {
+        //[UserButtonCode_couponToggleButton] -- add your button handler code here..
+		if (couponToggleButton->getToggleState())
+			sendTextButton->setButtonText("make coupon");
+		else sendTextButton->setButtonText("send");
+
+		passwordTextEditor->setVisible(couponToggleButton->getToggleState());
+		minSlider->setVisible(couponToggleButton->getToggleState());
+		minLabel->setVisible(couponToggleButton->getToggleState());
+        //[/UserButtonCode_couponToggleButton]
+    }
 
     //[UserbuttonClicked_Post]
     //[/UserbuttonClicked_Post]
@@ -326,15 +398,19 @@ void SendComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     {
         //[UserSliderCode_feeSlider] -- add your slider handling code here..
 		uint64 fee = (uint64)(sliderThatWasMoved->getValue() * 100000000L);
-		if (fee <= cheap)
+		if (fee < normal)
 			feeComboBox->setSelectedItemIndex(0, dontSendNotification);
-		else if (fee <= normal)
+		else if (fee < priority)
 			feeComboBox->setSelectedItemIndex(1, dontSendNotification);
-		else if (fee <= priority)
-			feeComboBox->setSelectedItemIndex(2, dontSendNotification);
+		else feeComboBox->setSelectedItemIndex(2, dontSendNotification);
 
-		UpdateTotalLabel(amountComboBox->getText(), String(feeSlider->getValue()));
+		UpdateTotalLabel(paymentLabel->isVisible() ? costLabel->getText() : amountComboBox->getText(), String(feeSlider->getValue()));
         //[/UserSliderCode_feeSlider]
+    }
+    else if (sliderThatWasMoved == minSlider)
+    {
+        //[UserSliderCode_minSlider] -- add your slider handling code here..
+        //[/UserSliderCode_minSlider]
     }
 
     //[UsersliderValueChanged_Post]
@@ -380,6 +456,8 @@ void SendComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
 void SendComponent::SetupTransaction(const String requestHeader, const String recipient, const String amountNQT, const String feeNQT, const String msg, const bool encrypted)
 {
+	SetView(1);
+
 	recipientComboBox->setText(recipient, dontSendNotification);
 	amountComboBox->setText(NQT2Burst(amountNQT), dontSendNotification);
 
@@ -412,13 +490,14 @@ void SendComponent::SetupTransaction(const String requestHeader, const String re
 	}
 	messageTextEditor->setText("", dontSendNotification);
 	fixedMessageLabel->setText(msg, dontSendNotification);
+
+	encryptToggleButton->setEnabled(encrypted);
 	encryptToggleButton->setToggleState(encrypted, dontSendNotification);
 
 	UpdateTotalLabel(NQT2Burst(amountNQT), String(feeSlider->getValue()));
 
 	this->notifierURL = notifierURL;
 
-	SetView(1);
 }
 
 void SendComponent::SetRecipients(StringArray recipients)
@@ -447,6 +526,11 @@ void SendComponent::SetSuggestedFees(uint64 cheap_in, uint64 normal_in, uint64 p
 {
 	int tindex = feeComboBox->getSelectedItemIndex();
 
+	if (cheap_in >= normal_in)
+		normal_in = cheap_in + FEE_QUANT;
+	if (normal_in >= priority_in)
+		priority_in = priority_in + FEE_QUANT;
+
 	if (cheap_in != normal_in || normal_in != priority_in)
 	{
 		cheap = cheap_in;
@@ -459,11 +543,11 @@ void SendComponent::SetSuggestedFees(uint64 cheap_in, uint64 normal_in, uint64 p
 		normal = FEE_QUANT * 30;
 		priority = FEE_QUANT * 60;
 	}
-
+	feeSlider->setRange(cheap / 100000000., priority / 100000000., FEE_QUANT / 100000000.);
 	feeComboBox->setSelectedItemIndex(tindex);
 }
 
-void SendComponent::SetPrice(String currency, String price)
+void SendComponent::SetPrice(String currency, double price)
 {
 	this->currency = currency;
 	this->price = price;
@@ -503,36 +587,26 @@ void SendComponent::UpdateTotalLabel(const String amount, const String fee)
 	//if (amountNQT > 0)
 	{
 		if (currency.compare("BTC") == 0)
-		{ // coin market cap conversion
-			String priceINT = price.upToFirstOccurrenceOf(".", false, true) + price.fromFirstOccurrenceOf(".", false, true).substring(0, 8); // convert to integer / 0.000001043106736701768 -> 104
-			uint64 priceSAT = priceINT.getLargeIntValue();
+		{ // conversion
 			uint64 balanceNQT = totalNQT.getLargeIntValue();
 
 			// multiply priceINT by amount of BURST
-			uint64 convertedSAT_NQT = priceSAT * balanceNQT;
-			uint64 convertedSAT = convertedSAT_NQT / 100000000; // convert the NQT/SAT back
+			uint64 convertedSAT_NQT = /*priceSAT*/price * (balanceNQT / 100000000.);
+			double convertedSAT = price * (balanceNQT / 100000000.); // convert the NQT/SAT back
 
-			String convertedSATstr(convertedSAT);
-			String convertedBTCstr = convertedSATstr.length() > 8 ? convertedSATstr.substring(0, 8) : "0";
-			convertedBTCstr += ".";
-			convertedBTCstr += convertedSATstr.getLastCharacters(8).paddedLeft('0', 8);
-
+			String convertedBTCstr = std::to_string(convertedSAT);
+			convertedBTCstr = convertedBTCstr.upToFirstOccurrenceOf(".", true, true) + convertedBTCstr.fromFirstOccurrenceOf(".", false, true).paddedRight('0', 8).substring(0, 8);
 			balance_t_ext = " (" + convertedBTCstr + " BTC)";
 		}
-		else if (currency.isNotEmpty())
-		{ // coin market cap conversion
-			String priceINT = price.upToFirstOccurrenceOf(".", false, true) + price.fromFirstOccurrenceOf(".", false, true).substring(0, 8); // convert to integer / 0.000001043106736701768 -> 104
-			uint64 priceSAT = priceINT.getLargeIntValue();
+		else if (currency.isNotEmpty() && currency.compare("BURST") != 0)
+		{ // conversion
 			uint64 balanceNQT = totalNQT.getLargeIntValue();
 
 			// multiply priceINT by amount of BURST
-			uint64 convertedSAT_NQT = priceSAT * balanceNQT;
-			uint64 convertedSAT = convertedSAT_NQT / 100000000; // convert the NQT/SAT back
+			uint64 convertedSAT_NQT = /*priceSAT*/price * balanceNQT;
+			double convertedSAT = convertedSAT_NQT / 100000000.; // convert the NQT/SAT back
 
-			String convertedSATstr(convertedSAT);
-			convertedSATstr = convertedSATstr.paddedLeft('0', 9);
-			String convertedStr = convertedSATstr.substring(0, convertedSATstr.length() - 8) + "." + convertedSATstr.substring(convertedSATstr.length() - 8, convertedSATstr.length() - 6);
-
+			String convertedStr(convertedSAT, 2);
 			balance_t_ext = (" (" + convertedStr + " " + currency + ")");
 		}
 	}
@@ -541,53 +615,81 @@ void SendComponent::UpdateTotalLabel(const String amount, const String fee)
 
 void SendComponent::SendBurst()
 {
-	String recipient = recipientComboBox->getText().trim();
-	String amount = Burst2NQT(amountComboBox->getText());
-	String fee = Burst2NQT(String(feeSlider->getValue()));
-	String message = fixedMessageLabel->getText() + " " + messageTextEditor->getText();
-	if (message.length() >= 1000)
-		message = message.substring(0, 999);
-	bool encrypt = encryptToggleButton->getToggleState();
-
-	listeners.call(&InterfaceListener::SendBurstcoin, recipient, amount, fee, message, encrypt);
-
-/*	URL url(notifierURL);
-	if (url.isWellFormed())
+	if (amountComboBox->getText().compare("HotWalletToken") == 0)
+	{ // conveniance function to send a token
+		String recipient = recipientComboBox->getText().trim();
+		listeners.call(&InterfaceListener::SendHotWalletLicense, recipient);
+	}
+	else
 	{
-		String resultNotify = url.readEntireTextStream();
-	}*/
-	SetView(0);
+		String recipient = recipientComboBox->getText().trim();
+		String amount = Burst2NQT(amountComboBox->getText());
+		String fee = Burst2NQT(String(feeSlider->getValue()));
+		String message = fixedMessageLabel->getText() + (fixedMessageLabel->getText().isNotEmpty() ? " " : String::empty) + messageTextEditor->getText();
+		if (message.length() >= 1000)
+			message = message.substring(0, 999);
+		bool encrypt = encryptToggleButton->getToggleState();
+
+		if (couponToggleButton->getToggleState())
+		{
+			/*if (passwordTextEditor->getText().isEmpty())
+			{
+				if (NativeMessageBox::showOkCancelBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "Use a empty coupon password ?!") == false)
+					return;
+			}*/
+			String deadline((int)minSlider->getValue());
+			InterfaceListener::couponArgs args;
+			args.recipient = recipient;
+			args.amountNQT = amount;
+			args.feeNQT = fee;
+			args.deadline = deadline;
+			args.msg = message;
+			args.password = passwordTextEditor->getText();
+			args.encrypted = encrypt;
+
+			listeners.call(&InterfaceListener::MakeCoupon, args);// recipient, amount, fee, deadline, message, passwordTextEditor->getText(), encrypt);
+		}
+		else listeners.call(&InterfaceListener::SendBurstcoin, recipient, amount, fee, message, encrypt);
+
+		SetView(0);
+	}
 }
 
 void SendComponent::SetView(int v)
 {
 	if (v == 0)
-	{
-		recipientComboBox->setText("", dontSendNotification);
-		amountComboBox->setText("", dontSendNotification);
-
-		messageTextEditor->setText("", dontSendNotification);
-
-		encryptToggleButton->setToggleState(false, dontSendNotification);
-		totalLabel->setText("", dontSendNotification);
-
+	{// reset view
+		bool resetAll = fixedMessageLabel->getText().isNotEmpty() || paymentLabel->getText().isNotEmpty();
 		fixedMessageLabel->setText("", dontSendNotification);
 		paymentLabel->setText("", dontSendNotification);
-		recipientFixedLabel->setText("", dontSendNotification);
-		costLabel->setText("", dontSendNotification);
-		notifierURL = String::empty;
+
+		if (resetAll)
+		{
+			recipientComboBox->setText("", dontSendNotification);
+			amountComboBox->setText("", dontSendNotification);
+			messageTextEditor->setText("", dontSendNotification);
+			encryptToggleButton->setToggleState(false, dontSendNotification);
+			totalLabel->setText("", dontSendNotification);
+
+			recipientFixedLabel->setText("", dontSendNotification);
+			costLabel->setText("", dontSendNotification);
+			notifierURL = String::empty;
+		}
 	}
+
 	recipientLabel->setVisible(v == 0);
 	recipientComboBox->setVisible(v == 0);
 
 	amountLabel->setVisible(v == 0);
 	amountComboBox->setVisible(v == 0);
-	
+
 	fixedMessageLabel->setVisible(v == 1);
 	paymentLabel->setVisible(v == 1);
 	recipientFixedLabel->setVisible(v == 1);
 	costLabel->setVisible(v == 1);
 	cancelButton->setVisible(v == 1);
+
+	encryptToggleButton->setEnabled(true);
 
 	repaint();
 }
@@ -621,13 +723,14 @@ BEGIN_JUCER_METADATA
          focusDiscardsChanges="0" fontname="Default font" fontsize="18"
          bold="0" italic="0" justification="36"/>
   <TEXTBUTTON name="sendTextButton" id="6294916aabe7c7c6" memberName="sendTextButton"
-              virtualName="" explicitFocusOrder="0" pos="16 301 328 24" bgColOff="ff77b517"
+              virtualName="" explicitFocusOrder="0" pos="328 368 328 24" bgColOff="ff77b517"
               bgColOn="ff77b517" buttonText="send" connectedEdges="0" needsCallback="1"
               radioGroupId="0"/>
   <SLIDER name="feeSlider" id="24c3eaff4e70f1dd" memberName="feeSlider"
-          virtualName="" explicitFocusOrder="0" pos="104 72 136 24" thumbcol="ff77b517"
-          rotarysliderfill="ff77b517" textboxhighlight="ff77b517" min="0.0073499999999999997627"
-          max="73.5" int="0.0073499999999999997627" style="IncDecButtons"
+          virtualName="" explicitFocusOrder="0" pos="104 72 136 24" tooltip="the fee that goes to the miner that adds your transaction to the blockchain"
+          bkgcol="595959" thumbcol="ff77b517" trackcol="ffffffff" rotarysliderfill="ff77b517"
+          rotaryslideroutline="ff000000" textboxhighlight="ff77b517" min="0.0073499999999999997627"
+          max="73.5" int="0.0073499999999999997627" style="LinearHorizontal"
           textBoxPos="TextBoxLeft" textBoxEditable="1" textBoxWidth="80"
           textBoxHeight="20" skewFactor="1" needsCallback="1"/>
   <TEXTEDITOR name="messageTextEditor" id="91e625efb4dfd505" memberName="messageTextEditor"
@@ -635,8 +738,9 @@ BEGIN_JUCER_METADATA
               multiline="1" retKeyStartsLine="0" readonly="0" scrollbars="1"
               caret="1" popupmenu="1"/>
   <TOGGLEBUTTON name="encryptToggleButton" id="e12b5cb5c89d558b" memberName="encryptToggleButton"
-                virtualName="" explicitFocusOrder="0" pos="104 272 80 24" buttonText="encrypt"
-                connectedEdges="0" needsCallback="1" radioGroupId="0" state="0"/>
+                virtualName="" explicitFocusOrder="0" pos="16 264 80 24" tooltip="encrypt to make the message only visible to the recipient"
+                buttonText="encrypt" connectedEdges="0" needsCallback="1" radioGroupId="0"
+                state="0"/>
   <LABEL name="messageLabel" id="27525753646d75a1" memberName="messageLabel"
          virtualName="" explicitFocusOrder="0" pos="13 205 78 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Message" editableSingleClick="0" editableDoubleClick="0"
@@ -658,12 +762,12 @@ BEGIN_JUCER_METADATA
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15" bold="0" italic="0" justification="34"/>
   <COMBOBOX name="feeComboBox" id="de6333299e5ba6b6" memberName="feeComboBox"
-            virtualName="" explicitFocusOrder="0" pos="248 72 96 24" editable="0"
-            layout="33" items="cheap&#10;normal&#10;priority" textWhenNonSelected="normal"
-            textWhenNoItems="(no choices)"/>
+            virtualName="" explicitFocusOrder="0" pos="248 72 96 24" tooltip="the suggested fees that goes to the miner that adds your transaction to the blockchain."
+            editable="0" layout="33" items="cheap&#10;standard&#10;priority"
+            textWhenNonSelected="standard" textWhenNoItems="(no choices)"/>
   <COMBOBOX name="recipientComboBox" id="ae82dfdeae76eb8e" memberName="recipientComboBox"
             virtualName="" explicitFocusOrder="0" pos="136 8 150 24" editable="1"
-            layout="33" items="@CurbShifter" textWhenNonSelected="BURST address or alias"
+            layout="33" items="@CurbShifter" textWhenNonSelected="BURST address, alias, numerical or public key"
             textWhenNoItems="(no choices)"/>
   <COMBOBOX name="amountComboBox" id="915c8f63738ec6f2" memberName="amountComboBox"
             virtualName="" explicitFocusOrder="0" pos="136 40 150 24" editable="1"
@@ -680,7 +784,7 @@ BEGIN_JUCER_METADATA
          focusDiscardsChanges="0" fontname="Default font" fontsize="16"
          bold="0" italic="0" justification="34"/>
   <TEXTBUTTON name="cancelButton" id="fff7bbb1ed04a85f" memberName="cancelButton"
-              virtualName="" explicitFocusOrder="0" pos="368 336 296 24" bgColOff="ffc85c5c"
+              virtualName="" explicitFocusOrder="0" pos="24 368 296 24" bgColOff="ffc85c5c"
               bgColOn="ff77b517" buttonText="cancel" connectedEdges="0" needsCallback="1"
               radioGroupId="0"/>
   <LABEL name="recipientFixedLabel" id="7e9074d7cd45f10f" memberName="recipientFixedLabel"
@@ -688,6 +792,24 @@ BEGIN_JUCER_METADATA
          edBkgCol="0" labelText="recipient" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15"
          bold="0" italic="0" justification="33"/>
+  <TEXTEDITOR name="passwordTextEditor" id="d719d6ed5193589b" memberName="passwordTextEditor"
+              virtualName="" explicitFocusOrder="0" pos="120 296 296 24" tooltip="the new coupon password"
+              initialText="" multiline="0" retKeyStartsLine="0" readonly="0"
+              scrollbars="1" caret="1" popupmenu="1"/>
+  <TOGGLEBUTTON name="couponToggleButton" id="cbcb6a7303cb42b3" memberName="couponToggleButton"
+                virtualName="" explicitFocusOrder="0" pos="16 296 96 24" tooltip="send the transaction as a coupon to be claimed later"
+                buttonText="as coupon" connectedEdges="0" needsCallback="1" radioGroupId="0"
+                state="0"/>
+  <SLIDER name="minSlider" id="1d49eed16b20c131" memberName="minSlider"
+          virtualName="" explicitFocusOrder="0" pos="424 296 80 24" tooltip="the minutes when this coupon expires since it's made"
+          min="8" max="1440" int="4" style="IncDecButtons" textBoxPos="TextBoxLeft"
+          textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1"
+          needsCallback="1"/>
+  <LABEL name="minLabel" id="6689759ad0e9668d" memberName="minLabel" virtualName=""
+         explicitFocusOrder="0" pos="512 296 118 24" tooltip="the minutes when this coupon expires since it's made"
+         edTextCol="ff000000" edBkgCol="0" labelText="min" editableSingleClick="0"
+         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
+         fontsize="15" bold="0" italic="0" justification="33"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

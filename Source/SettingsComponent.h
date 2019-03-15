@@ -23,6 +23,7 @@
 //[Headers]     -- You can add your own extra header files here --
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "Listeners.h"
+#include "BurstExt.h"
 //[/Headers]
 
 
@@ -38,7 +39,8 @@
 class SettingsComponent  : public TextEditorListener,
                            public Component,
                            public SettingsListener,
-                           public ButtonListener
+                           public ButtonListener,
+                           public ComboBoxListener
 {
 public:
     //==============================================================================
@@ -50,13 +52,17 @@ public:
 	void addInterfaceListener(InterfaceListener* const l)      { interfaceListeners.add(l); };
 	void removeInterfaceListener(InterfaceListener* const l)   { interfaceListeners.remove(l); };
 
+	void SetNode(const String address) override;
+
 	void textEditorTextChanged(TextEditor &editor); //Called when the user changes the text in some way.
 	void textEditorReturnKeyPressed(TextEditor &editor); //Called when the user presses the return key.
 	void textEditorEscapeKeyPressed(TextEditor &editor); //Called when the user presses the escape key.
 	void textEditorFocusLost(TextEditor &editor); //Called when the text editor loses focus.
 
+	void SetForceSSL_TSL(const bool forceSSLOn) override;
+	void SetNodeHop(const bool hopOn) override;
+	String GetSecretPhrase();
 	void SetSecretPhrase(const String str) override;
-	void SetBurstRS(const String rs) override;
 	void EnableControls(const bool on) override;
 
 	void ChangePIN();
@@ -68,11 +74,14 @@ public:
 	void SetCMCkey(const String key) override;
 	void SetCurrencyType(const String type) override;
 	void SetCurrencyType(const int type);
+
+	void ShowHttpPopup();
     //[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
     void buttonClicked (Button* buttonThatWasClicked) override;
+    void comboBoxChanged (ComboBox* comboBoxThatHasChanged) override;
 
     // Binary resources:
     static const char* brswordlist_txt;
@@ -82,8 +91,9 @@ public:
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
 	ListenerList <InterfaceListener> interfaceListeners;
-	String addressRS;
+	//String addressRS;
 	int currencyType;
+	BurstExt burstExt; // used to securely temp store the pass phrase in mem
     //[/UserVariables]
 
     //==============================================================================
@@ -92,7 +102,9 @@ private:
     ScopedPointer<TextButton> myPassPhraseButton;
     ScopedPointer<TextButton> cmcButton;
     ScopedPointer<TextEditor> cmcTextEditor;
-    ScopedPointer<TextButton> websocketButton;
+    ScopedPointer<TextButton> getKeyButton;
+    ScopedPointer<ComboBox> nodeComboBox;
+    ScopedPointer<TextButton> nodeAddressButton;
 
 
     //==============================================================================

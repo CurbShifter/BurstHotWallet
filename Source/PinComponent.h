@@ -38,8 +38,7 @@
 class PinComponent  : public TextEditorListener,
                       public Component,
                       public PinComponentListener,
-                      public ButtonListener,
-                      public ComboBoxListener
+                      public ButtonListener
 {
 public:
     //==============================================================================
@@ -57,21 +56,36 @@ public:
 	void textEditorEscapeKeyPressed(TextEditor &editor); //Called when the user presses the escape key.
 	void textEditorFocusLost(TextEditor &editor); //Called when the text editor loses focus.
 
+	void ClearMemory();
 	void SavePassPhrase();
-	void setMode(String passPhrase = String::empty);
+	void setViewMode(const int mode, const String passPhrase = String::empty);
+
+	String NewPassPhrase();
     //[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
     void buttonClicked (Button* buttonThatWasClicked) override;
-    void comboBoxChanged (ComboBox* comboBoxThatHasChanged) override;
     bool keyPressed (const KeyPress& key) override;
 
+    // Binary resources:
+    static const char* brswordlist_txt;
+    static const int brswordlist_txtSize;
+    static const char* burstHotWalletlogo_svg;
+    static const int burstHotWalletlogo_svgSize;
+    static const char* burst_logo_white_svg;
+    static const int burst_logo_white_svgSize;
 
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
-	String passPhrase;
+	bool firstOn;
+	bool newOn;
+	bool importOn;
+	bool savePinOn;
+	bool unlockOn;
+
+	BurstKit burstKit;
     //[/UserVariables]
 
     //==============================================================================
@@ -87,14 +101,26 @@ private:
     ScopedPointer<TextButton> textButton_9;
     ScopedPointer<TextButton> textButton_0;
     ScopedPointer<TextEditor> pinInputTextEditor;
-    ScopedPointer<Label> saveHeaderLabel;
+    ScopedPointer<Label> newWalletLabel;
     ScopedPointer<TextButton> unlockButton;
     ScopedPointer<TextButton> saveButton;
-    ScopedPointer<Label> saveHeaderLabel2;
-    ScopedPointer<ComboBox> accountsComboBox;
+    ScopedPointer<Label> ensurePinLabel;
     ScopedPointer<TextButton> textButton_10;
-    ScopedPointer<TextButton> newAccountButton;
-    ScopedPointer<TextButton> delAccountButton;
+    ScopedPointer<Label> passPhraseLabel;
+    ScopedPointer<Label> importantLabel;
+    ScopedPointer<Label> protectHeaderLabel;
+    ScopedPointer<Label> addressLabel;
+    ScopedPointer<TextButton> refreshButton;
+    ScopedPointer<TextButton> importButton;
+    ScopedPointer<TextButton> copiedTextButton;
+    ScopedPointer<TextEditor> passPhraseTextEditor;
+    ScopedPointer<Label> enterPassPhraseLabel;
+    ScopedPointer<TextButton> savePassPhraseButton;
+    ScopedPointer<Label> enterAddressLabel;
+    ScopedPointer<TextButton> newButton;
+    ScopedPointer<TextButton> backToStartButton;
+    ScopedPointer<Drawable> drawable1;
+    ScopedPointer<Drawable> drawable2;
 
 
     //==============================================================================

@@ -54,7 +54,7 @@ SettingsComponent::SettingsComponent ()
 
     addAndMakeVisible (myPassPhraseButton = new TextButton ("myPassPhraseButton"));
     myPassPhraseButton->setTooltip (TRANS("Pop-up menu with pass phrase options"));
-    myPassPhraseButton->setButtonText (TRANS("My pass phrase"));
+    myPassPhraseButton->setButtonText (TRANS("My account"));
     myPassPhraseButton->addListener (this);
     myPassPhraseButton->setColour (TextButton::buttonColourId, Colours::white);
     myPassPhraseButton->setColour (TextButton::buttonOnColourId, Colours::white);
@@ -80,14 +80,34 @@ SettingsComponent::SettingsComponent ()
     cmcTextEditor->setPopupMenuEnabled (true);
     cmcTextEditor->setText (String());
 
-    addAndMakeVisible (websocketButton = new TextButton ("websocketButton"));
-    websocketButton->setTooltip (TRANS("Pop-up menu with pay request options"));
-    websocketButton->setButtonText (TRANS("Browser requests"));
-    websocketButton->addListener (this);
-    websocketButton->setColour (TextButton::buttonColourId, Colours::white);
-    websocketButton->setColour (TextButton::buttonOnColourId, Colours::white);
-    websocketButton->setColour (TextButton::textColourOffId, Colours::black);
-    websocketButton->setColour (TextButton::textColourOnId, Colours::black);
+    addAndMakeVisible (getKeyButton = new TextButton ("getKeyButton"));
+    getKeyButton->setTooltip (TRANS("opens default browser"));
+    getKeyButton->setButtonText (TRANS("get key"));
+    getKeyButton->addListener (this);
+    getKeyButton->setColour (TextButton::buttonColourId, Colours::white);
+    getKeyButton->setColour (TextButton::buttonOnColourId, Colours::white);
+    getKeyButton->setColour (TextButton::textColourOffId, Colours::black);
+    getKeyButton->setColour (TextButton::textColourOnId, Colours::black);
+
+    addAndMakeVisible (nodeComboBox = new ComboBox ("nodeComboBox"));
+    nodeComboBox->setTooltip (TRANS("Can be testnet or main net. However it is recommened not to use the your same wallet account on both."));
+    nodeComboBox->setEditableText (true);
+    nodeComboBox->setJustificationType (Justification::centredLeft);
+    nodeComboBox->setTextWhenNothingSelected (TRANS("local or external node address"));
+    nodeComboBox->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
+    nodeComboBox->addItem (TRANS("wallet.burst-team.us:2083"), 1);
+    nodeComboBox->addItem (TRANS("localhost:8125"), 2);
+    nodeComboBox->addItem (TRANS("testnet.getburst.net:6876"), 3);
+    nodeComboBox->addListener (this);
+
+    addAndMakeVisible (nodeAddressButton = new TextButton ("nodeAddressButton"));
+    nodeAddressButton->setTooltip (TRANS("Pop-up menu with node address options"));
+    nodeAddressButton->setButtonText (TRANS("Node address"));
+    nodeAddressButton->addListener (this);
+    nodeAddressButton->setColour (TextButton::buttonColourId, Colours::white);
+    nodeAddressButton->setColour (TextButton::buttonOnColourId, Colours::white);
+    nodeAddressButton->setColour (TextButton::textColourOffId, Colours::black);
+    nodeAddressButton->setColour (TextButton::textColourOnId, Colours::black);
 
 
     //[UserPreSize]
@@ -99,12 +119,13 @@ SettingsComponent::SettingsComponent ()
 	passPhraseTextEditor->setPopupMenuEnabled(true);
 	passPhraseTextEditor->setPasswordCharacter(0x2022);
 	passPhraseTextEditor->addListener(this);
-	passPhraseTextEditor->setTextToShowWhenEmpty("My account", Colours::grey);
+	passPhraseTextEditor->setTextToShowWhenEmpty("My wallet pass phrase", Colours::grey);
 	passPhraseTextEditor->setVisible(false);
 
-	cmcTextEditor->setTextToShowWhenEmpty("Your coinmarketcap.com API key (not affiliated)", Colours::grey);
+	cmcTextEditor->setTextToShowWhenEmpty("coinmarketcap.com API key (not affiliated)", Colours::grey);
 	cmcTextEditor->addListener(this);
 	cmcTextEditor->setVisible(false);
+	getKeyButton->setVisible(false);
 
 	currencyType = 0;
     //[/UserPreSize]
@@ -127,7 +148,9 @@ SettingsComponent::~SettingsComponent()
     myPassPhraseButton = nullptr;
     cmcButton = nullptr;
     cmcTextEditor = nullptr;
-    websocketButton = nullptr;
+    getKeyButton = nullptr;
+    nodeComboBox = nullptr;
+    nodeAddressButton = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -155,34 +178,44 @@ void SettingsComponent::resized()
 	/*
     //[/UserPreResize]
 
-    passPhraseTextEditor->setBounds (136, 72, 360, 24);
-    lockButton->setBounds (8, 40, 120, 24);
-    myPassPhraseButton->setBounds (8, 72, 120, 24);
-    cmcButton->setBounds (8, 104, 120, 24);
-    cmcTextEditor->setBounds (136, 104, 360, 24);
-    websocketButton->setBounds (8, 136, 120, 24);
+    passPhraseTextEditor->setBounds (160, 64, 392, 24);
+    lockButton->setBounds (32, 152, 120, 24);
+    myPassPhraseButton->setBounds (32, 64, 120, 24);
+    cmcButton->setBounds (32, 96, 120, 24);
+    cmcTextEditor->setBounds (160, 96, 264, 24);
+    getKeyButton->setBounds (432, 96, 120, 24);
+    nodeComboBox->setBounds (160, 24, 400, 24);
+    nodeAddressButton->setBounds (32, 24, 120, 24);
     //[UserResized] Add your own custom resize handling here..
 	*/
-	const int rowH = 22;
+	const int rowH = 30;
 	const int pad = 15;
+	const int spacer = 5;
 	Rectangle<int> r = getBounds().withPosition(0, 0).reduced(pad);
 
 	Rectangle<int> r1 = r.withHeight(rowH);
-	Rectangle<int> r2 = r1.translated(0, rowH + 3);
-	Rectangle<int> r3 = r2.translated(0, rowH + 3);
-	Rectangle<int> r4 = r3.translated(0, rowH + 3);
+	Rectangle<int> r2 = r1.translated(0, rowH + spacer);
+	Rectangle<int> r3 = r2.translated(0, rowH + spacer);
+	Rectangle<int> r4 = r3.translated(0, rowH + spacer);
+	Rectangle<int> r5 = r4.translated(0, rowH + spacer);
 
 	const int bw = 150;
-	lockButton->setBounds(r1.withWidth(bw));
+
+	nodeAddressButton->setBounds(r1.withWidth(bw));
+	nodeComboBox->setBounds(r1.withTrimmedLeft(bw + 5));
+
 	myPassPhraseButton->setBounds(r2.withWidth(bw));
 	cmcButton->setBounds(r3.withWidth(bw));
-	websocketButton->setBounds(r4.withWidth(bw));
 
 	passPhraseTextEditor->setBounds(r2.withTrimmedLeft(bw + 5));
-	cmcTextEditor->setBounds(r3.withTrimmedLeft(bw + 5));
-	
+	cmcTextEditor->setBounds(r3.withTrimmedLeft(bw + 5).withTrimmedRight(80));
+	getKeyButton->setBounds(r3.withTrimmedLeft(bw + 5 + 5 +cmcTextEditor->getWidth()));
+//	cpTextEditor->setBounds(r5.withTrimmedLeft(bw + 5));
+
+	lockButton->setBounds(r5.withWidth(bw));
+
 #if ALLOW_EXT_REQ != 1
-	websocketButton->setVisible(false);
+	//websocketButton->setVisible(false);
 #endif
     //[/UserResized]
 }
@@ -206,11 +239,15 @@ void SettingsComponent::buttonClicked (Button* buttonThatWasClicked)
 		contextMenu = new PopupMenu;
 
 		contextMenu->addItem(7, "Copy public address to clipboard", true);
+		contextMenu->addItem(9, "Copy public key to clipboard", true);
+		contextMenu->addSeparator();
 		contextMenu->addItem(1, "Change my access PIN code", true);
-		contextMenu->addItem(5, "Manual edit pass phrase", true, editingPassPhrase);
+	/*	contextMenu->addItem(5, "Manual edit pass phrase", true, editingPassPhrase);
+		contextMenu->addSeparator();
 		contextMenu->addItem(3, "Import pass phrase (plain text!)", true);
 		contextMenu->addItem(2, "Export pass phrase (plain text!)", true);
-		contextMenu->addItem(6, "Generate new account / pass phrase", true);
+		contextMenu->addSeparator();*/
+		contextMenu->addItem(6, "Generate new / import account", true);
 
 		int result = contextMenu->show();
 		if (result == 1)
@@ -228,6 +265,10 @@ void SettingsComponent::buttonClicked (Button* buttonThatWasClicked)
 		else if (result == 5)
 		{// "Set manual pass phrase (existing wallet)"
 			passPhraseTextEditor->setVisible(!editingPassPhrase);
+
+			if (passPhraseTextEditor->isVisible())
+				passPhraseTextEditor->setText(GetSecretPhrase(), dontSendNotification);
+			else passPhraseTextEditor->setText("");
 		}
 		else if (result == 6)
 		{// "Make new pass phrase"
@@ -235,8 +276,13 @@ void SettingsComponent::buttonClicked (Button* buttonThatWasClicked)
 		}
 		else if (result == 7)
 		{
+			String addressRS(burstExt.GetAccountRS());
 			SystemClipboard::copyTextToClipboard(addressRS);
 			NativeMessageBox::showMessageBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "Address " + addressRS + "\nis copied to clipboard");
+		}
+		else if (result == 9)
+		{
+			interfaceListeners.call(&InterfaceListener::WalletPubKeyToClipboard, 0);
 		}
 
 		contextMenu = nullptr;
@@ -252,85 +298,101 @@ void SettingsComponent::buttonClicked (Button* buttonThatWasClicked)
 		ScopedPointer<PopupMenu> contextSubMenu;
 		contextSubMenu = new PopupMenu;
 
-		contextMenu->addItem(1, "Set your coinmarketcap.com/api key", true, editing);
-		contextMenu->addItem(7, "Get API key (opens browser) works with free Basic account", true, editing);
-
-		if (cmcTextEditor->getText().isNotEmpty())
+	//	if (cmcTextEditor->getText().isNotEmpty())
 		{
-			contextSubMenu->addItem(2, "BURST", true, currencyType == 0);
-			contextSubMenu->addItem(3, "BTC", true, currencyType == 1);
-			contextSubMenu->addItem(4, "USD", true, currencyType == 2);
-			contextSubMenu->addItem(5, "EUR", true, currencyType == 3);
-			contextSubMenu->addItem(6, "GBP", true, currencyType == 4);
+			contextSubMenu->addItem(10, "BURST", true, currencyType == 0);
+			contextSubMenu->addItem(11, "BTC", true, currencyType == 1);
+			contextSubMenu->addItem(12, "USD", true, currencyType == 2);
+			contextSubMenu->addItem(13, "EUR", true, currencyType == 3);
+			contextSubMenu->addItem(14, "GBP", true, currencyType == 4);
 		}
+		contextMenu->addItem(9, "Prices are only for indication. No rights are given", false, false);
+		
 		contextMenu->addSubMenu("Display currency", *contextSubMenu, true);
+		contextMenu->addItem(1, "Set coinmarketcap.com API key", true, editing);
 
 		int result = contextMenu->show();
 		if (result == 1)
 		{
 			cmcTextEditor->setVisible(!editing);
+			getKeyButton->setVisible(!editing);
 		}
-		else if (result == 7)
+		else if (result >= 10)
 		{
-			URL url("https://coinmarketcap.com/api/");
-			url.launchInDefaultBrowser();
-		}
-		else if (result > 1)
-		{
-			SetCurrencyType(result - 2);
+			SetCurrencyType(result - 10);
 		}
 
 		contextMenu = nullptr;
 		contextSubMenu = nullptr;
         //[/UserButtonCode_cmcButton]
     }
-    else if (buttonThatWasClicked == websocketButton)
+    else if (buttonThatWasClicked == getKeyButton)
     {
-        //[UserButtonCode_websocketButton] -- add your button handler code here..
-#if ALLOW_EXT_REQ == 1
-		String websocketsStr;
-		interfaceListeners.call(&InterfaceListener::GetAppValue, "httpsocket", websocketsStr);
-		bool websockets = websocketsStr.getIntValue() > 0;
-
+        //[UserButtonCode_getKeyButton] -- add your button handler code here..
+		URL url("https://coinmarketcap.com/api/");
+		url.launchInDefaultBrowser();
+        //[/UserButtonCode_getKeyButton]
+    }
+    else if (buttonThatWasClicked == nodeAddressButton)
+    {
+        //[UserButtonCode_nodeAddressButton] -- add your button handler code here..
 		ScopedPointer<PopupMenu> contextMenu;
 		contextMenu = new PopupMenu;
 
-		contextMenu->addItem(1, "Allow browser requests", true, websockets);
-		contextMenu->addItem(2, "Show browser request example page", true);
+		String forceSSLOnStr, hopOnStr;
+		interfaceListeners.call(&InterfaceListener::GetAppValue, "hopOn", hopOnStr);
+		interfaceListeners.call(&InterfaceListener::GetAppValue, "forceSSLOn", forceSSLOnStr);
+		bool hopOn = hopOnStr.getIntValue() > 0;
+		bool forceSSLOn = forceSSLOnStr.getIntValue() > 0;
+
+		contextMenu->addItem(2, "force https SSL/TSL (excludes nodes without SSL certificates)", true, forceSSLOn);
+		contextMenu->addItem(1, "enable node hopping (distribute your precence in the network)", false, hopOn);
+
 		int result = contextMenu->show();
 		if (result == 1)
 		{
-			if (!websockets)
-			{
-				if (NativeMessageBox::showOkCancelBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "Allow external pay requests?\nIt will need local networking on port 41137"))
-				{
-					interfaceListeners.call(&InterfaceListener::SetAppValue, "httpsocket", String(1));
-					bool ok = false;
-					interfaceListeners.call(&InterfaceListener::OpenHttpSocket, "127.0.0.1", 8080, ok);
-				}
-			}
-			else
-			{
-				interfaceListeners.call(&InterfaceListener::SetAppValue, "httpsocket", String(0));
-				interfaceListeners.call(&InterfaceListener::CloseHttpSocket);
-			}
+			hopOn = !hopOn; // toggle
+			interfaceListeners.call(&InterfaceListener::SetNodeHop, hopOn);
 		}
 		else if (result == 2)
 		{
-			URL url("https://curbshifter.github.io/BurstHotWallet/PayButtonDemo.html");
-			url.launchInDefaultBrowser();
+			forceSSLOn = !forceSSLOn; // toggle
+			interfaceListeners.call(&InterfaceListener::SetForceSSL_TSL, forceSSLOn);
 		}
-#endif
-		//[/UserButtonCode_websocketButton]
+
+		contextMenu = nullptr;
+        //[/UserButtonCode_nodeAddressButton]
     }
 
     //[UserbuttonClicked_Post]
     //[/UserbuttonClicked_Post]
 }
 
+void SettingsComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
+{
+    //[UsercomboBoxChanged_Pre]
+    //[/UsercomboBoxChanged_Pre]
+
+    if (comboBoxThatHasChanged == nodeComboBox)
+    {
+        //[UserComboBoxCode_nodeComboBox] -- add your combo box handling code here..
+		interfaceListeners.call(&InterfaceListener::SetAppValue, "server", nodeComboBox->getText());
+        //[/UserComboBoxCode_nodeComboBox]
+    }
+
+    //[UsercomboBoxChanged_Post]
+    //[/UsercomboBoxChanged_Post]
+}
+
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
+void SettingsComponent::SetNode(const String server)
+{
+	burstExt.SetNode(server);
+	nodeComboBox->setText(server, dontSendNotification);
+}
+
 void SettingsComponent::textEditorTextChanged(TextEditor &editor) //Called when the user changes the text in some way.
 {
 	if (passPhraseTextEditor == &editor)
@@ -347,7 +409,7 @@ void SettingsComponent::textEditorReturnKeyPressed(TextEditor &editor) //Called 
 {
 	if (passPhraseTextEditor == &editor)
 	{
-		interfaceListeners.call(&InterfaceListener::SavePassPhraseWithNewPIN, editor.getText());
+		interfaceListeners.call(&InterfaceListener::SavePassPhraseWithNewPIN, GetSecretPhrase());
 		SetSecretPhrase(editor.getText());
 	}
 	if (cmcTextEditor == &editor)
@@ -363,17 +425,31 @@ void SettingsComponent::textEditorFocusLost(TextEditor &/*editor*/) //Called whe
 {
 }
 
-void SettingsComponent::SetSecretPhrase(const String str)
+String SettingsComponent::GetSecretPhrase()
 {
-	passPhraseTextEditor->setText(str, dontSendNotification);
+	return burstExt.GetSecretPhraseString(); // from here the phrase will be exposed in the device memory
+}
+
+void SettingsComponent::SetForceSSL_TSL(const bool forceSSLOn)
+{
+	burstExt.SetForceSSL_TSL(forceSSLOn);
+}
+
+void SettingsComponent::SetNodeHop(const bool hopOn)
+{
+	burstExt.EnableNodeHop(hopOn ? 7 : 0);
+}
+
+void SettingsComponent::SetSecretPhrase(const String passphrase)
+{
+	burstExt.SetSecretPhrase(passphrase, 0);
+
+	if (passPhraseTextEditor->isVisible())
+		passPhraseTextEditor->setText(GetSecretPhrase(), dontSendNotification);
+
 	if (passPhraseTextEditor->getText().length() >= 35)
 		passPhraseTextEditor->setColour(TextEditor::backgroundColourId, Colours::white);
 	else passPhraseTextEditor->setColour(TextEditor::backgroundColourId, Colours::red);
-}
-
-void SettingsComponent::SetBurstRS(const String rs)
-{
-	addressRS = (rs);
 }
 
 void SettingsComponent::EnableControls(const bool on)
@@ -384,10 +460,11 @@ void SettingsComponent::EnableControls(const bool on)
 void SettingsComponent::ExportWallet()
 {
 	FileChooser myChooser("Select the location to save your wallet pass phrase...", File::getSpecialLocation(File::userDesktopDirectory), "*.*");
+	String addressRS(burstExt.GetAccountRS());
 	if (myChooser.browseForDirectory() && addressRS.isNotEmpty())
 	{
 		File f = myChooser.getResult().getChildFile(addressRS).withFileExtension("txt");
-		f.appendText(passPhraseTextEditor->getText());
+		f.appendText(GetSecretPhrase());
 
 		if (myChooser.getResult().getChildFile(addressRS).withFileExtension("txt").existsAsFile())
 			NativeMessageBox::showMessageBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "File saved !\n\nSecurly backup the pass phrase file and keep it private !\n" + f.getFullPathName());
@@ -397,13 +474,16 @@ void SettingsComponent::ExportWallet()
 
 void SettingsComponent::ImportWallet()
 {
-	if (NativeMessageBox::showOkCancelBox(AlertWindow::QuestionIcon, ProjectInfo::projectName, "Import a wallet pass phrase?\nPlease make sure to export and BACKUP YOUR CURRENT PASS PHRASE!\nHotWallet only holds 1 account at a time.") == 1)
+	if (NativeMessageBox::showOkCancelBox(AlertWindow::QuestionIcon, ProjectInfo::projectName, "Import a wallet pass phrase from a file?\nMake sure to BACKUP YOUR CURRENT PASS PHRASE!\nHotWallet only holds 1 account at a time.") == 1)
 	{
 		FileChooser myChooser("Select the wallet pass phrase file...", File::getSpecialLocation(File::userDesktopDirectory), "*.*");
 		if (myChooser.browseForFileToOpen())
 		{
 			File f = myChooser.getResult();
-			String passPhrase = f.loadFileAsString();
+			StringArray lines;
+			f.readLines(lines);
+			String passPhrase = lines[0];
+		//	String passPhrasePC = lines.size() > 0 ? lines[1] : String::empty;
 
 			if (passPhrase.isEmpty())
 				NativeMessageBox::showMessageBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "No passphrase found in file:\n" + f.getFullPathName());
@@ -420,24 +500,14 @@ void SettingsComponent::ChangePIN()
 {
 	if (NativeMessageBox::showOkCancelBox(AlertWindow::QuestionIcon, ProjectInfo::projectName, "Change the PIN that protects your passphrase?") == 1)
 	{
-		interfaceListeners.call(&InterfaceListener::SavePassPhraseWithNewPIN, passPhraseTextEditor->getText());
+		interfaceListeners.call(&InterfaceListener::SavePassPhraseWithNewPIN, GetSecretPhrase());
 	}
 }
 
 void SettingsComponent::CreateWallet()
 {
-	MemoryBlock wordListMb = MemoryBlock(brswordlist_txt, brswordlist_txtSize);
-	StringArray wordList = StringArray::fromLines(wordListMb.toString());
-	juce::Random r(Time::currentTimeMillis());
 	String passPhrase;
-	for (int i = 0; i < 12; i++)
-	{
-		unsigned int randInt = r.nextInt();
-		passPhrase += wordList[randInt % wordList.size()];
-		if (i < 11)
-			passPhrase += " ";
-	}
-	interfaceListeners.call(&InterfaceListener::SavePassPhraseWithNewPIN, passPhrase);
+	interfaceListeners.call(&InterfaceListener::CreateWallet);
 	SetSecretPhrase(passPhrase);
 }
 
@@ -476,12 +546,57 @@ void SettingsComponent::SetCurrencyType(const int type)
 
 void SettingsComponent::NewWallet()
 {
-	if (NativeMessageBox::showOkCancelBox(AlertWindow::QuestionIcon, ProjectInfo::projectName, "Create new wallet pass phrase?\nPlease make sure to export and BACKUP YOUR CURRENT PASS PHRASE!\nHotWallet only holds 1 account at a time.") == 1)
+	if (NativeMessageBox::showOkCancelBox(AlertWindow::QuestionIcon, ProjectInfo::projectName, "Create new / import wallet pass phrase?\nMake sure you have a BACKUP OF YOUR PASS PHRASE!\nHotWallet only holds 1 account at a time.") == 1)
 	{
 		CreateWallet();
 	}
 }
+/*
+void SettingsComponent::CollectComboBoxNodes()
+{
+	// goto burst apps team github and read ips from conf file
 
+
+	burstExt
+}
+*/
+void SettingsComponent::ShowHttpPopup()
+{
+#if ALLOW_EXT_REQ == 1
+	String websocketsStr;
+	interfaceListeners.call(&InterfaceListener::GetAppValue, "httpsocket", websocketsStr);
+	bool websockets = websocketsStr.getIntValue() > 0;
+
+	ScopedPointer<PopupMenu> contextMenu;
+	contextMenu = new PopupMenu;
+
+	contextMenu->addItem(1, "Allow browser requests", true, websockets);
+	contextMenu->addItem(2, "Show browser request example page", true);
+	int result = contextMenu->show();
+	if (result == 1)
+	{
+		if (!websockets)
+		{
+			if (NativeMessageBox::showOkCancelBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "Allow external pay requests?\nIt will need local networking on port 41137"))
+			{
+				interfaceListeners.call(&InterfaceListener::SetAppValue, "httpsocket", String(1));
+				bool ok = false;
+				interfaceListeners.call(&InterfaceListener::OpenHttpSocket, "127.0.0.1", 8080, ok);
+			}
+		}
+		else
+		{
+			interfaceListeners.call(&InterfaceListener::SetAppValue, "httpsocket", String(0));
+			interfaceListeners.call(&InterfaceListener::CloseHttpSocket);
+		}
+	}
+	else if (result == 2)
+	{
+		URL url("https://curbshifter.github.io/BurstHotWallet/PayButtonDemo.html");
+		url.launchInDefaultBrowser();
+	}
+#endif
+}
 //[/MiscUserCode]
 
 
@@ -501,31 +616,39 @@ BEGIN_JUCER_METADATA
                  initialHeight="400">
   <BACKGROUND backgroundColour="ffdfdfdf"/>
   <TEXTEDITOR name="passPhraseTextEditor" id="f0cbabb6811d2f5" memberName="passPhraseTextEditor"
-              virtualName="" explicitFocusOrder="0" pos="136 72 360 24" tooltip="Enter your existing pass phrase here. Or you can create a new wallet here. A red background indicates a phrase shorter than 35 characters, which is not recommended !"
+              virtualName="" explicitFocusOrder="0" pos="160 64 392 24" tooltip="Enter your existing pass phrase here. Or you can create a new wallet here. A red background indicates a phrase shorter than 35 characters, which is not recommended !"
               initialText="" multiline="0" retKeyStartsLine="0" readonly="0"
               scrollbars="0" caret="1" popupmenu="1"/>
   <TEXTBUTTON name="lockButton" id="2b10438639a15113" memberName="lockButton"
-              virtualName="" explicitFocusOrder="0" pos="8 40 120 24" tooltip="Locks the app now. And clears the pass phrase. You will need to enter the PIN to unlock it again."
+              virtualName="" explicitFocusOrder="0" pos="32 152 120 24" tooltip="Locks the app now. And clears the pass phrase. You will need to enter the PIN to unlock it again."
               bgColOff="ffffffff" bgColOn="ffffffff" textCol="ff000000" textColOn="ff000000"
               buttonText="Log out" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="myPassPhraseButton" id="a57dbbdc113f5472" memberName="myPassPhraseButton"
-              virtualName="" explicitFocusOrder="0" pos="8 72 120 24" tooltip="Pop-up menu with pass phrase options"
+              virtualName="" explicitFocusOrder="0" pos="32 64 120 24" tooltip="Pop-up menu with pass phrase options"
               bgColOff="ffffffff" bgColOn="ffffffff" textCol="ff000000" textColOn="ff000000"
-              buttonText="My pass phrase" connectedEdges="0" needsCallback="1"
+              buttonText="My account" connectedEdges="0" needsCallback="1"
               radioGroupId="0"/>
   <TEXTBUTTON name="cmcButton" id="6d710c0347734f90" memberName="cmcButton"
-              virtualName="" explicitFocusOrder="0" pos="8 104 120 24" tooltip="Pop-up menu with currency options"
+              virtualName="" explicitFocusOrder="0" pos="32 96 120 24" tooltip="Pop-up menu with currency options"
               bgColOff="ffffffff" bgColOn="ffffffff" textCol="ff000000" textColOn="ff000000"
               buttonText="Currency type" connectedEdges="0" needsCallback="1"
               radioGroupId="0"/>
   <TEXTEDITOR name="cmcTextEditor" id="40e0f00b7b45b6de" memberName="cmcTextEditor"
-              virtualName="" explicitFocusOrder="0" pos="136 104 360 24" tooltip="Enter your coinmarketcap.com API key to view the amounts in other currency values."
+              virtualName="" explicitFocusOrder="0" pos="160 96 264 24" tooltip="Enter your coinmarketcap.com API key to view the amounts in other currency values."
               initialText="" multiline="0" retKeyStartsLine="0" readonly="0"
               scrollbars="0" caret="1" popupmenu="1"/>
-  <TEXTBUTTON name="websocketButton" id="b79df861c06c00ce" memberName="websocketButton"
-              virtualName="" explicitFocusOrder="0" pos="8 136 120 24" tooltip="Pop-up menu with pay request options"
+  <TEXTBUTTON name="getKeyButton" id="bfbde25cea42c682" memberName="getKeyButton"
+              virtualName="" explicitFocusOrder="0" pos="432 96 120 24" tooltip="opens default browser"
               bgColOff="ffffffff" bgColOn="ffffffff" textCol="ff000000" textColOn="ff000000"
-              buttonText="Browser requests" connectedEdges="0" needsCallback="1"
+              buttonText="get key" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
+  <COMBOBOX name="nodeComboBox" id="1aa07b18d7c2e0de" memberName="nodeComboBox"
+            virtualName="" explicitFocusOrder="0" pos="160 24 400 24" tooltip="Can be testnet or main net. However it is recommened not to use the your same wallet account on both."
+            editable="1" layout="33" items="wallet.burst-team.us:2083&#10;localhost:8125&#10;testnet.getburst.net:6876"
+            textWhenNonSelected="local or external node address" textWhenNoItems="(no choices)"/>
+  <TEXTBUTTON name="nodeAddressButton" id="215f2fe3e006175a" memberName="nodeAddressButton"
+              virtualName="" explicitFocusOrder="0" pos="32 24 120 24" tooltip="Pop-up menu with node address options"
+              bgColOff="ffffffff" bgColOn="ffffffff" textCol="ff000000" textColOn="ff000000"
+              buttonText="Node address" connectedEdges="0" needsCallback="1"
               radioGroupId="0"/>
 </JUCER_COMPONENT>
 

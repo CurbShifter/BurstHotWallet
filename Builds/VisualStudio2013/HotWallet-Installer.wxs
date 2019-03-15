@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<?define ProductVersion = "0.1.$WCREV$"?>
+<?define ProductUpgradeCode = "3af7a0ee-274f-11e9-ab14-d663bd873d93"?>
+
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+	<Product Name='CryptoExtensions HotWallet' Manufacturer='CryptoExtensions' Id='*' UpgradeCode='$(var.ProductUpgradeCode)' Language='1033' Codepage='1252' Version='$(var.ProductVersion)'>
+	
+		<Package Id='*' Keywords='Installer' Description="CryptoExtensions HotWallet Installer" Comments='CryptoExtensions HotWallet.cash' Manufacturer='CryptoExtensions' InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
+		
+		<WixVariable Id="WixUILicenseRtf" Value="EULA.rtf" />
+		<WixVariable Id="WixUIBannerBmp" Value="WixUIBannerBmp.jpg" />
+	 	<WixVariable Id="WixUIDialogBmp" Value="WixUIDialogBmp.jpg" />
+		<WixVariable Id="WixUIExclamationIco" Value="icon.ico" />
+		<WixVariable Id="WixUIInfoIco" Value="icon.ico" />
+		<WixVariable Id="WixUINewIco" Value="icon.ico" />
+		<WixVariable Id="WixUIUpIco" Value="icon.ico" />
+	    
+		<MajorUpgrade DowngradeErrorMessage="A newer version of HotWallet is already installed." />
+		
+		<Media Id='1' Cabinet="hwc.CAB" CompressionLevel="high" EmbedCab="yes" />
+
+		<Icon Id="proglogo.exe" SourceFile="icon.ico" />				
+		
+		<Feature Id='Complete' Level='1'>
+			<ComponentRef Id='MainExecutable' />
+			<ComponentRef Id='ProgramMenuDir' />
+		</Feature>
+
+		<UI>
+			<UIRef Id="WixUI_Minimal" />
+			<Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchApplication">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed</Publish>
+		</UI>
+		
+		<Property Id="ARPPRODUCTICON" Value="proglogo.exe" />
+		
+		<Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1"/>
+		<Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch the CryptoExtensions HotWallet" />
+		<Property Id="WixShellExecTarget" Value="[#HWEXE]" />
+		<CustomAction Id="LaunchApplication" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" />
+
+	</Product>
+	
+	<Fragment>
+		<Directory Id='TARGETDIR' Name='SourceDir'>
+			<Directory Id='ProgramFilesFolder' Name='PFiles'>
+				<Directory Id='INSTALLDIRROOT' Name='CryptoExtensions'>
+					<Component Id='MainExecutable' Guid='3af7a3be-274f-11e9-ab14-d663bd873d93'>
+						<File Id='HWEXE' Name='BurstHotWallet.exe' DiskId='1' Source='Release\BurstHotWallet.exe' KeyPath='yes'>
+							<Shortcut Id="startmenuBLM" Directory="ProgramMenuDir" Name="CryptoExtensions HotWallet" WorkingDirectory='INSTALLDIR' Icon="proglogo.exe" IconIndex="0" Advertise="yes" />
+							<Shortcut Id="desktopBLM" Directory="DesktopFolder" Name="CryptoExtensions HotWallet" WorkingDirectory='INSTALLDIR' Icon="proglogo.exe" IconIndex="0" Advertise="yes" />
+						</File>
+					</Component>
+				</Directory>
+			</Directory>			
+			<Directory Id="ProgramMenuFolder" Name="Programs">
+				<Directory Id="ProgramMenuDir" Name="CryptoExtensions">
+					<Component Id="ProgramMenuDir" Guid="511566b8-274f-11e9-ab14-d663bd873d93">
+						<RemoveFolder Id='ProgramMenuDir' On='uninstall' />
+						<RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]' Type='string' Value='' KeyPath='yes' />
+					</Component>
+				</Directory>
+			</Directory>
+			<Directory Id="DesktopFolder" Name="Desktop" />
+		</Directory>
+	</Fragment>
+</Wix>

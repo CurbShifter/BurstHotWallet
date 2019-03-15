@@ -44,7 +44,11 @@ public:
 
 	void SetNode(const String address) override;
 	void SetSecretPhrase(const String pp) override;
+	void SetForceSSL_TSL(const bool forceSSLOn) override;
+	void SetNodeHop(const bool hopOn) override;
 	void Refresh() override;
+
+	void ResetPriceTimer();
 
 	void SetCMCkey(const String key) override;
 	void SetCurrencyType(const String currency) override;
@@ -91,8 +95,8 @@ public:
 	int GetCacheSize();
 	void ClearCache();
 
-	void GetPrice(String &currency, String &price);
-	void SetPrice(String currency, String price);
+	void GetPrice(String &currency, double &price);
+	void SetPrice(String currency, double price);
 	String NeatNr(const String balance);
 	
 	void ExportCSV();
@@ -106,6 +110,7 @@ private:
 	ScopedPointer<FileLogger> txlog;
 	Array<int> sortedRowIndex;
 	CriticalSection tldLock;
+	CriticalSection burstExtLock;
 	BurstExt burstKit;
 	uint64 cachedTimestamp;
 	int sortColumnId;
@@ -119,16 +124,18 @@ private:
 	String currentCurrencyType;
 
 	String currency;
-	String price;
+	double price;
 
 	String currency_cache;
-	String price_cache;
+	double price_cache;
 	HashMap<String, String> txMap;
 
 
 	Array<txDetails> txDetailArrayCache;
 	Array<txDetails> txDetailArray;
 	txDetails FillTxStruct(String txDetailsStr);
+	String GetAccountDisplayName(const String account);
+	HashMap<String, String> displayNames;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TransactionsComponent)
 };
