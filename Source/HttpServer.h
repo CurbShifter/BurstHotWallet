@@ -13,7 +13,7 @@
 //
 //------------------------------------------------------------------------------
 
-#if NO_BEAST != 1
+#if BEAST_SERVER == 1
 
 //#include <boost/beast.hpp>
 //#include <boost/container/detail/workaround.hpp>

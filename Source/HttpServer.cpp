@@ -5,7 +5,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 // Official repository: https://github.com/boostorg/beast
 
-#if NO_BEAST != 1
+#if BEAST_SERVER == 1
 
 #include "HttpServer.h"
 

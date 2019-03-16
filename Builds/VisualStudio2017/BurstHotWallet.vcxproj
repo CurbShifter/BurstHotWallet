@@ -145,7 +145,9 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\BalanceComponent.cpp" />
     <ClCompile Include="..\..\Source\HttpServer.cpp" />
+    <ClCompile Include="..\..\Source\ShoutComponent.cpp" />
     <ClCompile Include="..\..\Source\TransactionsComponent.cpp" />
     <ClCompile Include="..\..\Source\AboutComponent.cpp" />
     <ClCompile Include="..\..\Source\HistoryComponent.cpp" />
@@ -235,7 +237,9 @@
     <ClCompile Include="..\..\JuceLibraryCode\juce_video.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\BalanceComponent.h" />
     <ClInclude Include="..\..\Source\HttpServer.h" />
+    <ClInclude Include="..\..\Source\ShoutComponent.h" />
     <ClInclude Include="..\..\Source\TransactionsComponent.h" />
     <ClInclude Include="..\..\Source\AboutComponent.h" />
     <ClInclude Include="..\..\Source\HistoryComponent.h" />

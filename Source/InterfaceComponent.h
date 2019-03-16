@@ -191,19 +191,19 @@ private:
 	String setupTX_msg;
 	bool setupTX_encrypted;
 
-#if NO_BEAST != 1
+#if BEAST_SERVER == 1
 	ScopedPointer<HttpServer> httpServer;
 #endif
 	void StopHttpServer()
 	{
-#if NO_BEAST != 1
+#if BEAST_SERVER == 1
 		httpServer = nullptr;
 #endif
 	}
 	void StartHttpServer()
 	{
 		setupTX = false;
-#if NO_BEAST != 1
+#if BEAST_SERVER == 1
 		httpServer = new HttpServer();
 
 		if (httpServer)

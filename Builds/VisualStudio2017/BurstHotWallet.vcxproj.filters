@@ -168,6 +168,12 @@
     <ClCompile Include="..\..\Source\HttpServer.cpp">
       <Filter>BurstHotWallet\Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\ShoutComponent.cpp">
+      <Filter>BurstHotWallet\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\BalanceComponent.cpp">
+      <Filter>BurstHotWallet\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\TransactionsComponent.h">
@@ -255,6 +261,13 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.h" />
     <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.h" />
+    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.h" />
+    <ClInclude Include="..\..\Source\ShoutComponent.h">
+      <Filter>BurstHotWallet\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\BalanceComponent.h">
+      <Filter>BurstHotWallet\Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Source\BurstHotWallet-icon.svg">
