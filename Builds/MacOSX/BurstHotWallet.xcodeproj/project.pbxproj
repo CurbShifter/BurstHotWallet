@@ -25,6 +25,8 @@
 		0247FC5333FE8FED5D7F8238 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 81DA7A34C174FA2EEDFD5DAB /* WebKit.framework */; };
 		047B5C25F57F1CF7DA8A06AA /* juce_video.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5444BEF0145849A5C3CEB9BE /* juce_video.mm */; };
 		082852EBE0973C3BF0712977 /* juce_audio_formats.mm in Sources */ = {isa = PBXBuildFile; fileRef = 878FE1FE041B05B9F9373D53 /* juce_audio_formats.mm */; };
+		0A610763223CFDC90090FB50 /* BalanceComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A61075F223CFDC90090FB50 /* BalanceComponent.cpp */; };
+		0A610764223CFDC90090FB50 /* ShoutComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A610761223CFDC90090FB50 /* ShoutComponent.cpp */; };
 		0A7A843B0F17FEBACD108814 /* RecentFilesMenuTemplate.nib in Resources */ = {isa = PBXBuildFile; fileRef = 7766EDA5503E7F00DDA801A5 /* RecentFilesMenuTemplate.nib */; };
 		0ABE5C252A181614E45FC81B /* juce_graphics.mm in Sources */ = {isa = PBXBuildFile; fileRef = CFFFC1BEDAE85CC4C6302029 /* juce_graphics.mm */; };
 		0AC49C942208B77700652E77 /* HttpServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0AC49C922208B77700652E77 /* HttpServer.cpp */; };
@@ -79,6 +81,11 @@
 		05C661EF66464D4AF0D08450 /* BurstHotWallet-icon.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = "BurstHotWallet-icon.svg"; path = "../../Source/BurstHotWallet-icon.svg"; sourceTree = SOURCE_ROOT; };
 		081472194E3480AEF67B4FD3 /* juce_audio_devices.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = juce_audio_devices.mm; path = ../../JuceLibraryCode/juce_audio_devices.mm; sourceTree = SOURCE_ROOT; };
 		096B2DC8D34DB4DE25A64E7E /* SendComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SendComponent.h; path = ../../Source/SendComponent.h; sourceTree = SOURCE_ROOT; };
+		0A61075F223CFDC90090FB50 /* BalanceComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BalanceComponent.cpp; path = ../../Source/BalanceComponent.cpp; sourceTree = "<group>"; };
+		0A610760223CFDC90090FB50 /* BalanceComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BalanceComponent.h; path = ../../Source/BalanceComponent.h; sourceTree = "<group>"; };
+		0A610761223CFDC90090FB50 /* ShoutComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ShoutComponent.cpp; path = ../../Source/ShoutComponent.cpp; sourceTree = "<group>"; };
+		0A610762223CFDC90090FB50 /* ShoutComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ShoutComponent.h; path = ../../Source/ShoutComponent.h; sourceTree = "<group>"; };
+		0A610765223D1B590090FB50 /* Version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Version.h; path = ../../Source/Version.h; sourceTree = "<group>"; };
 		0AC49C922208B77700652E77 /* HttpServer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = HttpServer.cpp; path = ../../Source/HttpServer.cpp; sourceTree = "<group>"; };
 		0AC49C932208B77700652E77 /* HttpServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HttpServer.h; path = ../../Source/HttpServer.h; sourceTree = "<group>"; };
 		0AC49C952208F87800652E77 /* libboost_system.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_system.a; path = ../../../../../Libs/boost_1_67_0/stage/lib/libboost_system.a; sourceTree = "<group>"; };
@@ -240,6 +247,11 @@
 		5A2025BF573CF1806B039DDE /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				0A610765223D1B590090FB50 /* Version.h */,
+				0A61075F223CFDC90090FB50 /* BalanceComponent.cpp */,
+				0A610760223CFDC90090FB50 /* BalanceComponent.h */,
+				0A610761223CFDC90090FB50 /* ShoutComponent.cpp */,
+				0A610762223CFDC90090FB50 /* ShoutComponent.h */,
 				0AC49C922208B77700652E77 /* HttpServer.cpp */,
 				0AC49C932208B77700652E77 /* HttpServer.h */,
 				05C661EF66464D4AF0D08450 /* BurstHotWallet-icon.svg */,
@@ -472,7 +484,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -ex\n\n[ \"$ACTION\" = build ] || exit 0\n[ \"$BUILD_VARIANTS\" = \"normal\" ] || exit 0\n\nPRONAME=BurstHotWallet\n\ndir=\"/Volumes/$PRONAME\"\ndmg=\"$OBJROOT/../$PRONAME.dmg\"\n\ndmgTemplate=\"$PROJECT_DIR/DMG-template/$PRONAME.sparseimage\"\ndmgTemplateTemp=\"$PROJECT_DIR/DMG-template/$PRONAME-temp.sparseimage\"\n\ndmgTemp=\"$CONFIGURATION_BUILD_DIR/../../$PROJECT_NAMETEMP.dmg\"\ndmgcontents=\"$CONFIGURATION_BUILD_DIR/../dmg-contents\"\n\nrm -f \"$dmgTemplateTemp\"\ncp -R \"$dmgTemplate\" \"$dmgTemplateTemp\"\n\ntheapp=\"$PROJECT_DIR/build/Release/$PRONAME.app\"\n#strip -x \"$theapp/Contents/MacOS/$PRONAME\"\n\nrm -f \"$dmg\"\n\nhdiutil mount \"$dmgTemplateTemp\"\n\ncp -R \"$theapp\" \"$dir\"\n\nln -s \"/Applications/\" \"$dir/Applications\"\n\nhdiutil detach \"$dir\"\n\nthedmgfile=\"$PROJECT_DIR/$PRONAME.dmg\"\nrm -f $thedmgfile\nhdiutil convert \"$dmgTemplateTemp\" -format UDZO -o $thedmgfile\nhdiutil internet-enable -yes $thedmgfile\n\nrm -rf \"$dir\"\nrm -rf \"$dmgTemplateTemp\"\n";
+			shellScript = "set -ex\n\n[ \"$ACTION\" = build ] || exit 0\n[ \"$BUILD_VARIANTS\" = \"normal\" ] || exit 0\n\nPRONAME=BurstHotWallet\n\ndir=\"/Volumes/$PRONAME 2\"\ndmg=\"$OBJROOT/../$PRONAME.dmg\"\n\ndmgTemplate=\"$PROJECT_DIR/DMG-template/$PRONAME.sparseimage\"\ndmgTemplateTemp=\"$PROJECT_DIR/DMG-template/$PRONAME-temp.sparseimage\"\n\ndmgTemp=\"$CONFIGURATION_BUILD_DIR/../../$PROJECT_NAMETEMP.dmg\"\ndmgcontents=\"$CONFIGURATION_BUILD_DIR/../dmg-contents\"\n\nrm -f \"$dmgTemplateTemp\"\ncp -R \"$dmgTemplate\" \"$dmgTemplateTemp\"\n\ntheapp=\"$PROJECT_DIR/build/Release/$PRONAME.app\"\n#strip -x \"$theapp/Contents/MacOS/$PRONAME\"\n\nrm -f \"$dmg\"\n\nhdiutil mount \"$dmgTemplateTemp\"\n\ncp -R \"$theapp\" \"$dir\"\n\nln -s \"/Applications/\" \"$dir/Applications\"\n\nhdiutil detach \"$dir\"\n\nthedmgfile=\"$PROJECT_DIR/$PRONAME.dmg\"\nrm -f $thedmgfile\nhdiutil convert \"$dmgTemplateTemp\" -format UDZO -o $thedmgfile\nhdiutil internet-enable -yes $thedmgfile\n\nrm -rf \"$dir\"\nrm -rf \"$dmgTemplateTemp\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -493,8 +505,10 @@
 				3BC2D4C6523837DA2481841F /* Main.cpp in Sources */,
 				CE3B98C0C575572AC9A1C326 /* BinaryData.cpp in Sources */,
 				C5F1CA4E17CD7DFCB1DE11CD /* juce_audio_basics.mm in Sources */,
+				0A610763223CFDC90090FB50 /* BalanceComponent.cpp in Sources */,
 				37D7EB663DCCCE2385DC3542 /* juce_audio_devices.mm in Sources */,
 				082852EBE0973C3BF0712977 /* juce_audio_formats.mm in Sources */,
+				0A610764223CFDC90090FB50 /* ShoutComponent.cpp in Sources */,
 				2E15DE1E3FE8D1854EEC24B9 /* juce_audio_processors.mm in Sources */,
 				E450CAC010768A1DE961C06B /* juce_core.mm in Sources */,
 				EBA12396437E040F0E36A810 /* juce_cryptography.mm in Sources */,
@@ -663,6 +677,7 @@
 				0AC49C9922091F2800652E77 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
 		};
 		AB651DA2EE7AE2CFD21DFCF1 /* Build configuration list for PBXNativeTarget "BurstHotWallet (App)" */ = {
 			isa = XCConfigurationList;

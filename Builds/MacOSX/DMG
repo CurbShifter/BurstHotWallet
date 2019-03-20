@@ -12,6 +12,7 @@ svn update $BASEDIR/../../..
 
 cd $BASEDIR
 
+: `
 #-----------------------------
 # revision update
 versionTemplateFile=$BASEDIR/../../Source/VersionTemplate.h
@@ -65,12 +66,13 @@ fullTxt=$(cat $versionTemplateFile2)
 endTxt="${fullTxt/\$WCREV\$/$rev}"
 echo "$endTxt" > $versionFile2
 #-----------------------------
+`
 /usr/bin/xcodebuild -target "DMG" -configuration Release clean build
 #----- DMG
 
 cd $BASEDIR/../../..
 
-svn commit -m "OSX"
+#svn commit -m "OSX"
 
 echo ———————————————————————-
 echo ELAPSED TIME: $(($SECONDS / 60)) min $(($SECONDS % 60)) sec
