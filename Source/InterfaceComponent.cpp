@@ -816,7 +816,24 @@ void InterfaceComponent::SendHotWalletLicense(const String recipient)
 	GetAccountDisplayName(0, recipient, dispName);
 	if (NativeMessageBox::showOkCancelBox(AlertWindow::QuestionIcon, ProjectInfo::projectName, "Send license to " + dispName + " ?"))
 	{
-		String assetID = "13269126541312011129";// testnet hotwallet asset 13269126541312011129
+		String assetID;
+		if (assetID.isEmpty())
+		{ // find the HotWallet asset
+			String assetsByCurb = burstExt.getAssetsByIssuer(burstExt.ensureAccountID("HotWallet"));
+			var assetsByCurbJson;
+			Result r = JSON::parse(assetsByCurb, assetsByCurbJson);
+			if (assetsByCurbJson["assets"].isArray() && assetsByCurbJson["assets"][0].isArray())
+			{
+				for (int i = 0; i < assetsByCurbJson["assets"][0].size(); i++)
+				{
+					if (assetsByCurbJson["assets"][0][i]["name"].toString().compareIgnoreCase("HotWallet") == 0)
+					{
+						assetID = assetsByCurbJson["assets"][0][i]["asset"].toString();
+						assetIDNumberOfAccounts = (int64)assetsByCurbJson["assets"][0][i]["numberOfAccounts"];
+					}
+				}
+			}
+		}
 
 		String transferAssetResp = burstExt.transferAsset(recipient, assetID, "1", "normal", "1440", true, 0);
 		String transactionID = burstExt.GetJSONvalue(transferAssetResp, "transaction");

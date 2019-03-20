@@ -90,7 +90,7 @@ public:
 		var value[11];
 	};
 
-	TransactionsComponent::txDetails TransactionsComponent::GetCache(int i);
+	TransactionsComponent::txDetails GetCache(int i);
 	void SetCache(Array<TransactionsComponent::txDetails> txds);
 	int GetCacheSize();
 	void ClearCache();
@@ -129,6 +129,9 @@ private:
 	String currency_cache;
 	double price_cache;
 	HashMap<String, String> txMap;
+
+	String NQT2Burst(const String value);
+	String Burst2NQT(const String value);
 
 
 	Array<txDetails> txDetailArrayCache;

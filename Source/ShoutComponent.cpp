@@ -222,10 +222,12 @@ void ShoutComponent::timerCallback()
 void ShoutComponent::run()
 {
 	String account;
+	String accountID;
 	String timestamp;
 	{
 		const ScopedLock lock(burstExtLock);
-		account = (burstExt.ensureAccountRS(SHOUT_ADDRESS)); // is the account ID
+		account = (burstExt.ensureAccountRS(SHOUT_ADDRESS)); // is the account RS
+		accountID = (burstExt.ensureAccountID(account)); // is the account ID
 		timestamp = String((Time::currentTimeMillis() / 1000) - BURSTCOIN_GENESIS_EPOCH - (60 * 60 * 24)); // is the earliest block(in seconds since the genesis block) to retrieve(optional)
 	}
 
@@ -254,13 +256,17 @@ void ShoutComponent::run()
 					int index = accountTransactionsJson[arrayName.toUTF8()].size() - 1 - i; // reverse order, bcz free token
 					if (accountTransactionsJson[arrayName.toUTF8()][index]["attachment"]["messageIsText"])
 					{
+					//	const String senderID = accountTransactionsJson[arrayName.toUTF8()][index]["sender"];
+						const String recipientID = accountTransactionsJson[arrayName.toUTF8()][index]["recipient"];
 						const String amountNQT = accountTransactionsJson[arrayName.toUTF8()][index]["amountNQT"].toString();
 						const String message = accountTransactionsJson[arrayName.toUTF8()][index]["attachment"]["message"].toString().trim();
 						const String timestamp = accountTransactionsJson[arrayName.toUTF8()][index]["timestamp"].toString();
-						if (message.isNotEmpty() && amountNQT.getLargeIntValue() >= freeTokenBase - freeToken)
+						if (message.isNotEmpty() && 
+							amountNQT.getLargeIntValue() >= freeTokenBase - freeToken && 
+							accountID.compare(recipientID) == 0) // only incoming tx
 						{
 							shout s;
-							s.message = message.startsWith(SHOUT_PREFIX) ? message.substring(String(SHOUT_PREFIX).length()) : message;
+							s.message = message.startsWith(SHOUT_PREFIX) ? message.substring(String(SHOUT_PREFIX).length()) : String::empty;
 							s.amountNQT = (uint64)amountNQT.getLargeIntValue();
 							s.alivetime = (Time::currentTimeMillis() / 1000) - ((uint64)timestamp.getLargeIntValue() + BURSTCOIN_GENESIS_EPOCH);
 

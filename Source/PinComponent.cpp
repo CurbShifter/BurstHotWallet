@@ -591,6 +591,7 @@ void PinComponent::buttonClicked (Button* buttonThatWasClicked)
     {
         //[UserButtonCode_savePassPhraseButton] -- add your button handler code here..
 		setViewMode(4);
+		passPhraseTextEditor->clear();
         //[/UserButtonCode_savePassPhraseButton]
     }
     else if (buttonThatWasClicked == newButton)

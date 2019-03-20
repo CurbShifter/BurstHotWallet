@@ -98,8 +98,11 @@ void TransactionsComponent::SetSecretPhrase(String pp)
 	burstKit.SetSecretPhrase(pp, 0);
 
 	const File logFileToWriteTo(File::getSpecialLocation(File::SpecialLocationType::userDocumentsDirectory).getChildFile(ProjectInfo::projectName).getChildFile(burstKit.GetAccountRS()).withFileExtension("txlog"));
-	if (!txlog && logFileToWriteTo.getFullPathName().isNotEmpty())
+	if (logFileToWriteTo.getFullPathName().isNotEmpty())
+	{
+		txlog = nullptr; // delete any previous on account switch
 		txlog = new FileLogger(logFileToWriteTo, "", (1000 * 1000) * 100);
+	}
 }
 
 void TransactionsComponent::SetForceSSL_TSL(const bool forceSSLOn)
@@ -551,7 +554,7 @@ void TransactionsComponent::run()
 		{
 			var cacheRowJSON;
 			const String line = lines[i];
-			if (line.isNotEmpty() && line.startsWithChar('{') && line.endsWithChar('}'))
+			if (line.isNotEmpty() && line.startsWithChar('{') && line.endsWithChar('}') && line.contains("Calculated balance change") == false)
 			{
 				juce::Result r = JSON::parse(lines[i], cacheRowJSON);
 
@@ -590,7 +593,7 @@ void TransactionsComponent::run()
 			juce::Result r = JSON::parse(state, stateJSON);
 			numberOfBlocks = stateJSON.getProperty("numberOfBlocks", String::empty).toString().getLargeIntValue();
 		}
-		accountTransactionIds = burstKit.getAccountTransactionIds(burstKit.GetAccountRS(), timestamp);
+		accountTransactionIds = burstKit.getAccountTransactionIds(burstKit.GetAccountRS(), timestamp, String::empty, String::empty, String::empty, String::empty, String::empty, true);
 	}
 
 	var accountTransactionIdsJSON;
@@ -652,7 +655,7 @@ void TransactionsComponent::run()
 			txDetails txd = FillTxStruct(txIdDetails);
 
 			txds.add(txd);
-			txlog->logMessage(txIdDetails);
+		//	txlog->logMessage(txIdDetails); // dont log these. not needed since BRS 2.3.1
 		}
 
 		const String accountID = burstKit.GetAccountID();
@@ -722,7 +725,7 @@ TransactionsComponent::txDetails TransactionsComponent::FillTxStruct(String txDe
 		const String senderID = txIdDetailsJSON["sender"];
 		const String recipientID = txIdDetailsJSON["recipient"];
 
-		if (accountID.compare(senderID) == 0 || accountID.compare(recipientID) == 0) // filter out tx not to or from this account
+		if (accountID.compare(senderID) == 0 || accountID.compare(recipientID) == 0 || recipientID.isEmpty()) // filter out tx not to or from this account. or empty recipientID if multiout receive
 		{
 			txDetail.value[0] = txIdDetailsJSON["timestamp"].toString();
 			{
@@ -758,7 +761,19 @@ TransactionsComponent::txDetails TransactionsComponent::FillTxStruct(String txDe
 			}
 			else if ((int)(txIdDetailsJSON["attachment"]["version.MultiOutCreation"]) == 1)
 			{
-				txDetail.value[1] = "Multi Out";
+				if (txIdDetailsJSON["attachment"]["recipients"] && txIdDetailsJSON["attachment"]["recipients"].isArray())
+				{
+					String msg;
+					for (int itt = 0; itt < txIdDetailsJSON["attachment"]["recipients"].size(); itt++)
+					{
+						msg += GetAccountDisplayName(txIdDetailsJSON["attachment"]["recipients"][itt][0].toString()) + ":" + 
+							NQT2Burst(txIdDetailsJSON["attachment"]["recipients"][itt][1].toString()) + " BURST ";
+
+						if (senderID.compare(accountID) != 0 && txIdDetailsJSON["attachment"]["recipients"][itt][0].toString().compare(accountID) == 0) // incoming multiout
+							txDetail.value[2] = txIdDetailsJSON["attachment"]["recipients"][itt][1].toString(); // we founf the incoming amount. override the total amount
+					}
+					txDetail.value[4] = "MultiOut " + msg;
+				}
 			}
 			else if ((int)(txIdDetailsJSON["attachment"]["version.AssetIssuance"]) == 1)
 			{ //"type":2,"subtype":0
@@ -930,6 +945,29 @@ String TransactionsComponent::ConvertedValue(String balance)
 	}
 
 	return r;
+}
+
+String TransactionsComponent::NQT2Burst(const String value)
+{
+	bool minus = value.startsWithChar('-');
+	String neatNr(value.removeCharacters("-").paddedLeft('0', 9));
+	neatNr = (neatNr.substring(0, neatNr.length() - 8) + "." + neatNr.substring(neatNr.length() - 8, neatNr.length()).trimCharactersAtEnd("0"));
+	return minus ? "-" + neatNr : neatNr;
+}
+
+String TransactionsComponent::Burst2NQT(const String value)
+{
+	int64 amountNQT = 0;
+	String amount = value.trim().retainCharacters("0123456789.,");
+	int point = amount.indexOfAnyOf(".,");
+	if (point < 0)
+		amountNQT = amount.retainCharacters("0123456789").getLargeIntValue() * 100000000L;
+	else
+	{
+		amountNQT = amount.substring(0, point).getLargeIntValue() * 100000000L;
+		amountNQT += amount.substring(point + 1, amount.length()).retainCharacters("0123456789").paddedRight('0', 8).substring(0, 8).getLargeIntValue();
+	}
+	return String(amountNQT);
 }
 
 
