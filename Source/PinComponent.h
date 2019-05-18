@@ -60,6 +60,8 @@ public:
 	void SavePassPhrase();
 	void setViewMode(const int mode, const String passPhrase = String::empty);
 
+	void CheckPassPhrase();
+
 	String NewPassPhrase();
     //[/UserMethods]
 
@@ -84,8 +86,12 @@ private:
 	bool importOn;
 	bool savePinOn;
 	bool unlockOn;
+	bool checkOn;	
 
 	BurstKit burstKit;
+
+	bool failedWordCheck;
+	int checkIter;
     //[/UserVariables]
 
     //==============================================================================
@@ -119,6 +125,9 @@ private:
     ScopedPointer<Label> enterAddressLabel;
     ScopedPointer<TextButton> newButton;
     ScopedPointer<TextButton> backToStartButton;
+    ScopedPointer<TextEditor> checkTextEditor;
+    ScopedPointer<Label> checkHeaderLabel;
+    ScopedPointer<TextButton> checkButton;
     ScopedPointer<Drawable> drawable1;
     ScopedPointer<Drawable> drawable2;
 

@@ -42,6 +42,8 @@ TransactionsComponent::TransactionsComponent() : Thread("Transactions")
 	table.getVerticalScrollBar()->setAutoHide(false);
 	table.setColour(TableListBox::ColourIds::backgroundColourId, Colour(0xfffcfcfc));
 
+	table.getHeader().setSortColumnId(1, false);
+
 	addAndMakeVisible(table);
 
 	table.autoSizeAllColumns();
@@ -54,7 +56,7 @@ TransactionsComponent::TransactionsComponent() : Thread("Transactions")
 
 	latestCMCtimestamp = (Time::currentTimeMillis() / 1000) - 120;
 
-	startTimer(1000);
+	startTimer(2000);
 }
 
 TransactionsComponent::~TransactionsComponent()
@@ -408,7 +410,11 @@ bool TransactionsComponent::keyStateChanged(bool /*isKeyDown*/, Component * /*or
 void TransactionsComponent::timerCallback()
 {
 	if (isThreadRunning())
+	{
 		triggerRefresh = true;
+		table.updateContent();
+		repaint();
+	}
 	else if (triggerRefresh)
 	{
 		triggerRefresh = false;
@@ -420,11 +426,11 @@ void TransactionsComponent::timerCallback()
 	{
 		autoRefreshCounter = 0;
 		Refresh();
-		repaint();
 	}
+
 	
 	String currency_read;
-	double price_read;
+	double price_read = 0.;
 	GetPrice(currency_read, price_read);
 	if (currency_read.compare(currency_cache) != 0 || price_read > 0.)
 	{
@@ -464,7 +470,8 @@ void TransactionsComponent::GetPrice(String &currency, double &price)
 void TransactionsComponent::SetCache(Array<TransactionsComponent::txDetails> txds)
 {
 	const ScopedLock lock(tldLock);
-	txDetailArray.swapWith(txds);
+	if (txds.size() >= txDetailArray.size())
+		txDetailArray.swapWith(txds);
 }
 
 void TransactionsComponent::ClearCache()
@@ -550,29 +557,32 @@ void TransactionsComponent::run()
 	{ // load cache
 		StringArray lines;
 		txlog->getLogFile().readLines(lines);
-		for (int i = 0; i < lines.size() && !threadShouldExit(); i++)
+		for (int i = lines.size() - 1; i >= 0 && !threadShouldExit(); i--)
 		{
 			var cacheRowJSON;
 			const String line = lines[i];
 			if (line.isNotEmpty() && line.startsWithChar('{') && line.endsWithChar('}') && line.contains("Calculated balance change") == false)
 			{
 				juce::Result r = JSON::parse(lines[i], cacheRowJSON);
-
-				txDetails txDetail = FillTxStruct(line);
-				if (knownTx.contains(txDetail.value[6].toString()) == false && txDetail.value[0].toString().isNotEmpty())
+				if (r.wasOk())
 				{
-					const String amountNQTstr = txDetail.value[2].toString();
-					bool minus = amountNQTstr.startsWithChar('-');
-					int64 amountNQT = amountNQTstr.getLargeIntValue();
-					calculatedBalance += amountNQT;
-					if (minus)
+					txDetails txDetail = FillTxStruct(line);
+					if (knownTx.contains(txDetail.value[6].toString()) == false && txDetail.value[0].toString().isNotEmpty())
 					{
-						int64 feeNQT = txDetail.value[3].toString().getLargeIntValue();
-						calculatedBalance -= feeNQT;
+						const String amountNQTstr = txDetail.value[2].toString();
+						bool minus = amountNQTstr.startsWithChar('-');
+						int64 amountNQT = amountNQTstr.getLargeIntValue();
+						calculatedBalance += amountNQT;
+						if (minus)
+						{
+							int64 feeNQT = txDetail.value[3].toString().getLargeIntValue();
+							calculatedBalance -= feeNQT;
+						}
+
+						txds.add(txDetail);
+						knownTx.add(txDetail.value[6].toString()); // save tx id
+						SetCache(txds);
 					}
-					
-					txds.add(txDetail);
-					knownTx.add(txDetail.value[6].toString()); // save tx id
 				}
 			}
 		}
@@ -580,7 +590,7 @@ void TransactionsComponent::run()
 
 	String timestamp; // is the earliest block(in seconds since the genesis block) to retrieve(optional) 
 	if (cachedTimestamp > 0)
-		timestamp = String(timestamp);
+		timestamp = String(cachedTimestamp);
 	
 	String accountTransactionIds;
 	{
@@ -591,7 +601,8 @@ void TransactionsComponent::run()
 			String state = burstKit.getState("true");
 			var stateJSON;
 			juce::Result r = JSON::parse(state, stateJSON);
-			numberOfBlocks = stateJSON.getProperty("numberOfBlocks", String::empty).toString().getLargeIntValue();
+			if (r.wasOk())
+				numberOfBlocks = stateJSON.getProperty("numberOfBlocks", String::empty).toString().getLargeIntValue();
 		}
 		accountTransactionIds = burstKit.getAccountTransactionIds(burstKit.GetAccountRS(), timestamp, String::empty, String::empty, String::empty, String::empty, String::empty, true);
 	}
@@ -614,6 +625,9 @@ void TransactionsComponent::run()
 				}
 				txDetails txd = FillTxStruct(txIdDetails);
 				txds.add(txd);
+				SetCache(txds);
+
+				cachedTimestamp = jmax<int>(cachedTimestamp, txd.value[0].toString().getLargeIntValue() - 1);
 
 				const String amountNQTstr = txd.value[2].toString();
 				bool minus = amountNQTstr.startsWithChar('-');
@@ -655,7 +669,8 @@ void TransactionsComponent::run()
 			txDetails txd = FillTxStruct(txIdDetails);
 
 			txds.add(txd);
-		//	txlog->logMessage(txIdDetails); // dont log these. not needed since BRS 2.3.1
+			SetCache(txds);
+			//	txlog->logMessage(txIdDetails); // dont log these. not needed since BRS 2.3.1
 		}
 
 		const String accountID = burstKit.GetAccountID();
@@ -743,57 +758,59 @@ TransactionsComponent::txDetails TransactionsComponent::FillTxStruct(String txDe
 
 			txDetail.value[3] = (txIdDetailsJSON["feeNQT"]);
 
-			if ((int)(txIdDetailsJSON["attachment"]["version.EncryptedMessage"]) == 1)
+			const var attachment = txIdDetailsJSON["attachment"];
+
+			if ((int)(attachment["version.EncryptedMessage"]) == 1)
 			{
-				const String data(txIdDetailsJSON["attachment"]["encryptedMessage"]["data"].toString()); // is the AES-encrypted data
-				const String nonce(txIdDetailsJSON["attachment"]["encryptedMessage"]["nonce"].toString()); // is the unique nonce associated with the encrypted data
-				if ((bool)txIdDetailsJSON["attachment"]["encryptedMessage"]["isText"] == true)
+				const String data(attachment["encryptedMessage"]["data"].toString()); // is the AES-encrypted data
+				const String nonce(attachment["encryptedMessage"]["nonce"].toString()); // is the unique nonce associated with the encrypted data
+				if ((bool)attachment["encryptedMessage"]["isText"] == true)
 					txDetail.value[4] = burstKit.decryptFrom(txIdDetailsJSON["senderRS"], data, nonce, "true");
 			}
-			else if ((int)(txIdDetailsJSON["attachment"]["version.Message"]) == 1)
+			else if ((int)(attachment["version.Message"]) == 1)
 			{
-				if (txIdDetailsJSON["attachment"]["messageIsText"])
-					txDetail.value[4] = txIdDetailsJSON["attachment"]["message"];
+				if (attachment["messageIsText"])
+					txDetail.value[4] = attachment["message"];
 			}
-			else if ((int)(txIdDetailsJSON["attachment"]["version.AliasAssignment"]) == 1)
+			else if ((int)(attachment["version.AliasAssignment"]) == 1)
 			{
 				txDetail.value[1] = "Alias Assignment";
 			}
-			else if ((int)(txIdDetailsJSON["attachment"]["version.MultiOutCreation"]) == 1)
+			else if ((int)(attachment["version.MultiOutCreation"]) == 1)
 			{
-				if (txIdDetailsJSON["attachment"]["recipients"] && txIdDetailsJSON["attachment"]["recipients"].isArray())
+				if (attachment["recipients"] && attachment["recipients"].isArray())
 				{
 					String msg;
-					for (int itt = 0; itt < txIdDetailsJSON["attachment"]["recipients"].size(); itt++)
+					for (int itt = 0; itt < attachment["recipients"].size(); itt++)
 					{
-						msg += GetAccountDisplayName(txIdDetailsJSON["attachment"]["recipients"][itt][0].toString()) + ":" + 
-							NQT2Burst(txIdDetailsJSON["attachment"]["recipients"][itt][1].toString()) + " BURST ";
+						msg += GetAccountDisplayName(attachment["recipients"][itt][0].toString()) + ":" + 
+							NQT2Burst(attachment["recipients"][itt][1].toString()) + " BURST ";
 
-						if (senderID.compare(accountID) != 0 && txIdDetailsJSON["attachment"]["recipients"][itt][0].toString().compare(accountID) == 0) // incoming multiout
-							txDetail.value[2] = txIdDetailsJSON["attachment"]["recipients"][itt][1].toString(); // we founf the incoming amount. override the total amount
+						if (senderID.compare(accountID) != 0 && attachment["recipients"][itt][0].toString().compare(accountID) == 0) // incoming multiout
+							txDetail.value[2] = attachment["recipients"][itt][1].toString(); // we founf the incoming amount. override the total amount
 					}
 					txDetail.value[4] = "MultiOut " + msg;
 				}
 			}
-			else if ((int)(txIdDetailsJSON["attachment"]["version.AssetIssuance"]) == 1)
+			else if ((int)(attachment["version.AssetIssuance"]) == 1)
 			{ //"type":2,"subtype":0
-				txDetail.value[1] = "Asset Issuance " + txIdDetailsJSON["attachment"]["name"].toString();
+				txDetail.value[1] = "Asset Issuance " + attachment["name"].toString();
 			}
-			else if ((int)(txIdDetailsJSON["attachment"]["version.AskOrderPlacement"]) == 1)
+			else if ((int)(attachment["version.AskOrderPlacement"]) == 1)
 			{//"type":2,"subtype":2
 				txDetail.value[1] = "Ask Order Placement";
 			}
-			else if ((int)(txIdDetailsJSON["attachment"]["version.BidOrderPlacement"]) == 1)
+			else if ((int)(attachment["version.BidOrderPlacement"]) == 1)
 			{//"type":2,"subtype":3
 				txDetail.value[1] = "Bid Order Placement";
 			}
-			else if ((int)(txIdDetailsJSON["attachment"]["version.AssetTransfer"]) == 1)
+			else if ((int)(attachment["version.AssetTransfer"]) == 1)
 			{//"type":2,"subtype":3
-				String assetJsonStr = burstKit.getAsset(txIdDetailsJSON["attachment"]["asset"].toString());
+				String assetJsonStr = burstKit.getAsset(attachment["asset"].toString());
 				var assetJson;
-				Result r = JSON::parse(assetJsonStr, assetJson);
-				txDetail.value[4] = "Asset " + assetJson["name"].toString();
-				
+				Result r2 = JSON::parse(assetJsonStr, assetJson);
+				if (r2.wasOk())
+					txDetail.value[4] = "Asset " + assetJson["name"].toString();
 			}
 
 			txDetail.value[5] = txIdDetailsJSON["confirmations"];

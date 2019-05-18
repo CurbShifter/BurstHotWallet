@@ -256,12 +256,39 @@ PinComponent::PinComponent ()
     backToStartButton->setColour (TextButton::buttonColourId, Colour (0xffbebebe));
     backToStartButton->setColour (TextButton::buttonOnColourId, Colour (0xff8d8d8d));
 
+    addAndMakeVisible (checkTextEditor = new TextEditor ("checkTextEditor"));
+    checkTextEditor->setMultiLine (false);
+    checkTextEditor->setReturnKeyStartsNewLine (false);
+    checkTextEditor->setReadOnly (false);
+    checkTextEditor->setScrollbarsShown (true);
+    checkTextEditor->setCaretVisible (true);
+    checkTextEditor->setPopupMenuEnabled (true);
+    checkTextEditor->setText (String());
+
+    addAndMakeVisible (checkHeaderLabel = new Label ("checkHeaderLabel",
+                                                     TRANS("Copy check of your pass phrase. If incorrect you will return back to the new pass phrase creation.\n"
+                                                     "\n"
+                                                     "Only enter the _ word, and click next.")));
+    checkHeaderLabel->setFont (Font (18.00f, Font::plain));
+    checkHeaderLabel->setJustificationType (Justification::centred);
+    checkHeaderLabel->setEditable (false, false, false);
+    checkHeaderLabel->setColour (TextEditor::textColourId, Colour (0xffd2d2d2));
+    checkHeaderLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
+    addAndMakeVisible (checkButton = new TextButton ("checkButton"));
+    checkButton->setButtonText (TRANS("next"));
+    checkButton->addListener (this);
+    checkButton->setColour (TextButton::buttonColourId, Colour (0xff77b517));
+    checkButton->setColour (TextButton::buttonOnColourId, Colour (0xff77b517));
+    checkButton->setColour (TextButton::textColourOffId, Colours::white);
+
     drawable1 = Drawable::createFromImageData (burstHotWalletlogo_svg, burstHotWalletlogo_svgSize);
     drawable2 = Drawable::createFromImageData (burst_logo_white_svg, burst_logo_white_svgSize);
 
     //[UserPreSize]
 	pinInputTextEditor->addListener(this);
 	passPhraseTextEditor->addListener(this);
+	checkTextEditor->addListener(this);
 
     //[/UserPreSize]
 
@@ -277,6 +304,10 @@ PinComponent::PinComponent ()
 	importOn = false;
 	savePinOn = false;
 	unlockOn = false;
+	checkOn = false;
+
+	checkIter = 0;
+	failedWordCheck = false;
     //[/Constructor]
 }
 
@@ -315,6 +346,9 @@ PinComponent::~PinComponent()
     enterAddressLabel = nullptr;
     newButton = nullptr;
     backToStartButton = nullptr;
+    checkTextEditor = nullptr;
+    checkHeaderLabel = nullptr;
+    checkButton = nullptr;
     drawable1 = nullptr;
     drawable2 = nullptr;
 
@@ -405,9 +439,9 @@ void PinComponent::resized()
     textButton_0->setBounds (160, 608, 32, 24);
     pinInputTextEditor->setBounds (112, 472, 96, 24);
     newWalletLabel->setBounds (32, 16, 408, 32);
-    unlockButton->setBounds (96, 664, 176, 32);
-    saveButton->setBounds (376, 664, 208, 32);
-    ensurePinLabel->setBounds (328, 616, 320, 40);
+    unlockButton->setBounds (96, 640, 176, 32);
+    saveButton->setBounds (400, 616, 208, 32);
+    ensurePinLabel->setBounds (352, 568, 320, 40);
     textButton_10->setBounds (216, 472, 32, 24);
     passPhraseLabel->setBounds (32, 248, 408, 104);
     importantLabel->setBounds (32, 136, 408, 104);
@@ -422,6 +456,9 @@ void PinComponent::resized()
     enterAddressLabel->setBounds (464, 328, 232, 25);
     newButton->setBounds (136, 56, 80, 24);
     backToStartButton->setBounds (400, 56, 80, 24);
+    checkTextEditor->setBounds (40, 800, 320, 24);
+    checkHeaderLabel->setBounds (40, 688, 320, 104);
+    checkButton->setBounds (112, 832, 176, 32);
     //[UserResized] Add your own custom resize handling here..
 	*/
 
@@ -481,7 +518,10 @@ void PinComponent::resized()
 	unlockHeaderLabel->setBounds(r.withHeight(headerHeight).withSizeKeepingCentre(w, headerHeight));
 	unlockButton->setBounds(ensurePinLabel->getBounds());
 
-
+	// check
+	checkHeaderLabel->setBounds(r.reduced(40).withHeight(100));
+	checkTextEditor->setBounds(r.reduced(40).withTrimmedTop(120).withHeight(30));
+	checkButton->setBounds(r.reduced(40).withTrimmedTop(190).withHeight(50));
     //[/UserResized]
 }
 
@@ -584,8 +624,9 @@ void PinComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == copiedTextButton)
     {
         //[UserButtonCode_copiedTextButton] -- add your button handler code here..
-		setViewMode(4);
-        //[/UserButtonCode_copiedTextButton]
+		CheckPassPhrase();
+		setViewMode(6);
+		//[/UserButtonCode_copiedTextButton]
     }
     else if (buttonThatWasClicked == savePassPhraseButton)
     {
@@ -605,6 +646,12 @@ void PinComponent::buttonClicked (Button* buttonThatWasClicked)
         //[UserButtonCode_backToStartButton] -- add your button handler code here..
 		setViewMode(1);
         //[/UserButtonCode_backToStartButton]
+    }
+    else if (buttonThatWasClicked == checkButton)
+    {
+        //[UserButtonCode_checkButton] -- add your button handler code here..
+		CheckPassPhrase();
+        //[/UserButtonCode_checkButton]
     }
 
     //[UserbuttonClicked_Post]
@@ -641,6 +688,11 @@ void PinComponent::textEditorTextChanged(TextEditor &editor) //Called when the u
 
 void PinComponent::textEditorReturnKeyPressed(TextEditor &editor) //Called when the user presses the return key.
 {
+	if (checkTextEditor == &editor)
+	{
+		CheckPassPhrase();
+	}
+
 	if (pinInputTextEditor == &editor)
 	{
 		if (unlockButton->isVisible())
@@ -671,6 +723,7 @@ void PinComponent::setViewMode(const int mode, const String passPhrase)
 	importOn = false;
 	savePinOn = false;
 	unlockOn = false;
+	checkOn = false;
 
 	passPhraseLabel->setText(NewPassPhrase(), dontSendNotification);
 
@@ -683,7 +736,9 @@ void PinComponent::setViewMode(const int mode, const String passPhrase)
 	{
 		newOn = true;
 
-		burstKit.SetSecretPhrase(NewPassPhrase());
+		if (failedWordCheck == false)
+			burstKit.SetSecretPhrase(NewPassPhrase());
+		failedWordCheck = false;
 		passPhraseLabel->setText(burstKit.GetSecretPhraseString(), dontSendNotification);
 		addressLabel->setText(burstKit.GetAccountRS(), dontSendNotification);
 	}
@@ -702,6 +757,10 @@ void PinComponent::setViewMode(const int mode, const String passPhrase)
 	{
 		burstKit.SetSecretPhrase(String::empty);
 		unlockOn = true;
+	}
+	else if (mode == 6)
+	{
+		checkOn = true;
 	}
 
 	{
@@ -750,6 +809,10 @@ void PinComponent::setViewMode(const int mode, const String passPhrase)
 		// unlock
 		unlockHeaderLabel->setVisible(unlockOn);
 		unlockButton->setVisible(unlockOn);
+
+		checkTextEditor->setVisible(checkOn);
+		checkHeaderLabel->setVisible(checkOn);
+		checkButton->setVisible(checkOn);
 	}
 	repaint();
 }
@@ -783,6 +846,36 @@ void PinComponent::ClearMemory()
 {
 	burstKit.SetSecretPhrase(String::empty);
 	pinInputTextEditor->setText(String::empty);
+}
+
+void PinComponent::CheckPassPhrase()
+{
+	if (checkIter > 0)
+	{
+		const StringArray words = StringArray::fromTokens(burstKit.GetSecretPhraseString(), " ", String::empty);
+		if (checkTextEditor->getText().compare(words[checkIter - 1]) == 0)
+		{ // word check okay
+			Random random;
+			checkIter += random.nextInt(6) + 1; // random increment
+
+			if (checkIter >= 24)
+			{ // finished
+				setViewMode(4);
+			}
+		}
+		else
+		{ // word check failed
+			checkIter = 0;
+			failedWordCheck = true;
+			setViewMode(2);
+		}
+	}
+	else checkIter = 1;
+
+	// refresh the label with word selection
+	String baseText = "Copy check of your 24 word pass phrase. If incorrect you will return back to the new pass phrase creation.\n\nEnter word: " + String(checkIter);
+	checkHeaderLabel->setText(baseText, dontSendNotification);
+	checkTextEditor->setText(String::empty);
 }
 
 //[/MiscUserCode]
@@ -868,15 +961,15 @@ BEGIN_JUCER_METADATA
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="18" bold="0" italic="0" justification="36"/>
   <TEXTBUTTON name="unlockButton" id="33e3372e57fc5d7c" memberName="unlockButton"
-              virtualName="" explicitFocusOrder="0" pos="96 664 176 32" bgColOff="ff77b517"
+              virtualName="" explicitFocusOrder="0" pos="96 640 176 32" bgColOff="ff77b517"
               bgColOn="ff77b517" textCol="ffffffff" buttonText="unlock" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="saveButton" id="394fe95e7b293295" memberName="saveButton"
-              virtualName="" explicitFocusOrder="0" pos="376 664 208 32" bgColOff="ff77b517"
+              virtualName="" explicitFocusOrder="0" pos="400 616 208 32" bgColOff="ff77b517"
               bgColOn="ff77b517" textCol="ffffffff" textColOn="ffffffff" buttonText="Save pass phrase with PIN code"
               connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <LABEL name="ensurePinLabel" id="c9a19ae588203789" memberName="ensurePinLabel"
-         virtualName="" explicitFocusOrder="0" pos="328 616 320 40" bkgCol="ffffffff"
+         virtualName="" explicitFocusOrder="0" pos="352 568 320 40" bkgCol="ffffffff"
          textCol="ff8d1212" outlineCol="ffff0000" edTextCol="ffd2d2d2"
          edBkgCol="ffffffff" labelText="Ensure you remember the PIN and keep it private !"
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
@@ -945,6 +1038,19 @@ BEGIN_JUCER_METADATA
               virtualName="" explicitFocusOrder="0" pos="400 56 80 24" bgColOff="ffbebebe"
               bgColOn="ff8d8d8d" buttonText="back" connectedEdges="0" needsCallback="1"
               radioGroupId="0"/>
+  <TEXTEDITOR name="checkTextEditor" id="d814bd1c7315c12e" memberName="checkTextEditor"
+              virtualName="" explicitFocusOrder="0" pos="40 800 320 24" initialText=""
+              multiline="0" retKeyStartsLine="0" readonly="0" scrollbars="1"
+              caret="1" popupmenu="1"/>
+  <LABEL name="checkHeaderLabel" id="fb4df01f557589d" memberName="checkHeaderLabel"
+         virtualName="" explicitFocusOrder="0" pos="40 688 320 104" edTextCol="ffd2d2d2"
+         edBkgCol="0" labelText="Copy check of your pass phrase. If incorrect you will return back to the new pass phrase creation.&#10;&#10;Only enter the _ word, and click next."
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default font" fontsize="18" bold="0" italic="0" justification="36"/>
+  <TEXTBUTTON name="checkButton" id="32bddfd3e5904f14" memberName="checkButton"
+              virtualName="" explicitFocusOrder="0" pos="112 832 176 32" bgColOff="ff77b517"
+              bgColOn="ff77b517" textCol="ffffffff" buttonText="next" connectedEdges="0"
+              needsCallback="1" radioGroupId="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
