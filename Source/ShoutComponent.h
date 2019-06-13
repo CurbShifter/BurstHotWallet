@@ -31,9 +31,7 @@
 //==============================================================================
 /**
                                                                     //[Comments]
-    An auto-generated component, created by the Projucer.
-
-    Describe your class and how it works here!
+public SettableTooltipClient
                                                                     //[/Comments]
 */
 class ShoutComponent  : public Component,
@@ -54,13 +52,14 @@ public:
 	void run();
 	void timerCallback();
 
-	void SetNode(const String address) override;
+	void SetNode(const String address, const bool allowNonSSL = true) override;
 	void SetForceSSL_TSL(const bool forceSSLOn) override;
 	void SetNodeHop(const bool hopOn) override;
 
 	struct shout
 	{
 		String message;
+		String senderRS;
 		uint64 alivetime;
 		uint64 amountNQT;
 		float showtime;
@@ -90,6 +89,7 @@ private:
 
     //==============================================================================
     ScopedPointer<TextButton> textButton;
+    ScopedPointer<TextButton> shoutMessageButton;
 
 
     //==============================================================================

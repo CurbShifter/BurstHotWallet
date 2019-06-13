@@ -45,6 +45,7 @@ public:
 
 	virtual void SetupTransaction(const String requestHeader, const String recipient, const String amount, const String fee, const String msg, const bool /*encrypted*/) {};
 	virtual void SendBurstcoin(const String recipient, const String amount, const String fee, const String msg, const bool /*encrypted*/) {};
+	virtual void SendAsset(const String recipient, const String assetID, const String amountNQT, const String feeNQT, const String msg, const bool encrypted) {};
 	virtual void MakeCoupon(couponArgs args) {};
 	virtual void SendHotWalletLicense(const String recipient) {};
 
@@ -67,6 +68,7 @@ public:
 	virtual void CloseHttpSocket() {};
 #endif
 	virtual void Broke(const bool show, const String pubKey_b64, const bool isPro) {};
+	virtual void SetAssetsBalances(const StringPairArray assetsBalances) {};
 };
 
 class SettingsListener
@@ -75,7 +77,7 @@ public:
 	SettingsListener() {};
 	virtual ~SettingsListener() {};
 
-	virtual void SetNode(const String) {};
+	virtual void SetNode(const String, const bool) {};
 	virtual void SetSecretPhrase(const String) {};
 	virtual void SetForceSSL_TSL(const bool forceSSLOn) {};
 	virtual void SetNodeHop(const bool hopOn) {};
@@ -116,6 +118,7 @@ public:
 	virtual void SetAmounts(StringArray amounts) {};
 	virtual void SetSuggestedFees(uint64 /*cheap*/, uint64 /*normal*/, uint64 /*priority*/) {};
 	virtual void SetPrice(String currency, double price) {};
+	virtual void SetAssets(const StringArray assetIDs, const StringArray assetsNames, const StringArray assetsDescription, const StringArray assetsDecimals, const StringPairArray assetsBalances) {};
 };
 
 class TransactionsComponentListener
@@ -123,7 +126,7 @@ class TransactionsComponentListener
 public:
 	TransactionsComponentListener() {};
 	virtual ~TransactionsComponentListener() {};
-	virtual void SetNode(const String) {};
+	virtual void SetNode(const String, const bool) {};
 	virtual void SetSecretPhrase(const String) {};
 	virtual void SetForceSSL_TSL(const bool forceSSLOn) {};
 	virtual void SetNodeHop(const bool hopOn) {};
@@ -133,6 +136,7 @@ public:
 	virtual void SetCurrencyType(const String currency) {};
 
 	virtual void ResetPriceTimer() {};
+	virtual void SetAssets(const StringArray assetIDs, const StringArray assetsNames, const StringArray assetsDescription, const StringArray assetsDecimals, const StringPairArray assetsBalances) {};
 };
 
 class BalanceComponentListener
@@ -140,12 +144,13 @@ class BalanceComponentListener
 public:
 	BalanceComponentListener() {};
 	virtual ~BalanceComponentListener() {};
-	virtual void SetNode(const String) {};
+	virtual void SetNode(const String, const bool) {};
 	virtual void SetSecretPhrase(const String) {};
 	virtual void SetForceSSL_TSL(const bool forceSSLOn) {};
 	virtual void SetNodeHop(const bool hopOn) {};
 	virtual void UpdateBalance() {};
 	virtual void SetPrice(String currency, double price) {};
+	virtual void AddAssetWhitelist(const StringArray assetIDs) {};
 };
 
 class ShoutComponentListener
@@ -153,7 +158,7 @@ class ShoutComponentListener
 public:
 	ShoutComponentListener() {};
 	virtual ~ShoutComponentListener() {};
-	virtual void SetNode(const String) {};
+	virtual void SetNode(const String, const bool) {};
 	virtual void SetForceSSL_TSL(const bool forceSSLOn) {};
 	virtual void SetNodeHop(const bool hopOn) {};
 };

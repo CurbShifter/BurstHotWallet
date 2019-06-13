@@ -121,6 +121,8 @@ public:
     static const int burstHotWalletlogo_svgSize;
     static const char* burstHotWalletPrologo_svg;
     static const int burstHotWalletPrologo_svgSize;
+    static const char* burst_logo_white_svg;
+    static const int burst_logo_white_svgSize;
 
 
 private:
@@ -214,18 +216,31 @@ private:
 	}
 
 	void Broke(const bool show, const String pubKey_b64, const bool isPro) override;
+	void SetAssetsBalances(const StringPairArray assetsBalances) override;
 
 	// calls to burstExt
 	void SetNode(const String value);
 	void SetForceSSL_TSL(const bool forceSSLOn) override;
 	void SetNodeHop(const bool hopOn) override;
 	void MakeCoupon(couponArgs args) override;
+	void RedeemCoupon(const String couponCode, const String password);
+
 	void SendBurstcoin(const String recipient, const String amount, const String fee, const String msg, const bool encrypted) override;
+	void SendAsset(const String recipient, const String assetID, const String amountNQT, const String feeNQT, const String msg, const bool encrypted) override;
 	void SendHotWalletLicense(const String recipient) override;
 	//void UpdateBalance(String &balance) override;
 	void GetAccountDisplayName(const uint64 account, const String accountRS, String &displayName) override;
 	void SetupSendView();
+	void GetAssetWhitelist(StringArray &assets, StringArray &assetsNames, StringArray &assetsDescription, StringArray &assetsDecimals);
+	void UpdateAssetData();
+	StringArray assetWhitelist;
+	StringArray assetWhitelistNames;
+	StringArray assetWhitelistDescription;
+	StringArray assetWhitelistDecimals;
+	StringPairArray assetsBalances;
 
+	juce::Rectangle<float> leftTopCorner1;
+	juce::Rectangle<float> leftTopCorner2;
     //[/UserVariables]
 
     //==============================================================================
@@ -242,6 +257,7 @@ private:
     ScopedPointer<AboutComponent> aboutComponent;
     ScopedPointer<Drawable> drawable1;
     ScopedPointer<Drawable> drawable2;
+    ScopedPointer<Drawable> drawable3;
 
 
     //==============================================================================

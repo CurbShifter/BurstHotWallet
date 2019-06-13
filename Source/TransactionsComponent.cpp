@@ -28,9 +28,9 @@ TransactionsComponent::TransactionsComponent() : Thread("Transactions")
 	cachedTimestamp = 0;
 	
 	table.getHeader().addColumn("time", 1, 50, 100, -1, TableHeaderComponent::visible | TableHeaderComponent::resizable | TableHeaderComponent::appearsOnColumnMenu | TableHeaderComponent::sortable);
-	table.getHeader().addColumn("transaction", 2, 50, 100, -1, TableHeaderComponent::visible | TableHeaderComponent::resizable | TableHeaderComponent::appearsOnColumnMenu | TableHeaderComponent::sortable);
-	table.getHeader().addColumn("amount", 3, 50, 100, -1, TableHeaderComponent::visible | TableHeaderComponent::resizable | TableHeaderComponent::appearsOnColumnMenu | TableHeaderComponent::sortable);
-	table.getHeader().addColumn("fee", 4, 50, 100, -1, TableHeaderComponent::visible | TableHeaderComponent::resizable | TableHeaderComponent::appearsOnColumnMenu | TableHeaderComponent::sortable);
+	table.getHeader().addColumn("contact", 2, 50, 100, -1, TableHeaderComponent::visible | TableHeaderComponent::resizable | TableHeaderComponent::appearsOnColumnMenu | TableHeaderComponent::sortable);
+	table.getHeader().addColumn("amount", 3, 70, 150, -1, TableHeaderComponent::visible | TableHeaderComponent::resizable | TableHeaderComponent::appearsOnColumnMenu | TableHeaderComponent::sortable);
+	table.getHeader().addColumn("fee", 4, 30, 70, -1, TableHeaderComponent::visible | TableHeaderComponent::resizable | TableHeaderComponent::appearsOnColumnMenu | TableHeaderComponent::sortable);
 	table.getHeader().addColumn("details", 5, 50, 100, -1, TableHeaderComponent::visible | TableHeaderComponent::resizable | TableHeaderComponent::appearsOnColumnMenu | TableHeaderComponent::sortable);
 
 	table.setHeaderHeight(30);
@@ -88,10 +88,10 @@ void TransactionsComponent::resized()
 	table.autoSizeColumn(1);
 }
 
-void TransactionsComponent::SetNode(String server)
+void TransactionsComponent::SetNode(String server, const bool allowNonSSL)
 {
 	const ScopedLock lock(burstExtLock);
-	burstKit.SetNode(server);
+	burstKit.SetNode(server, allowNonSSL);
 }
 
 void TransactionsComponent::SetSecretPhrase(String pp)
@@ -160,11 +160,15 @@ void TransactionsComponent::paintRowBackground(Graphics &g, int rowNumber, int w
 	if (GetCacheSize() > rowNumber)
 	{
 		const TransactionsComponent::txDetails txd = GetCache(getIndexOfSorted(rowNumber));
-		int64 blockHeight = jmax<int64>(numberOfBlocks - txd.value[9].toString().getLargeIntValue(), 0);
+		int64 blockHeight = jmax<int64>(numberOfBlocks - txd.value[col::height].toString().getLargeIntValue(), 0);
 		float neededConfirmations = 10.f;
 		if (blockHeight > neededConfirmations)
+		{
 			g.fillAll(Colours::white);
-		else g.fillAll(Colours::white.darker((1.f - (blockHeight / neededConfirmations)) * 0.5f));
+			g.setGradientFill(ColourGradient(Colours::white, 0, height / 4, Colours::whitesmoke.withAlpha(0.5f), 0, height, false));
+			g.fillAll();
+		}
+		else g.fillAll(Colours::white.darker((1.f - (blockHeight / neededConfirmations)) * 0.3f));
 
 		if (table.isRowSelected(rowNumber))
 		{
@@ -217,11 +221,34 @@ void TransactionsComponent::paintCell(Graphics &g, int rowNumber, int columnId, 
 	}
 	else if(columnId == 3)
 	{
+		String prefixMain = (txt.startsWith("-")) ? "" : "+";
+		String prefix = (txt.startsWith("-")) ? "-" : "+";
 		if (txt.startsWith("-"))
+		{
+			prefixMain = "";
+			prefix = "-";
 			g.setColour(Colours::darkred);
-		else g.setColour(Colours::darkgreen);
-		g.setFont(20.f);
-		g.drawText(NeatNr(txt), 0, 0, width, height, Justification::left);
+		}
+		else
+		{
+			prefixMain = "+";
+			prefix = "+";
+			g.setColour(Colours::darkgreen);
+		}
+
+		g.setFont(18.f);
+		const String amountStr = txt.getDoubleValue() != 0. ? prefixMain + NeatNr(txt) + " BURST" : String::empty;
+		String assetStr;
+		if (txd.value[col::asset].toString().isNotEmpty())
+		{
+			const String name = GetAssetName(txd.value[col::asset].toString());
+			const String quantityNQT = txd.value[col::assetQuantityQNT].toString();
+			const String decimals = GetAssetDecimals(txd.value[col::asset].toString()); //txd.value[col::assetDecimals].toString();
+			double amountDbl = (quantityNQT.getDoubleValue() / pow(10., decimals.getLargeIntValue()));
+			String amountStr = String::formatted("%." + String(decimals.getLargeIntValue()) + "f", amountDbl);
+			assetStr = (amountStr.isNotEmpty() ? " " : "") + prefix + amountStr + " " + name;
+		}
+		g.drawText(amountStr + assetStr, 0, 0, width, height, Justification::left);
 	}
 	else if(columnId == 4)
 	{
@@ -323,28 +350,36 @@ void TransactionsComponent::sortOrderChanged(int newSortColumnId, bool isForward
 
 int TransactionsComponent::getIndexWhenSorted(const int idx)
 {
+	const int s = GetCacheSize();
+	if (sortedRowIndex.size() != s) // check to update the sort
+		sortOrderChanged(sortColumnId, sortIsForwards);
+
 	int r = -1;
 	for (int i = 0; i < sortedRowIndex.size(); i++)
 	{ // find idx
 		if (idx == sortedRowIndex[i])
 			r = i;
 	}
-	if (r == -1)
+/*	if (r == -1)
 	{
 		sortOrderChanged(sortColumnId, sortIsForwards);
 		return -1;
-	}
+	}*/
 	return r;
 }
 
 int TransactionsComponent::getIndexOfSorted(const int idx)
 {
+	const int s = GetCacheSize();
+	if (sortedRowIndex.size() != s) // check to update the sort
+		sortOrderChanged(sortColumnId, sortIsForwards);
+
 	if (idx < sortedRowIndex.size() && idx >= 0)
 		return sortedRowIndex[idx];
 	else if (idx == sortedRowIndex.size())
 		return idx;
 	else {
-		sortOrderChanged(sortColumnId, sortIsForwards);
+	//	sortOrderChanged(sortColumnId, sortIsForwards);
 		return -1;
 	}
 }
@@ -432,7 +467,7 @@ void TransactionsComponent::timerCallback()
 	String currency_read;
 	double price_read = 0.;
 	GetPrice(currency_read, price_read);
-	if (currency_read.compare(currency_cache) != 0 || price_read > 0.)
+	if (currency_read.compare(currency_cache) != 0 || price_read != price_cache)
 	{
 		currency_cache = currency_read;
 		price_cache = price_read;
@@ -566,21 +601,22 @@ void TransactionsComponent::run()
 				juce::Result r = JSON::parse(lines[i], cacheRowJSON);
 				if (r.wasOk())
 				{
+					const ScopedLock lock(burstExtLock);
 					txDetails txDetail = FillTxStruct(line);
-					if (knownTx.contains(txDetail.value[6].toString()) == false && txDetail.value[0].toString().isNotEmpty())
+					if (knownTx.contains(txDetail.value[col::transaction].toString()) == false && txDetail.value[col::time].toString().isNotEmpty())
 					{
-						const String amountNQTstr = txDetail.value[2].toString();
+						const String amountNQTstr = txDetail.value[col::amount].toString();
 						bool minus = amountNQTstr.startsWithChar('-');
 						int64 amountNQT = amountNQTstr.getLargeIntValue();
 						calculatedBalance += amountNQT;
 						if (minus)
 						{
-							int64 feeNQT = txDetail.value[3].toString().getLargeIntValue();
+							int64 feeNQT = txDetail.value[col::fee].toString().getLargeIntValue();
 							calculatedBalance -= feeNQT;
 						}
 
 						txds.add(txDetail);
-						knownTx.add(txDetail.value[6].toString()); // save tx id
+						knownTx.add(txDetail.value[col::transaction].toString()); // save tx id
 						SetCache(txds);
 					}
 				}
@@ -619,27 +655,28 @@ void TransactionsComponent::run()
 			{
 				// add some anti spamzors delay
 				String txIdDetails;
+				txDetails txd;
 				{
 					const ScopedLock lock(burstExtLock);
 					txIdDetails = burstKit.getTransaction(txid);
+					txd = FillTxStruct(txIdDetails);
 				}
-				txDetails txd = FillTxStruct(txIdDetails);
 				txds.add(txd);
 				SetCache(txds);
 
-				cachedTimestamp = jmax<int>(cachedTimestamp, txd.value[0].toString().getLargeIntValue() - 1);
+				cachedTimestamp = jmax<int>(cachedTimestamp, txd.value[col::time].toString().getLargeIntValue() - 1);
 
-				const String amountNQTstr = txd.value[2].toString();
+				const String amountNQTstr = txd.value[col::amount].toString();
 				bool minus = amountNQTstr.startsWithChar('-');
 				int64 amountNQT = amountNQTstr.getLargeIntValue();
 				calculatedBalance += amountNQT;
 				if (minus)
 				{
-					int64 feeNQT = txd.value[3].toString().getLargeIntValue();
+					int64 feeNQT = txd.value[col::fee].toString().getLargeIntValue();
 					calculatedBalance -= feeNQT;
 				}
 				
-				int64 calcConfirmations = jmax<int64>(numberOfBlocks - txd.value[9].toString().getLargeIntValue(), 0);
+				int64 calcConfirmations = jmax<int64>(numberOfBlocks - txd.value[col::height].toString().getLargeIntValue(), 0);
 				float neededConfirmations = 10.f;
 				if (calcConfirmations > neededConfirmations) // needs enough confirmations to be logged
 					txlog->logMessage(txIdDetails);
@@ -696,7 +733,7 @@ void TransactionsComponent::run()
 					}
 					else txd = FillTxStruct(txMap[txid]);
 
-					if (txd.value[0].toString().getLargeIntValue() > 0)
+					if (txd.value[col::time].toString().getLargeIntValue() > 0)
 						txds.add(txd);
 				}
 			}
@@ -712,13 +749,12 @@ void TransactionsComponent::run()
 
 String TransactionsComponent::GetAccountDisplayName(const String account)
 {	
-	if (displayNames.contains(account) == false)
+	if (displayNames.contains(account) == false) // a simple app lifetime cache
 	{
 		String displayName;
-		// todo add a simple app lifetime cache
 		
 		const String rs = burstKit.ensureAccountRS(String(account));
-		displayName = burstKit.getAccountAliases(rs);
+		displayName = burstKit.getAccountAliases(rs, true);
 		if (displayName.isEmpty())
 			displayName = rs;
 
@@ -742,39 +778,83 @@ TransactionsComponent::txDetails TransactionsComponent::FillTxStruct(String txDe
 
 		if (accountID.compare(senderID) == 0 || accountID.compare(recipientID) == 0 || recipientID.isEmpty()) // filter out tx not to or from this account. or empty recipientID if multiout receive
 		{
-			txDetail.value[0] = txIdDetailsJSON["timestamp"].toString();
+			txDetail.value[col::time] = txIdDetailsJSON["timestamp"].toString();
 			{
 				String account;
 				if (accountID.compare(senderID) != 0)
 					account = (senderID);
 				else account = (recipientID);
 
-				txDetail.value[1] = GetAccountDisplayName(account);
+				txDetail.value[col::contact] = GetAccountDisplayName(account);
 			}
 
 			if (senderID.compare(recipientID) != 0) // tx not send to self
-				txDetail.value[2] = (accountID.compare(senderID) != 0 ? "" : "-") + (txIdDetailsJSON["amountNQT"].toString());
-			else txDetail.value[2] = "0";
+				txDetail.value[col::amount] = (accountID.compare(senderID) != 0 ? "" : "-") + (txIdDetailsJSON["amountNQT"].toString());
+			else txDetail.value[col::amount] = "0";
 
-			txDetail.value[3] = (txIdDetailsJSON["feeNQT"]);
+			txDetail.value[col::fee] = (txIdDetailsJSON["feeNQT"]);
+
+			txDetail.value[col::confirmations] = txIdDetailsJSON["confirmations"];
+			txDetail.value[col::transaction] = txIdDetailsJSON["transaction"];
+			txDetail.value[col::block] = txIdDetailsJSON["block"];
+			txDetail.value[col::blockTimestamp] = txIdDetailsJSON["blockTimestamp"];
+			txDetail.value[col::height] = txIdDetailsJSON["height"];
+			txDetail.value[col::type] = txIdDetailsJSON["type"];
+			txDetail.value[col::subtype] = txIdDetailsJSON["subtype"];
+			
+			txDetail.value[col::asset] = ""; // asset id (default burst 0)
 
 			const var attachment = txIdDetailsJSON["attachment"];
-
+			String messageData;
 			if ((int)(attachment["version.EncryptedMessage"]) == 1)
 			{
 				const String data(attachment["encryptedMessage"]["data"].toString()); // is the AES-encrypted data
 				const String nonce(attachment["encryptedMessage"]["nonce"].toString()); // is the unique nonce associated with the encrypted data
 				if ((bool)attachment["encryptedMessage"]["isText"] == true)
-					txDetail.value[4] = burstKit.decryptFrom(txIdDetailsJSON["senderRS"], data, nonce, "true");
+					txDetail.value[col::details] = burstKit.decryptFrom(txIdDetailsJSON["senderRS"], data, nonce, "true");
 			}
 			else if ((int)(attachment["version.Message"]) == 1)
 			{
 				if (attachment["messageIsText"])
-					txDetail.value[4] = attachment["message"];
+					txDetail.value[col::details] = attachment["message"];
+				else
+				{ // check if the data can be interpreted as utf8 text (AT limitation can't set messageIsText)
+					MemoryBlock m;
+					m.loadFromHexString(attachment["message"].toString() + "00"); // assume we need a extra zero termination
+					if (m.toString().isNotEmpty())
+						txDetail.value[col::details] = m.toString();
+					else txDetail.value[col::details] = attachment["message"].toString();
+				}
 			}
-			else if ((int)(attachment["version.AliasAssignment"]) == 1)
+			messageData = txDetail.value[col::details].toString();
+			if (messageData.isNotEmpty())
+				messageData = ", " + messageData; // prepend spacing
+			
+			if ((int)(attachment["version.PublicKeyAnnouncement"]) == 1)
 			{
-				txDetail.value[1] = "Alias Assignment";
+				if (messageData.isNotEmpty())
+				{
+					txDetail.value[col::details] = txDetail.value[col::details].toString() + ", Public Key Announcement: " + attachment["recipientPublicKey"].toString();
+					messageData = ", " + messageData + ", Public Key Announcement: " + attachment["recipientPublicKey"].toString();
+				}
+				else
+				{
+					txDetail.value[col::details] = "Public Key Announcement: " + attachment["recipientPublicKey"].toString();
+					messageData = ", Public Key Announcement: " + attachment["recipientPublicKey"].toString();
+				}
+				
+			}
+
+			// these attachments could include a message too. so no 'else if' here
+			if ((int)(attachment["version.AliasAssignment"]) == 1)
+			{
+				txDetail.value[col::contact] = "Alias assignment";
+				txDetail.value[col::details] = attachment["alias"].toString() + messageData;
+			}
+			else if ((int)(attachment["version.AccountInfo"]) == 1)
+			{
+				txDetail.value[col::contact] = "Account info update";
+				txDetail.value[col::details] = (attachment["name"].toString().isNotEmpty() ? attachment["name"].toString() + ", " : "") + attachment["description"].toString() + messageData;
 			}
 			else if ((int)(attachment["version.MultiOutCreation"]) == 1)
 			{
@@ -787,41 +867,74 @@ TransactionsComponent::txDetails TransactionsComponent::FillTxStruct(String txDe
 							NQT2Burst(attachment["recipients"][itt][1].toString()) + " BURST ";
 
 						if (senderID.compare(accountID) != 0 && attachment["recipients"][itt][0].toString().compare(accountID) == 0) // incoming multiout
-							txDetail.value[2] = attachment["recipients"][itt][1].toString(); // we founf the incoming amount. override the total amount
+							txDetail.value[col::amount] = attachment["recipients"][itt][1].toString(); // we founf the incoming amount. override the total amount
 					}
-					txDetail.value[4] = "MultiOut " + msg;
+					txDetail.value[col::details] = "MultiOut " + msg + messageData;
 				}
 			}
+			else if ((int)(attachment["version.RewardRecipientAssignment"]) == 1)
+			{
+				txDetail.value[col::contact] = "Reward Recipient Assignment";
+				txDetail.value[col::details] = txIdDetailsJSON["recipientRS"].toString() + messageData;
+			}
 			else if ((int)(attachment["version.AssetIssuance"]) == 1)
-			{ //"type":2,"subtype":0
-				txDetail.value[1] = "Asset Issuance " + attachment["name"].toString();
+			{
+				txDetail.value[col::contact] = "Asset Issuance";
+				txDetail.value[col::details] = attachment["name"].toString() + messageData;
+			}
+			else if ((int)(attachment["version.AssetTransfer"]) == 1)
+			{//"type":2,"subtype":1
+				txDetail.value[col::asset] = attachment["asset"].toString();
+				txDetail.value[col::assetQuantityQNT] = attachment["quantityQNT"];
 			}
 			else if ((int)(attachment["version.AskOrderPlacement"]) == 1)
 			{//"type":2,"subtype":2
-				txDetail.value[1] = "Ask Order Placement";
+				txDetail.value[col::contact] = "Ask Order";
+
+				txDetail.value[col::asset] = attachment["asset"].toString();
+				txDetail.value[col::assetQuantityQNT] = attachment["quantityQNT"];
+				txDetail.value[col::assetPriceNQT] = attachment["priceNQT"];
 			}
 			else if ((int)(attachment["version.BidOrderPlacement"]) == 1)
 			{//"type":2,"subtype":3
-				txDetail.value[1] = "Bid Order Placement";
-			}
-			else if ((int)(attachment["version.AssetTransfer"]) == 1)
-			{//"type":2,"subtype":3
-				String assetJsonStr = burstKit.getAsset(attachment["asset"].toString());
-				var assetJson;
-				Result r2 = JSON::parse(assetJsonStr, assetJson);
-				if (r2.wasOk())
-					txDetail.value[4] = "Asset " + assetJson["name"].toString();
-			}
+				txDetail.value[col::contact] = "Bid Order";
 
-			txDetail.value[5] = txIdDetailsJSON["confirmations"];
-			txDetail.value[6] = txIdDetailsJSON["transaction"];
-			txDetail.value[7] = txIdDetailsJSON["block"];
-			txDetail.value[8] = txIdDetailsJSON["blockTimestamp"];
-			txDetail.value[9] = txIdDetailsJSON["height"];
-			txDetail.value[10] = txIdDetailsJSON["type"];
+				txDetail.value[col::asset] = attachment["asset"].toString();
+				txDetail.value[col::assetQuantityQNT] = attachment["quantityQNT"];
+				txDetail.value[col::assetPriceNQT] = attachment["priceNQT"];
+			}
 		}
 	}
 	return txDetail;
+}
+
+String TransactionsComponent::GetAssetName(const String assetID)
+{
+	/*	StringArray assetWhitelistDescription;
+	StringPairArray assetsBalances;
+	*/
+	const int idx = GetAssetIndex(assetID);
+	if (idx >= 0)
+		return assetWhitelistNames[idx];
+	else
+	{ // lookup expensive
+		String assetStr = burstKit.getAsset(assetID);
+		var assetJson;
+		Result r = JSON::parse(assetStr, assetJson);
+
+		assetWhitelist.add(assetID);
+		assetWhitelistNames.add(assetJson["name"].toString());
+		assetWhitelistDescription.add(assetJson["description"].toString());
+		assetWhitelistDecimals.add(assetJson["decimals"].toString());
+
+		return assetJson["name"].toString();
+	}	
+}
+
+String TransactionsComponent::GetAssetDecimals(const String assetID)
+{
+	const int idx = GetAssetIndex(assetID);
+	return idx >= 0 ? assetWhitelistDecimals[idx] : "0";
 }
 
 String TransactionsComponent::NeatNr(const String balance)
@@ -837,12 +950,12 @@ String TransactionsComponent::NeatNr(const String balance)
 void TransactionsComponent::ShowPopupMenu(int rowNr)
 {
 	PopupMenu m;
-	m.addItem(1, "Copy contact address to clipboard");
-	m.addItem(2, "Copy Amount to clipboard");
-	m.addItem(3, "Copy Fee to clipboard");
-	m.addItem(4, "Copy Message to clipboard");
-	m.addItem(6, "Show transaction on explorer.burstcoin.network");
-	m.addItem(5, "Export CSV file with all transactions");
+	m.addItem(1, "Copy contact");
+	m.addItem(2, "Copy amount");
+	m.addItem(3, "Copy fee");
+	m.addItem(4, "Copy message");
+	m.addItem(6, "Open on explorer.burstcoin.network");
+	m.addItem(5, "Export CSV file (all transactions)");
 	const int result = m.show();
 	
 	TransactionsComponent::txDetails txd;
@@ -851,7 +964,7 @@ void TransactionsComponent::ShowPopupMenu(int rowNr)
 
 	if (result == 1)
 	{
-		String txt = txd.value[1].toString();
+		String txt = txd.value[col::contact].toString();
 		if (txt.startsWith("BURST-2222-2222-2222-22222"))
 			txt = ("no recipient");
 		else if (txt.startsWith("BURST-"))
@@ -860,7 +973,7 @@ void TransactionsComponent::ShowPopupMenu(int rowNr)
 	}
 	if (result == 2)
 	{
-		String txt = txd.value[2].toString();
+		String txt = txd.value[col::amount].toString();
 		if (txt.containsChar(';'))
 		{
 			StringArray sa = StringArray::fromTokens(txt, ";", "");
@@ -872,13 +985,13 @@ void TransactionsComponent::ShowPopupMenu(int rowNr)
 	}
 	if (result == 3)
 	{
-		String txt = txd.value[3].toString();
+		String txt = txd.value[col::fee].toString();
 		txt = (NeatNr(txt));
 		SystemClipboard::copyTextToClipboard(txt);
 	}
 	if (result == 4)
 	{
-		String txt = txd.value[4].toString();
+		String txt = txd.value[col::details].toString();
 		SystemClipboard::copyTextToClipboard(txt);
 	}
 	if (result == 5)
@@ -887,7 +1000,7 @@ void TransactionsComponent::ShowPopupMenu(int rowNr)
 	}
 	if (result == 6)
 	{
-		URL url("https://explorer.burstcoin.network/?action=transaction&id=" + txd.value[6].toString());
+		URL url("https://explorer.burstcoin.network/?action=transaction&id=" + txd.value[col::transaction].toString());
 		url.launchInDefaultBrowser();
 	}
 }
@@ -906,7 +1019,7 @@ void TransactionsComponent::ExportCSV()
 			const TransactionsComponent::txDetails txd = GetCache(getIndexOfSorted(i));
 			for (int columnId = 1; columnId <= 11; columnId++)
 			{
-				String txt = txd.value[columnId - 1].toString();
+			/*	String txt = txd.value[columnId - 1].toString();
 				if (columnId == 1)
 				{
 					txt = Time((txt.getLargeIntValue() + BURSTCOIN_GENESIS_EPOCH) * 1000).toString(true, true, false, true);
@@ -928,9 +1041,58 @@ void TransactionsComponent::ExportCSV()
 				}
 				else if (columnId == 6)
 				{
-					txt = String(jmax<int64>(numberOfBlocks - txd.value[9].toString().getLargeIntValue(), 0));
+					txt = String(jmax<int64>(numberOfBlocks - txd.value[col::height].toString().getLargeIntValue(), 0));
+				}*/
+				String txt = txd.value[columnId - 1].toString();
+				if (columnId == 1)
+				{
+					String timeStr = Time((txt.getLargeIntValue() + BURSTCOIN_GENESIS_EPOCH) * 1000).toString(true, true, false, true);
+					txt = timeStr;
 				}
-				
+				else if (columnId == 2)
+				{
+					if (txt.startsWith("BURST-2222-2222-2222-22222"))
+						txt = ("sub type TX");
+					else if (txt.startsWith("BURST-"))
+						txt = (txt.substring(6));
+					else
+					{
+						if (txt.containsChar(';'))
+						{
+							StringArray sa = StringArray::fromTokens(txt, ";", "");
+							txt = (sa[0]);
+						}
+						else txt = (txt);
+					}
+				}
+				else if (columnId == 3)
+				{
+					String prefixMain = (txt.startsWith("-")) ? "" : "+";
+					String prefix = (txt.startsWith("-")) ? "-" : "+";
+					if (txt.startsWith("-"))
+					{
+						prefixMain = "";
+						prefix = "-";
+					}
+					else
+					{
+						prefixMain = "+";
+						prefix = "+";
+					}
+
+					const String amountStr = txt.getDoubleValue() != 0. ? prefixMain + NeatNr(txt) + " BURST" : String::empty;
+					String assetStr;
+					if (txd.value[col::asset].toString().isNotEmpty())
+					{
+						const String name = GetAssetName(txd.value[col::asset].toString());
+						const String quantityNQT = txd.value[col::assetQuantityQNT].toString();
+						const String decimals = GetAssetDecimals(txd.value[col::asset].toString()); //txd.value[col::assetDecimals].toString();
+						double amountDbl = (quantityNQT.getDoubleValue() / pow(10., decimals.getLargeIntValue()));
+						String amountStr = String::formatted("%." + String(decimals.getLargeIntValue()) + "f", amountDbl);
+						assetStr = (amountStr.isNotEmpty() ? " " : "") + prefix + amountStr + " " + name;
+					}
+					txt = (amountStr + assetStr);
+				}
 				f.appendText("\"" + txt + "\",");
 			}
 			f.appendText("\n");
@@ -985,6 +1147,45 @@ String TransactionsComponent::Burst2NQT(const String value)
 		amountNQT += amount.substring(point + 1, amount.length()).retainCharacters("0123456789").paddedRight('0', 8).substring(0, 8).getLargeIntValue();
 	}
 	return String(amountNQT);
+}
+
+int TransactionsComponent::GetAssetIndex(const String assetID)
+{
+	return assetWhitelist.indexOf(assetID);
+}
+
+void TransactionsComponent::SetAssets(const StringArray assetIDs, const StringArray assetsNames, const StringArray assetsDescription, const StringArray assetsDecimals, const StringPairArray assetsBalances)
+{
+	if (assetWhitelist.size() > assetIDs.size())
+	{ // if we used to have more data than given now. then keep the trailing data. (update the front)
+		assetWhitelist.removeRange(0, assetIDs.size());
+		StringArray assetIDs_t = assetIDs;
+		assetIDs_t.addArray(assetWhitelist);
+		assetWhitelist = assetIDs_t;
+
+		assetWhitelistNames.removeRange(0, assetsNames.size());
+		StringArray assetNames_t = assetsNames;
+		assetNames_t.addArray(assetWhitelistNames);
+		assetWhitelistNames = assetNames_t;
+
+		assetWhitelistDescription.removeRange(0, assetsDescription.size());
+		StringArray assetDescription_t = assetsDescription;
+		assetDescription_t.addArray(assetWhitelistDescription);
+		assetWhitelistDescription = assetDescription_t;
+
+		assetWhitelistDecimals.removeRange(0, assetsDecimals.size());
+		StringArray assetDecimals_t = assetsDecimals;
+		assetDecimals_t.addArray(assetWhitelistDecimals);
+		assetWhitelistDecimals = assetDecimals_t;
+	}
+	else
+	{
+		assetWhitelist = assetIDs;
+		assetWhitelistNames = assetsNames;
+		assetWhitelistDescription = assetsDescription;
+		assetWhitelistDecimals = assetsDecimals;
+	}
+	this->assetsBalances = assetsBalances;
 }
 
 

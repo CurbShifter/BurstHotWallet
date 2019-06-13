@@ -54,6 +54,7 @@ BalanceComponent::BalanceComponent ()
 
 
     //[UserPreSize]
+	updated = false;
 	balanceLabel->setFont(Font(22.00f, Font::plain));
 	//[/UserPreSize]
 
@@ -139,13 +140,18 @@ void BalanceComponent::buttonClicked (Button* buttonThatWasClicked)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
-void BalanceComponent::SetNode(const String server)
+void BalanceComponent::AddAssetWhitelist(const StringArray assetIDs)
+{
+	externalAssetWhitelist.addArray(assetIDs);
+}
+
+void BalanceComponent::SetNode(const String server, const bool allowNonSSL)
 {
 	stopThread(500);
 	const ScopedLock lock(burstExtLock);
 
 	assetID.clear();
-	burstExt.SetNode(server);
+	burstExt.SetNode(server, allowNonSSL);
 
 	startThread();
 }
@@ -185,14 +191,29 @@ void BalanceComponent::timerCallback()
 	const ScopedTryLock lock(burstExtLock);
 	if (lock.isLocked())
 	{
-		if (balance.isNotEmpty() && balanceLabel->getText().compare(balance) != 0 && myBurstRS.isNotEmpty())
+		if (balance.isNotEmpty() && balanceLabel->getText().compare(balance) != 0 && myBurstRS.isNotEmpty() && updated)
 		{
+			updated = false;
 			accountButton->setButtonText(myBurstRS);
-			balanceLabel->setTooltip(balance);
+
+			String tooltip(balance);
+			tooltip += "\n";
+			for (int i = 1; i < assetsBalances.getAllKeys().size(); i++)
+			{
+				String assetDecimals;
+				const String assetName = GetAssetName(assetsBalances.getAllKeys()[i], assetDecimals);
+				String nr;
+				nr = String::formatted("%." + assetDecimals + "f", assetsBalances.getAllValues()[i].getLargeIntValue() / pow(10., assetDecimals.getLargeIntValue()), assetDecimals.getLargeIntValue());
+				tooltip += nr + " " + assetName + "\n";
+			}
+			balanceLabel->setTooltip(tooltip);
+
+
 			balanceLabel->setText(balance_converted, dontSendNotification);
 
 			{ // show the secure account option, if the wallet is empty and has no pubkey
 				interfaceListeners.call(&InterfaceListener::Broke, (hasPubKey == false), pubKey_b64, isPro);
+				interfaceListeners.call(&InterfaceListener::SetAssetsBalances, assetsBalances);
 			}
 			repaint();
 		}
@@ -203,6 +224,7 @@ void BalanceComponent::run()
 {
 	const ScopedLock lock(burstExtLock);
 	UpdateBalanceRun();
+	updated = true;
 }
 
 String BalanceComponent::NQT2Burst(const String value)
@@ -222,8 +244,33 @@ void BalanceComponent::UpdateBalanceRun()
 {
 	// check / update balance
 	myBurstRS = burstExt.GetAccountRS();	
-	uint64 balance_root = burstExt.GetBalance(0);
+	if (myBurstRS.isEmpty())
+		return;
+
+	// extract the balances for the assets. and allow these to be whitelisted
+	assetsBalances.clear();
+	String accountStr = burstExt.getAccount(myBurstRS);
+	var accountJson;
+	Result r = JSON::parse(accountStr, accountJson);
+	
+	uint64 balance_root = accountJson["balanceNQT"].toString().getLargeIntValue();
 	balance = String(balance_root);
+	assetsBalances.set("0", balance); // 0 is BURST
+
+	if (accountJson["assetBalances"].isArray())
+	{
+		for (int i = 0; i < accountJson["assetBalances"].size(); i++)
+		{
+			const String assetID = accountJson["assetBalances"][i]["asset"];
+			const String balanceQNT = accountJson["assetBalances"][i]["balanceQNT"];
+			assetsBalances.set(assetID, balanceQNT);
+		}
+	}
+
+	for (int i = 0; i < externalAssetWhitelist.size(); i++)
+		assetsBalances.set(externalAssetWhitelist[i], "0");
+
+	
 
 	if (threadShouldExit())
 		return;
@@ -250,7 +297,6 @@ void BalanceComponent::UpdateBalanceRun()
 			balance = ("EMPTY WALLET");
 		else balance = ("NEW EMPTY WALLET");
 	}
-	//return;
 
 	if (threadShouldExit())
 		return;
@@ -292,10 +338,33 @@ void BalanceComponent::UpdateBalanceRun()
 	}
 	if (assetID.isNotEmpty())
 	{
-		String getAssetAccountsJson = burstExt.getAssetAccounts(assetID);
-		isPro = getAssetAccountsJson.contains(myBurstRS);
+		isPro = (assetsBalances[assetID].getLargeIntValue() > 0);		
+		//	String getAssetAccountsJson = burstExt.getAssetAccounts(assetID);
+		//	isPro = getAssetAccountsJson.contains(myBurstRS);		
 	}
 }
+
+String BalanceComponent::GetAssetName(const String assetID, String &decimals)
+{
+	if (assetWhitelistNames.containsKey(assetID))
+	{
+		decimals = assetWhitelistDecimals[assetID];
+		return assetWhitelistNames[assetID];
+	}
+	else
+	{ // lookup expensive
+		String assetStr = burstExt.getAsset(assetID);
+		var assetJson;
+		Result r = JSON::parse(assetStr, assetJson);
+
+		assetWhitelistNames.set(assetID, assetJson["name"].toString());
+		decimals = assetJson["decimals"].toString();
+		assetWhitelistDecimals.set(assetID, decimals);
+
+		return assetJson["name"].toString();
+	}	
+}
+
 //[/MiscUserCode]
 
 

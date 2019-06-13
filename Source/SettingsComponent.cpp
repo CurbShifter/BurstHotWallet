@@ -18,6 +18,39 @@
 */
 
 //[Headers] You can add your own extra header files here...
+#define SERVERLISTURL "https://raw.githubusercontent.com/CurbShifter/BurstHotWallet/master/resources/serverlist.csv"
+#define SERVERLIST "\"Burst - team Wallet\",\"https://wallet.burst-team.us:2083/\",\"mainnet\"\n\
+					\"Burst-team Wallet 1\",\"https://wallet1.burst-team.us:2083/\",\"mainnet\"\n\
+					\"Burst-team Wallet 2\",\"https://wallet2.burst-team.us:2083/\",\"mainnet\"\n\
+					\"Burst-team Wallet 3\",\"https://wallet3.burst-team.us:2083/\",\"mainnet\"\n\
+					\"Burst-team Wallet 4\",\"https://wallet4.burst-team.us:2083/\",\"mainnet\"\n\
+					\"Burst-team Wallet 5\",\"https://wallet5.burst-team.us:2083/\",\"mainnet\"\n\
+					\"burst-alliance\",\"https://wallet.burst-alliance.org:8125/\",\"mainnet\"\n\
+					\"Cryptoguru\",\"https://wallet.burst.cryptoguru.org:8125\",\"mainnet\"\n\
+					\"Poolofd32th wallet 1\",\"https://wallet.poolofd32th.club\",\"mainnet\"\n\
+					\"Poolofd32th wallet 2\",\"https://wallet2.poolofd32th.club\",\"mainnet\"\n\
+					\"localhost\",\"http://localhost:8125/\",\"localhost\"\n\
+					\"getburst [testnet]\",\"http://testnet.getburst.net:6876/\",\"testnet\""
+
+#define POOLLISTURL "https://raw.githubusercontent.com/CurbShifter/BurstHotWallet/master/resources/poollist.csv"
+#define POOLLIST "\"BMF50 Marketing Pool\",\"bmf50pool.burstcoin.ro\",\"8080\",\"BURST-S8Z2-TQ7W-ECVP-FM4FP\",\"16711252963\"\n\
+					\"CryptoGuru Pool 50/50\",\"50-50-pool.burst.cryptoguru.org\",\"8124\",\"BURST-8KLL-PBYV-6DBC-AM942\",\"31536000\"\n\
+					\"CryptoGuru Pool 0-100\",\"0-100-pool.burst.cryptoguru.org\",\"8124\",\"BURST-HKML-NRG6-VBRA-2F8PS\",\"31536000\"\n\
+					\"Fastpool.info\",\"fastpool.info\",\"8080\",\"BURST-YMJP-8NNG-6HCJ-29XYJ\",\"80000000\"\n\
+					\"pool poolofd32th\",\"pool.poolofd32th.club\",\"8124\",\"BURST-GATX-U4KB-7AWU-H3N8S\",\"2592000\"\n\
+					\"VLP Pool 0/100\",\"voiplanparty.com\",\"8124\",\"BURST-MBCG-4ERH-FVH5-2GTXB\",\"31536000\"\n\
+					\"xen poolofd32th\",\"xen.poolofd32th.club\",\"8122\",\"BURST-LBQ2-XLPT-S2S8-64ZG5\",\"2592000\"\n\
+					\"0-100 burst-team us\",\"0-100.burst-team.us\",\"8080\",\"BURST-YBW4-A3D3-LVUF-F9WVJ\",\"10368000\"\n\
+					\"pool burst-team us\",\"pool.burst-team.us\",\"8080\",\"BURST-WRM9-F6JU-NVX5-D7VXS\",\"2592000\"\n\
+					\"burstneon.com\",\"burstneon.com\",\"8080\",\"BURST-YXZW-JH7M-QKR9-9PKBN\",\"63072000\"\n\
+					\"burstcoin.ro\",\"pool.burstcoin.ro\",\"8080\",\"BURST-GG4B-34Y9-ZXGV-FNTNJ\",\"7889231\"\n\
+					\"burstcoin.space\",\"pool.burstcoin.space\",\"8124\",\"BURST-SPAC-EWWF-CRX2-78Z6Z\",\"2592000\"\n\
+					\"Burst Minig club\",\"pool.burstmining.club\",\"8124\",\"BURST-RNMB-9FJW-3BJW-F3Z3M\",\"86400\"\n\
+					\"BurstPool Cloud\",\"burstpool.cloud\",\"8124\",\"BURST-DYDN-98Z8-YJMY-E2KD4\",\"63072000\"\n\
+					\"0-100pool.burstcoin.ro\",\"0-100pool.burstcoin.ro\",\"8880\",\"BURST-NEWP-R7WE-KUH3-3336G\",\"31536000\"\n\
+					\"burstcoin.ml\",\"pool.burstcoin.ml\",\"8080\",\"BURST-85W6-5P5V-7VLZ-GZJEF\",\"31536000\"\n\
+					\"moverspool.ml\",\"moverspool.ml\",\"8080\",\"BURST-2FMM-EMKQ-9WQR-8DB52\",\"31104000\""
+
 //[/Headers]
 
 #include "SettingsComponent.h"
@@ -109,8 +142,136 @@ SettingsComponent::SettingsComponent ()
     nodeAddressButton->setColour (TextButton::textColourOffId, Colours::black);
     nodeAddressButton->setColour (TextButton::textColourOnId, Colours::black);
 
+    addAndMakeVisible (setRewardRecipientButton = new TextButton ("setRewardRecipientButton"));
+    setRewardRecipientButton->setTooltip (TRANS("set the pool mining recipient. Enter an address or alias of the pool to which you are mining to. (using cheap fee)"));
+    setRewardRecipientButton->setButtonText (TRANS("set"));
+    setRewardRecipientButton->addListener (this);
+    setRewardRecipientButton->setColour (TextButton::buttonColourId, Colours::white);
+    setRewardRecipientButton->setColour (TextButton::buttonOnColourId, Colours::white);
+    setRewardRecipientButton->setColour (TextButton::textColourOffId, Colours::black);
+    setRewardRecipientButton->setColour (TextButton::textColourOnId, Colours::black);
 
-    //[UserPreSize]
+    addAndMakeVisible (poolComboBox = new ComboBox ("poolComboBox"));
+    poolComboBox->setTooltip (TRANS("set the pool mining recipient. Enter an address or alias of the pool to which you are mining to. Or your own address for solo."));
+    poolComboBox->setEditableText (true);
+    poolComboBox->setJustificationType (Justification::centredLeft);
+    poolComboBox->setTextWhenNothingSelected (TRANS("address of mining pool"));
+    poolComboBox->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
+    poolComboBox->addItem (TRANS("BMF 50 pool BURST-S8Z2-TQ7W-ECVP-FM4FP"), 1);
+    poolComboBox->addListener (this);
+
+    addAndMakeVisible (accountNameTextEditor = new TextEditor ("accountNameTextEditor"));
+    accountNameTextEditor->setTooltip (TRANS("The public account name. Often viewable on explorers."));
+    accountNameTextEditor->setMultiLine (false);
+    accountNameTextEditor->setReturnKeyStartsNewLine (false);
+    accountNameTextEditor->setReadOnly (false);
+    accountNameTextEditor->setScrollbarsShown (false);
+    accountNameTextEditor->setCaretVisible (true);
+    accountNameTextEditor->setPopupMenuEnabled (true);
+    accountNameTextEditor->setText (String());
+
+    addAndMakeVisible (accountDescriptionTextEditor = new TextEditor ("accountDescriptionTextEditor"));
+    accountDescriptionTextEditor->setTooltip (TRANS("A brief public description of this account. Often viewable on explorers"));
+    accountDescriptionTextEditor->setMultiLine (false);
+    accountDescriptionTextEditor->setReturnKeyStartsNewLine (false);
+    accountDescriptionTextEditor->setReadOnly (false);
+    accountDescriptionTextEditor->setScrollbarsShown (false);
+    accountDescriptionTextEditor->setCaretVisible (true);
+    accountDescriptionTextEditor->setPopupMenuEnabled (true);
+    accountDescriptionTextEditor->setText (String());
+
+    addAndMakeVisible (poolLabel = new Label ("poolLabel",
+                                              TRANS("Mining reward recipient")));
+    poolLabel->setFont (Font (15.00f, Font::plain));
+    poolLabel->setJustificationType (Justification::centredRight);
+    poolLabel->setEditable (false, false, false);
+    poolLabel->setColour (TextEditor::textColourId, Colours::black);
+    poolLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
+    addAndMakeVisible (nameLabel = new Label ("nameLabel",
+                                              TRANS("Account name")));
+    nameLabel->setFont (Font (15.00f, Font::plain));
+    nameLabel->setJustificationType (Justification::centredRight);
+    nameLabel->setEditable (false, false, false);
+    nameLabel->setColour (TextEditor::textColourId, Colours::black);
+    nameLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
+    addAndMakeVisible (descriptionLabel = new Label ("descriptionLabel",
+                                                     TRANS("Description")));
+    descriptionLabel->setTooltip (TRANS("a brief public description of this account"));
+    descriptionLabel->setFont (Font (15.00f, Font::plain));
+    descriptionLabel->setJustificationType (Justification::centredRight);
+    descriptionLabel->setEditable (false, false, false);
+    descriptionLabel->setColour (TextEditor::textColourId, Colours::black);
+    descriptionLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
+    addAndMakeVisible (setAccountButton = new TextButton ("setAccountButton"));
+    setAccountButton->setTooltip (TRANS("set the name and description if not empty. (using standard fee)"));
+    setAccountButton->setButtonText (TRANS("set account info"));
+    setAccountButton->addListener (this);
+    setAccountButton->setColour (TextButton::buttonColourId, Colours::white);
+    setAccountButton->setColour (TextButton::buttonOnColourId, Colours::white);
+    setAccountButton->setColour (TextButton::textColourOffId, Colours::black);
+    setAccountButton->setColour (TextButton::textColourOnId, Colours::black);
+
+    addAndMakeVisible (aliasesComboBox = new ComboBox ("aliasesComboBox"));
+    aliasesComboBox->setTooltip (TRANS("Aliases with alphanumeric characters"));
+    aliasesComboBox->setEditableText (true);
+    aliasesComboBox->setJustificationType (Justification::centredLeft);
+    aliasesComboBox->setTextWhenNothingSelected (TRANS("your unique aliases"));
+    aliasesComboBox->setTextWhenNoChoicesAvailable (TRANS("empty"));
+    aliasesComboBox->addListener (this);
+
+    addAndMakeVisible (aliasesLabel = new Label ("aliasesLabel",
+                                                 TRANS("Aliases")));
+    aliasesLabel->setFont (Font (15.00f, Font::plain));
+    aliasesLabel->setJustificationType (Justification::centredRight);
+    aliasesLabel->setEditable (false, false, false);
+    aliasesLabel->setColour (TextEditor::textColourId, Colours::black);
+    aliasesLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
+    addAndMakeVisible (addAliasButton = new TextButton ("addAliasButton"));
+    addAliasButton->setTooltip (TRANS("add an alias if its available (using standard fee)"));
+    addAliasButton->setButtonText (TRANS("add"));
+    addAliasButton->addListener (this);
+    addAliasButton->setColour (TextButton::buttonColourId, Colours::white);
+    addAliasButton->setColour (TextButton::buttonOnColourId, Colours::white);
+    addAliasButton->setColour (TextButton::textColourOffId, Colours::black);
+	addAliasButton->setColour(TextButton::textColourOnId, Colours::black);
+
+
+	//[UserPreSize]
+	{
+		nodeComboBox->clear();
+		URL url(SERVERLISTURL);
+		String serversCSV = url.readEntireTextStream();
+		StringArray lines;
+		if (serversCSV.isEmpty() || serversCSV.contains("mainnet") == false)
+			serversCSV = SERVERLIST;
+		lines = StringArray::fromTokens(serversCSV, "\n", "");
+		for (int i = 0; i < lines.size(); i++)
+		{
+			StringArray c = StringArray::fromTokens(lines[i].trim(), ",", "\"");
+			if (c.size() > 1)
+				nodeComboBox->addItem(c[1].unquoted(), i + 1);
+		}
+	}
+	{
+		poolComboBox->clear();
+		URL url(POOLLISTURL);
+		String poolCSV = url.readEntireTextStream();
+		StringArray lines;
+		if (poolCSV.isEmpty() || poolCSV.contains("\",\"") == false)
+			poolCSV = POOLLIST;
+		lines = StringArray::fromTokens(poolCSV, "\n", "");
+		for (int i = 0; i < lines.size(); i++)
+		{
+			StringArray c = StringArray::fromTokens(lines[i].trim(), ",", "\"");
+			if (c.size() > 1)
+				poolComboBox->addItem(c[0].unquoted() + " - "+ c[3].unquoted(), i + 1);
+		}
+	}	
+
 	passPhraseTextEditor->setMultiLine(false);
 	passPhraseTextEditor->setReturnKeyStartsNewLine(false);
 	passPhraseTextEditor->setReadOnly(false);
@@ -127,7 +288,11 @@ SettingsComponent::SettingsComponent ()
 	cmcTextEditor->setVisible(false);
 	getKeyButton->setVisible(false);
 
+	accountNameTextEditor->addListener(this);
+	accountDescriptionTextEditor->addListener(this);
+
 	currencyType = 0;
+	addAliasButton->setEnabled(false);
     //[/UserPreSize]
 
     setSize (600, 400);
@@ -135,6 +300,8 @@ SettingsComponent::SettingsComponent ()
 
     //[Constructor] You can add your own custom stuff here..
 	EnableControls(true);
+
+	//startTimer(1000 * 60 * 4); // 4 min
     //[/Constructor]
 }
 
@@ -151,6 +318,17 @@ SettingsComponent::~SettingsComponent()
     getKeyButton = nullptr;
     nodeComboBox = nullptr;
     nodeAddressButton = nullptr;
+    setRewardRecipientButton = nullptr;
+    poolComboBox = nullptr;
+    accountNameTextEditor = nullptr;
+    accountDescriptionTextEditor = nullptr;
+    poolLabel = nullptr;
+    nameLabel = nullptr;
+    descriptionLabel = nullptr;
+    setAccountButton = nullptr;
+    aliasesComboBox = nullptr;
+    aliasesLabel = nullptr;
+    addAliasButton = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -178,14 +356,25 @@ void SettingsComponent::resized()
 	/*
     //[/UserPreResize]
 
-    passPhraseTextEditor->setBounds (160, 64, 392, 24);
-    lockButton->setBounds (32, 152, 120, 24);
-    myPassPhraseButton->setBounds (32, 64, 120, 24);
-    cmcButton->setBounds (32, 96, 120, 24);
-    cmcTextEditor->setBounds (160, 96, 264, 24);
-    getKeyButton->setBounds (432, 96, 120, 24);
-    nodeComboBox->setBounds (160, 24, 400, 24);
-    nodeAddressButton->setBounds (32, 24, 120, 24);
+    passPhraseTextEditor->setBounds (424, 80, 152, 24);
+    lockButton->setBounds (40, 392, 120, 24);
+    myPassPhraseButton->setBounds (40, 80, 120, 24);
+    cmcButton->setBounds (40, 360, 120, 24);
+    cmcTextEditor->setBounds (160, 360, 264, 24);
+    getKeyButton->setBounds (432, 360, 120, 24);
+    nodeComboBox->setBounds (160, 24, 392, 24);
+    nodeAddressButton->setBounds (40, 24, 120, 24);
+    setRewardRecipientButton->setBounds (432, 208, 120, 24);
+    poolComboBox->setBounds (160, 208, 264, 24);
+    accountNameTextEditor->setBounds (160, 112, 264, 24);
+    accountDescriptionTextEditor->setBounds (160, 144, 264, 24);
+    poolLabel->setBounds (40, 208, 118, 24);
+    nameLabel->setBounds (40, 112, 118, 24);
+    descriptionLabel->setBounds (40, 144, 118, 24);
+    setAccountButton->setBounds (432, 144, 120, 24);
+    aliasesComboBox->setBounds (160, 176, 264, 24);
+    aliasesLabel->setBounds (40, 176, 118, 24);
+    addAliasButton->setBounds (432, 176, 120, 24);
     //[UserResized] Add your own custom resize handling here..
 	*/
 	const int rowH = 30;
@@ -193,26 +382,57 @@ void SettingsComponent::resized()
 	const int spacer = 5;
 	Rectangle<int> r = getBounds().withPosition(0, 0).reduced(pad);
 
-	Rectangle<int> r1 = r.withHeight(rowH);
+	const int rowsNum = 12;
+	Rectangle<int> r_[rowsNum];
+
+	r_[0] = r.withHeight(rowH);
+	for (int i = 0; i < rowsNum - 1; i++)
+		r_[i+1] = r_[i].translated(0, rowH + spacer);
+
+	/*Rectangle<int> r1 = r.withHeight(rowH);
 	Rectangle<int> r2 = r1.translated(0, rowH + spacer);
 	Rectangle<int> r3 = r2.translated(0, rowH + spacer);
 	Rectangle<int> r4 = r3.translated(0, rowH + spacer);
-	Rectangle<int> r5 = r4.translated(0, rowH + spacer);
+	Rectangle<int> r5 = r4.translated(0, rowH + spacer);*/
 
 	const int bw = 150;
+	const int col3 = 120;
+	int rowIdx = 0;
+	nodeAddressButton->setBounds(r_[rowIdx].withWidth(bw));
+	nodeComboBox->setBounds(r_[rowIdx].withTrimmedLeft(bw + 5));
 
-	nodeAddressButton->setBounds(r1.withWidth(bw));
-	nodeComboBox->setBounds(r1.withTrimmedLeft(bw + 5));
+	rowIdx += 2;
 
-	myPassPhraseButton->setBounds(r2.withWidth(bw));
-	cmcButton->setBounds(r3.withWidth(bw));
+	myPassPhraseButton->setBounds(r_[rowIdx].withWidth(bw));
+	passPhraseTextEditor->setBounds(r_[rowIdx].withTrimmedLeft(bw + 5));
 
-	passPhraseTextEditor->setBounds(r2.withTrimmedLeft(bw + 5));
-	cmcTextEditor->setBounds(r3.withTrimmedLeft(bw + 5).withTrimmedRight(80));
-	getKeyButton->setBounds(r3.withTrimmedLeft(bw + 5 + 5 +cmcTextEditor->getWidth()));
+	rowIdx++;
+	nameLabel->setBounds(r_[rowIdx].withWidth(bw));
+	accountNameTextEditor->setBounds(r_[rowIdx].withTrimmedLeft(bw + 5).withTrimmedRight(col3));
+	rowIdx++;
+	descriptionLabel->setBounds(r_[rowIdx].withWidth(bw));
+	accountDescriptionTextEditor->setBounds(r_[rowIdx].withTrimmedLeft(bw + 5).withTrimmedRight(col3));
+	setAccountButton->setBounds(r_[rowIdx].withTrimmedLeft(bw + 5 + 5 + accountDescriptionTextEditor->getWidth()));
+
+	rowIdx++;
+	aliasesLabel->setBounds(r_[rowIdx].withWidth(bw));
+	aliasesComboBox->setBounds(r_[rowIdx].withTrimmedLeft(bw + 5).withTrimmedRight(col3));
+	addAliasButton->setBounds(r_[rowIdx].withTrimmedLeft(bw + 5 + 5 + aliasesComboBox->getWidth()));
+
+	rowIdx++;
+	poolLabel->setBounds(r_[rowIdx].withWidth(bw));
+	poolComboBox->setBounds(r_[rowIdx].withTrimmedLeft(bw + 5).withTrimmedRight(col3));
+	setRewardRecipientButton->setBounds(r_[rowIdx].withTrimmedLeft(bw + 5 + 5 + poolComboBox->getWidth()));
+
+	rowIdx+=2;
+
+	cmcButton->setBounds(r_[rowIdx].withWidth(bw));
+	cmcTextEditor->setBounds(r_[rowIdx].withTrimmedLeft(bw + 5).withTrimmedRight(col3));
+	getKeyButton->setBounds(r_[rowIdx].withTrimmedLeft(bw + 5 + 5 + cmcTextEditor->getWidth()));
 //	cpTextEditor->setBounds(r5.withTrimmedLeft(bw + 5));
+	rowIdx += 2;
 
-	lockButton->setBounds(r5.withWidth(bw));
+	lockButton->setBounds(r_[rowIdx].withWidth(bw));
 
 #if ALLOW_EXT_REQ != 1
 	//websocketButton->setVisible(false);
@@ -244,9 +464,9 @@ void SettingsComponent::buttonClicked (Button* buttonThatWasClicked)
 		contextMenu->addItem(1, "Change my access PIN code", true);
 	/*	contextMenu->addItem(5, "Manual edit pass phrase", true, editingPassPhrase);
 		contextMenu->addSeparator();
-		contextMenu->addItem(3, "Import pass phrase (plain text!)", true);
+		contextMenu->addItem(3, "Import pass phrase (plain text!)", true);*/
 		contextMenu->addItem(2, "Export pass phrase (plain text!)", true);
-		contextMenu->addSeparator();*/
+		contextMenu->addSeparator();
 		contextMenu->addItem(6, "Generate new / import account", true);
 
 		int result = contextMenu->show();
@@ -307,7 +527,7 @@ void SettingsComponent::buttonClicked (Button* buttonThatWasClicked)
 			contextSubMenu->addItem(14, "GBP", true, currencyType == 4);
 		}
 		contextMenu->addItem(9, "Prices are only for indication. No rights are given", false, false);
-		
+
 		contextMenu->addSubMenu("Display currency", *contextSubMenu, true);
 		contextMenu->addItem(1, "Set coinmarketcap.com API key", true, editing);
 
@@ -363,6 +583,53 @@ void SettingsComponent::buttonClicked (Button* buttonThatWasClicked)
 		contextMenu = nullptr;
         //[/UserButtonCode_nodeAddressButton]
     }
+    else if (buttonThatWasClicked == setRewardRecipientButton)
+    {
+        //[UserButtonCode_setRewardRecipientButton] -- add your button handler code here..
+		String poolSelection = poolComboBox->getText().trim();
+		if (poolSelection.length() >= 26)
+		{
+			poolSelection = poolSelection.substring(poolSelection.length() - 26, poolSelection.length());
+			String recipient = burstExt.ensureAccountRS(poolSelection);
+			if (NativeMessageBox::showOkCancelBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "Set the account reward recipient to " + recipient + " ?\n(cheap fee)"))
+			{
+				String str = burstExt.setRewardRecipient(recipient, "cheap", "1440");
+				if (burstExt.GetJSONvalue(str, "transaction").isNotEmpty())
+					NativeMessageBox::showMessageBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "New account reward recipient has been sent.\n\nPlease be patient while it is mined and verified. (~30 min)");
+				else NativeMessageBox::showMessageBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "Failed to set the account reward recipient !\n" + burstExt.GetJSONvalue(str, "errorDescription"));
+			}
+		}
+        //[/UserButtonCode_setRewardRecipientButton]
+    }
+    else if (buttonThatWasClicked == setAccountButton)
+    {
+        //[UserButtonCode_setAccountButton] -- add your button handler code here..
+		String name_ = accountNameTextEditor->getText();
+		String description_ = accountDescriptionTextEditor->getText();
+
+		if (NativeMessageBox::showOkCancelBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "Set the account name & description info? (cheap fee)\n" + name_ + "\n" + description_ + "\n"))
+		{
+			String str = burstExt.setAccountInfo(name_, description_, "cheap", "1440");
+			if (burstExt.GetJSONvalue(str, "transaction").isNotEmpty())
+				NativeMessageBox::showMessageBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "New account name & description has been sent. Please be patient while it is mined and verified.");
+			else NativeMessageBox::showMessageBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "Failed to set the account info !\n" + burstExt.GetJSONvalue(str, "errorDescription"));
+		}
+        //[/UserButtonCode_setAccountButton]
+    }
+    else if (buttonThatWasClicked == addAliasButton)
+    {
+        //[UserButtonCode_addAliasButton] -- add your button handler code here..
+		String newAlias = aliasesComboBox->getText().trim();
+		if (NativeMessageBox::showOkCancelBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "Set alias " + newAlias + " ?\n(cheap fee)"))
+		{
+			String aliasURI = "acct:" + burstExt.GetAccountRS().toLowerCase() + "@burst";
+			String str = burstExt.setAlias(newAlias, aliasURI, "cheap", "1440");
+			if (burstExt.GetJSONvalue(str, "transaction").isNotEmpty())
+				NativeMessageBox::showMessageBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "Transaction has been sent. Please be patient while it is mined and verified.");
+			else NativeMessageBox::showMessageBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "Failed to set the alias !\n" + burstExt.GetJSONvalue(str, "errorDescription"));
+		}
+        //[/UserButtonCode_addAliasButton]
+    }
 
     //[UserbuttonClicked_Post]
     //[/UserbuttonClicked_Post]
@@ -379,6 +646,18 @@ void SettingsComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 		interfaceListeners.call(&InterfaceListener::SetAppValue, "server", nodeComboBox->getText());
         //[/UserComboBoxCode_nodeComboBox]
     }
+    else if (comboBoxThatHasChanged == poolComboBox)
+    {
+        //[UserComboBoxCode_poolComboBox] -- add your combo box handling code here..
+		setRewardRecipientButton->setEnabled(true);
+        //[/UserComboBoxCode_poolComboBox]
+    }
+    else if (comboBoxThatHasChanged == aliasesComboBox)
+    {
+        //[UserComboBoxCode_aliasesComboBox] -- add your combo box handling code here..
+		addAliasButton->setEnabled(aliasesArray.contains(aliasesComboBox->getText()) == false && aliasesComboBox->getText().isNotEmpty());
+        //[/UserComboBoxCode_aliasesComboBox]
+    }
 
     //[UsercomboBoxChanged_Post]
     //[/UsercomboBoxChanged_Post]
@@ -387,9 +666,9 @@ void SettingsComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
-void SettingsComponent::SetNode(const String server)
+void SettingsComponent::SetNode(const String server, const bool allowNonSSL)
 {
-	burstExt.SetNode(server);
+	burstExt.SetNode(server, allowNonSSL);
 	nodeComboBox->setText(server, dontSendNotification);
 }
 
@@ -402,6 +681,10 @@ void SettingsComponent::textEditorTextChanged(TextEditor &editor) //Called when 
 	if (cmcTextEditor == &editor)
 	{
 		interfaceListeners.call(&InterfaceListener::SetCMCkey, editor.getText());
+	}
+	if (accountNameTextEditor == &editor || accountDescriptionTextEditor == &editor)
+	{ // enable the set account button if the data changed
+		setAccountButton->setEnabled(accountNameTextEditor->getText().compare(name) != 0 || accountDescriptionTextEditor->getText().compare(description) != 0);
 	}
 }
 
@@ -450,6 +733,61 @@ void SettingsComponent::SetSecretPhrase(const String passphrase)
 	if (passPhraseTextEditor->getText().length() >= 35)
 		passPhraseTextEditor->setColour(TextEditor::backgroundColourId, Colours::white);
 	else passPhraseTextEditor->setColour(TextEditor::backgroundColourId, Colours::red);
+
+	if (passphrase.isNotEmpty())
+		UpdateAccountData();
+	// else todo clear
+}
+
+void SettingsComponent::timerCallback()
+{
+	UpdateAccountData();
+}
+
+void SettingsComponent::UpdateAccountData()
+{
+	String getAccountStr = burstExt.getAccount(burstExt.GetAccountRS());
+	var jsonStructure;
+	Result r = JSON::parse(getAccountStr, jsonStructure);
+	name = jsonStructure["name"];
+	description = jsonStructure["description"];
+
+	accountNameTextEditor->setText(name, dontSendNotification);
+	accountDescriptionTextEditor->setText(description, dontSendNotification);
+	setAccountButton->setEnabled(false);
+
+	aliasesComboBox->clear();
+	aliasesArray.clear();
+	String aliases = burstExt.getAliases(burstExt.GetAccountRS());
+	var aliasesJson;
+	Result r2 = JSON::parse(aliases, aliasesJson);
+	if (aliasesJson["aliases"].isArray())
+	{
+		for (int i = 0; i < aliasesJson["aliases"].size(); i++)
+		{
+			aliasesArray.add(aliasesJson["aliases"][i]["aliasName"]);
+		}
+		aliasesComboBox->addItemList(aliasesArray, 1);
+		aliasesComboBox->setSelectedItemIndex(0);
+	}
+
+	const String rewardRecipientJsonStr = burstExt.getRewardRecipient(burstExt.GetAccountRS());
+	const String rewardRecipientStr = burstExt.GetJSONvalue(rewardRecipientJsonStr, "rewardRecipient");
+	const String rewardRecipientRS = burstExt.ensureAccountRS(rewardRecipientStr);
+	if (rewardRecipientRS.isNotEmpty())
+	{
+		int idx = -1;
+		for (int i = 0; i < poolComboBox->getNumItems(); i++)
+		{
+			if (poolComboBox->getItemText(i).contains(rewardRecipientRS))
+				idx = i;
+		}
+		if (idx >= 0)
+			poolComboBox->setSelectedItemIndex(idx, dontSendNotification);
+		else if (rewardRecipientRS.isNotEmpty())
+			poolComboBox->setText(rewardRecipientRS, dontSendNotification);
+		setRewardRecipientButton->setEnabled(false);
+	}
 }
 
 void SettingsComponent::EnableControls(const bool on)
@@ -610,46 +948,95 @@ void SettingsComponent::ShowHttpPopup()
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="SettingsComponent" componentName=""
-                 parentClasses="public TextEditorListener, public Component, public SettingsListener"
+                 parentClasses="public TextEditorListener, public Component, public SettingsListener, public Timer"
                  constructorParams="" variableInitialisers="" snapPixels="8" snapActive="1"
                  snapShown="1" overlayOpacity="0.330" fixedSize="0" initialWidth="600"
                  initialHeight="400">
   <BACKGROUND backgroundColour="ffdfdfdf"/>
   <TEXTEDITOR name="passPhraseTextEditor" id="f0cbabb6811d2f5" memberName="passPhraseTextEditor"
-              virtualName="" explicitFocusOrder="0" pos="160 64 392 24" tooltip="Enter your existing pass phrase here. Or you can create a new wallet here. A red background indicates a phrase shorter than 35 characters, which is not recommended !"
+              virtualName="" explicitFocusOrder="0" pos="424 80 152 24" tooltip="Enter your existing pass phrase here. Or you can create a new wallet here. A red background indicates a phrase shorter than 35 characters, which is not recommended !"
               initialText="" multiline="0" retKeyStartsLine="0" readonly="0"
               scrollbars="0" caret="1" popupmenu="1"/>
   <TEXTBUTTON name="lockButton" id="2b10438639a15113" memberName="lockButton"
-              virtualName="" explicitFocusOrder="0" pos="32 152 120 24" tooltip="Locks the app now. And clears the pass phrase. You will need to enter the PIN to unlock it again."
+              virtualName="" explicitFocusOrder="0" pos="40 392 120 24" tooltip="Locks the app now. And clears the pass phrase. You will need to enter the PIN to unlock it again."
               bgColOff="ffffffff" bgColOn="ffffffff" textCol="ff000000" textColOn="ff000000"
               buttonText="Log out" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="myPassPhraseButton" id="a57dbbdc113f5472" memberName="myPassPhraseButton"
-              virtualName="" explicitFocusOrder="0" pos="32 64 120 24" tooltip="Pop-up menu with pass phrase options"
+              virtualName="" explicitFocusOrder="0" pos="40 80 120 24" tooltip="Pop-up menu with pass phrase options"
               bgColOff="ffffffff" bgColOn="ffffffff" textCol="ff000000" textColOn="ff000000"
               buttonText="My account" connectedEdges="0" needsCallback="1"
               radioGroupId="0"/>
   <TEXTBUTTON name="cmcButton" id="6d710c0347734f90" memberName="cmcButton"
-              virtualName="" explicitFocusOrder="0" pos="32 96 120 24" tooltip="Pop-up menu with currency options"
+              virtualName="" explicitFocusOrder="0" pos="40 360 120 24" tooltip="Pop-up menu with currency options"
               bgColOff="ffffffff" bgColOn="ffffffff" textCol="ff000000" textColOn="ff000000"
               buttonText="Currency type" connectedEdges="0" needsCallback="1"
               radioGroupId="0"/>
   <TEXTEDITOR name="cmcTextEditor" id="40e0f00b7b45b6de" memberName="cmcTextEditor"
-              virtualName="" explicitFocusOrder="0" pos="160 96 264 24" tooltip="Enter your coinmarketcap.com API key to view the amounts in other currency values."
+              virtualName="" explicitFocusOrder="0" pos="160 360 264 24" tooltip="Enter your coinmarketcap.com API key to view the amounts in other currency values."
               initialText="" multiline="0" retKeyStartsLine="0" readonly="0"
               scrollbars="0" caret="1" popupmenu="1"/>
   <TEXTBUTTON name="getKeyButton" id="bfbde25cea42c682" memberName="getKeyButton"
-              virtualName="" explicitFocusOrder="0" pos="432 96 120 24" tooltip="opens default browser"
+              virtualName="" explicitFocusOrder="0" pos="432 360 120 24" tooltip="opens default browser"
               bgColOff="ffffffff" bgColOn="ffffffff" textCol="ff000000" textColOn="ff000000"
               buttonText="get key" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <COMBOBOX name="nodeComboBox" id="1aa07b18d7c2e0de" memberName="nodeComboBox"
-            virtualName="" explicitFocusOrder="0" pos="160 24 400 24" tooltip="Can be testnet or main net. However it is recommened not to use the your same wallet account on both."
+            virtualName="" explicitFocusOrder="0" pos="160 24 392 24" tooltip="Can be testnet or main net. However it is recommened not to use the your same wallet account on both."
             editable="1" layout="33" items="wallet.burst-team.us:2083&#10;localhost:8125&#10;testnet.getburst.net:6876"
             textWhenNonSelected="local or external node address" textWhenNoItems="(no choices)"/>
   <TEXTBUTTON name="nodeAddressButton" id="215f2fe3e006175a" memberName="nodeAddressButton"
-              virtualName="" explicitFocusOrder="0" pos="32 24 120 24" tooltip="Pop-up menu with node address options"
+              virtualName="" explicitFocusOrder="0" pos="40 24 120 24" tooltip="Pop-up menu with node address options"
               bgColOff="ffffffff" bgColOn="ffffffff" textCol="ff000000" textColOn="ff000000"
               buttonText="Node address" connectedEdges="0" needsCallback="1"
               radioGroupId="0"/>
+  <TEXTBUTTON name="setRewardRecipientButton" id="e77fc513bd6b67c1" memberName="setRewardRecipientButton"
+              virtualName="" explicitFocusOrder="0" pos="432 208 120 24" tooltip="set the pool mining recipient. Enter an address or alias of the pool to which you are mining to. (using cheap fee)"
+              bgColOff="ffffffff" bgColOn="ffffffff" textCol="ff000000" textColOn="ff000000"
+              buttonText="set" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
+  <COMBOBOX name="poolComboBox" id="72c476375a9f41de" memberName="poolComboBox"
+            virtualName="" explicitFocusOrder="0" pos="160 208 264 24" tooltip="set the pool mining recipient. Enter an address or alias of the pool to which you are mining to. Or your own address for solo."
+            editable="1" layout="33" items="BMF 50 pool BURST-S8Z2-TQ7W-ECVP-FM4FP"
+            textWhenNonSelected="address of mining pool" textWhenNoItems="(no choices)"/>
+  <TEXTEDITOR name="accountNameTextEditor" id="ce4c2bec32b82234" memberName="accountNameTextEditor"
+              virtualName="" explicitFocusOrder="0" pos="160 112 264 24" tooltip="The public account name. Often viewable on explorers."
+              initialText="" multiline="0" retKeyStartsLine="0" readonly="0"
+              scrollbars="0" caret="1" popupmenu="1"/>
+  <TEXTEDITOR name="accountDescriptionTextEditor" id="af2bdb775e8462ce" memberName="accountDescriptionTextEditor"
+              virtualName="" explicitFocusOrder="0" pos="160 144 264 24" tooltip="A brief public description of this account. Often viewable on explorers"
+              initialText="" multiline="0" retKeyStartsLine="0" readonly="0"
+              scrollbars="0" caret="1" popupmenu="1"/>
+  <LABEL name="poolLabel" id="ae56949c5949a8d1" memberName="poolLabel"
+         virtualName="" explicitFocusOrder="0" pos="40 208 118 24" edTextCol="ff000000"
+         edBkgCol="0" labelText="Mining reward recipient" editableSingleClick="0"
+         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
+         fontsize="15" bold="0" italic="0" justification="34"/>
+  <LABEL name="nameLabel" id="b003f261c26c7d9f" memberName="nameLabel"
+         virtualName="" explicitFocusOrder="0" pos="40 112 118 24" edTextCol="ff000000"
+         edBkgCol="0" labelText="Account name" editableSingleClick="0"
+         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
+         fontsize="15" bold="0" italic="0" justification="34"/>
+  <LABEL name="descriptionLabel" id="d00e126d74f88b88" memberName="descriptionLabel"
+         virtualName="" explicitFocusOrder="0" pos="40 144 118 24" tooltip="a brief public description of this account"
+         edTextCol="ff000000" edBkgCol="0" labelText="Description" editableSingleClick="0"
+         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
+         fontsize="15" bold="0" italic="0" justification="34"/>
+  <TEXTBUTTON name="setAccountButton" id="fead80966fda6de0" memberName="setAccountButton"
+              virtualName="" explicitFocusOrder="0" pos="432 144 120 24" tooltip="set the name and description if not empty. (using standard fee)"
+              bgColOff="ffffffff" bgColOn="ffffffff" textCol="ff000000" textColOn="ff000000"
+              buttonText="set account info" connectedEdges="0" needsCallback="1"
+              radioGroupId="0"/>
+  <COMBOBOX name="aliasesComboBox" id="a5e5442855cb884b" memberName="aliasesComboBox"
+            virtualName="" explicitFocusOrder="0" pos="160 176 264 24" tooltip="Aliases with alphanumeric characters"
+            editable="1" layout="33" items="" textWhenNonSelected="your unique aliases"
+            textWhenNoItems="empty"/>
+  <LABEL name="aliasesLabel" id="edc03fc29ce676f2" memberName="aliasesLabel"
+         virtualName="" explicitFocusOrder="0" pos="40 176 118 24" edTextCol="ff000000"
+         edBkgCol="0" labelText="Aliases" editableSingleClick="0" editableDoubleClick="0"
+         focusDiscardsChanges="0" fontname="Default font" fontsize="15"
+         bold="0" italic="0" justification="34"/>
+  <TEXTBUTTON name="addAliasButton" id="e83c547edaade8cc" memberName="addAliasButton"
+              virtualName="" explicitFocusOrder="0" pos="432 176 120 24" tooltip="add an alias if its available (using standard fee)"
+              bgColOff="ffffffff" bgColOn="ffffffff" textCol="ff000000" textColOn="ff000000"
+              buttonText="add" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

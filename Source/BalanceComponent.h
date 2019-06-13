@@ -53,13 +53,15 @@ public:
 	void removeInterfaceListener(InterfaceListener* const l)   { interfaceListeners.remove(l); };
 	void run();
 	void timerCallback();
-	void SetNode(const String address) override;
+	void SetNode(const String address, const bool allowNonSSL = true) override;
 	void SetSecretPhrase(const String str) override;
 	void SetForceSSL_TSL(const bool forceSSLOn) override;
 	void SetNodeHop(const bool hopOn) override;
 	void SetPrice(String currency, double price) override;
 	void UpdateBalance();
 	void UpdateBalanceRun();
+	void AddAssetWhitelist(const StringArray assetIDs);
+	String GetAssetName(const String assetID, String &decimals);
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -74,6 +76,7 @@ private:
 	CriticalSection burstExtLock;
 	BurstExt burstExt; // used to securely temp store the pass phrase in mem
 	
+	bool updated;
 	String balance;
 	String balance_converted;
 	String myBurstRS;
@@ -85,6 +88,10 @@ private:
 	String assetID;
 	int64 assetIDNumberOfAccounts;
 	int64 timerDelay;
+	StringArray externalAssetWhitelist;
+	StringPairArray assetsBalances;
+	StringPairArray assetWhitelistNames;
+	StringPairArray assetWhitelistDecimals;
 
 	String NQT2Burst(const String value);
     //[/UserVariables]

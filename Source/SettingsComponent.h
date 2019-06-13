@@ -39,6 +39,7 @@
 class SettingsComponent  : public TextEditorListener,
                            public Component,
                            public SettingsListener,
+                           public Timer,
                            public ButtonListener,
                            public ComboBoxListener
 {
@@ -52,7 +53,7 @@ public:
 	void addInterfaceListener(InterfaceListener* const l)      { interfaceListeners.add(l); };
 	void removeInterfaceListener(InterfaceListener* const l)   { interfaceListeners.remove(l); };
 
-	void SetNode(const String address) override;
+	void SetNode(const String address, const bool allowNonSSL = true) override;
 
 	void textEditorTextChanged(TextEditor &editor); //Called when the user changes the text in some way.
 	void textEditorReturnKeyPressed(TextEditor &editor); //Called when the user presses the return key.
@@ -76,6 +77,9 @@ public:
 	void SetCurrencyType(const int type);
 
 	void ShowHttpPopup();
+
+	void UpdateAccountData();
+	void timerCallback() override;
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -92,6 +96,9 @@ private:
     //[UserVariables]   -- You can add your own custom variables in this section.
 	ListenerList <InterfaceListener> interfaceListeners;
 	//String addressRS;
+	String name, description;
+	StringArray aliasesArray;
+
 	int currencyType;
 	BurstExt burstExt; // used to securely temp store the pass phrase in mem
     //[/UserVariables]
@@ -105,6 +112,17 @@ private:
     ScopedPointer<TextButton> getKeyButton;
     ScopedPointer<ComboBox> nodeComboBox;
     ScopedPointer<TextButton> nodeAddressButton;
+    ScopedPointer<TextButton> setRewardRecipientButton;
+    ScopedPointer<ComboBox> poolComboBox;
+    ScopedPointer<TextEditor> accountNameTextEditor;
+    ScopedPointer<TextEditor> accountDescriptionTextEditor;
+    ScopedPointer<Label> poolLabel;
+    ScopedPointer<Label> nameLabel;
+    ScopedPointer<Label> descriptionLabel;
+    ScopedPointer<TextButton> setAccountButton;
+    ScopedPointer<ComboBox> aliasesComboBox;
+    ScopedPointer<Label> aliasesLabel;
+    ScopedPointer<TextButton> addAliasButton;
 
 
     //==============================================================================

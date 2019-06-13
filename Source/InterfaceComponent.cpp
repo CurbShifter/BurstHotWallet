@@ -67,7 +67,7 @@ InterfaceComponent::InterfaceComponent ()
     historyButton->setColour (TextButton::buttonOnColourId, Colour (0xff84cb16));
 
     addAndMakeVisible (sendButton = new TextButton ("sendButton"));
-    sendButton->setButtonText (TRANS("send Burst"));
+    sendButton->setButtonText (TRANS("send"));
     sendButton->addListener (this);
     sendButton->setColour (TextButton::buttonColourId, Colour (0xff84cb16));
     sendButton->setColour (TextButton::buttonOnColourId, Colour (0xff84cb16));
@@ -95,6 +95,7 @@ InterfaceComponent::InterfaceComponent ()
 
     drawable1 = Drawable::createFromImageData (burstHotWalletlogo_svg, burstHotWalletlogo_svgSize);
     drawable2 = Drawable::createFromImageData (burstHotWalletPrologo_svg, burstHotWalletPrologo_svgSize);
+    drawable3 = Drawable::createFromImageData (burst_logo_white_svg, burst_logo_white_svgSize);
 
     //[UserPreSize]
 	sendComponent->setVisible(false);
@@ -107,6 +108,8 @@ InterfaceComponent::InterfaceComponent ()
 
 
     //[Constructor] You can add your own custom stuff here..
+	leftTopCorner1 = juce::Rectangle<float>(0, 0, 100, 50).reduced(5);
+	leftTopCorner2 = juce::Rectangle<float>(100, 0, 80, 50).reduced(6);
 
 	lastSendDataMs = 0;
 
@@ -163,17 +166,29 @@ InterfaceComponent::InterfaceComponent ()
 		addBalanceComponentListener(balanceComponent);
 	}
 
+	String forceSSLOnStr;
+	GetAppValue("forceSSLOn", forceSSLOnStr);
+
+	bool forceSSLOn = forceSSLOnStr.getIntValue() > 0;
+	burstExt.SetForceSSL_TSL(forceSSLOn);
+	transactionsComponentListeners.call(&TransactionsComponentListener::SetForceSSL_TSL, forceSSLOn);
+	shoutComponentListeners.call(&ShoutComponentListener::SetForceSSL_TSL, forceSSLOn);
+	settingsListeners.call(&SettingsListener::SetForceSSL_TSL, forceSSLOn);
+	balanceComponentListeners.call(&BalanceComponentListener::SetForceSSL_TSL, forceSSLOn);
+
 	String node_server;
 	GetAppValue("server", node_server);
 	if (node_server.isEmpty())
 	{
-		node_server = "https://wallet1.burst-team.us:2083/";
+		node_server = US_NET;// "https://wallet1.burst-team.us:2083/";
 	}
 	burstExt.SetNode(node_server);
-	transactionsComponentListeners.call(&TransactionsComponentListener::SetNode, node_server);
-	shoutComponentListeners.call(&ShoutComponentListener::SetNode, node_server);
-	settingsListeners.call(&SettingsListener::SetNode, node_server);
-	balanceComponentListeners.call(&BalanceComponentListener::SetNode, node_server);
+	node_server = burstExt.GetNode();
+
+	transactionsComponentListeners.call(&TransactionsComponentListener::SetNode, node_server, false);
+	shoutComponentListeners.call(&ShoutComponentListener::SetNode, node_server, false);
+	settingsListeners.call(&SettingsListener::SetNode, node_server, false);
+	balanceComponentListeners.call(&BalanceComponentListener::SetNode, node_server, false);
 
 	wizlaf = new CELookAndFeel();
 	Typeface::Ptr typefacePtr = Typeface::createSystemTypefaceFor(BinaryData::NotoSansRegular_ttf, BinaryData::NotoSansRegular_ttfSize);
@@ -216,7 +231,7 @@ InterfaceComponent::InterfaceComponent ()
 		settingsListeners.call(&SettingsListener::CreateWallet);
 	else LoadPassPhrase();
 
-	versionLabel->setText("v0.2." PROJECT_SVNRevision " (" + String(burstExt.GetBurstKitVersionNumber()) + ")", dontSendNotification);
+	versionLabel->setText("v0.3." PROJECT_SVNRevision " (" + String(burstExt.GetBurstKitVersionNumber()) + ")", dontSendNotification);
 
 #if ALLOW_EXT_REQ == 1
 	String httpsocketStr;
@@ -228,16 +243,6 @@ InterfaceComponent::InterfaceComponent ()
 	}
 #endif
 
-	String forceSSLOnStr;
-	GetAppValue("forceSSLOn", forceSSLOnStr);
-
-	bool forceSSLOn = forceSSLOnStr.getIntValue() > 0;
-	burstExt.SetForceSSL_TSL(forceSSLOn);
-	transactionsComponentListeners.call(&TransactionsComponentListener::SetForceSSL_TSL, forceSSLOn);
-	shoutComponentListeners.call(&ShoutComponentListener::SetForceSSL_TSL, forceSSLOn);
-	settingsListeners.call(&SettingsListener::SetForceSSL_TSL, forceSSLOn);
-	balanceComponentListeners.call(&BalanceComponentListener::SetForceSSL_TSL, forceSSLOn);
-
 	String hopOnStr;
 	GetAppValue("hopOn", hopOnStr);
 
@@ -247,7 +252,6 @@ InterfaceComponent::InterfaceComponent ()
 	shoutComponentListeners.call(&ShoutComponentListener::SetNodeHop, hopOn);
 	settingsListeners.call(&SettingsListener::SetNodeHop, hopOn);
 	balanceComponentListeners.call(&BalanceComponentListener::SetNodeHop, hopOn);
-
 
 	//systemTray->showInfoBubble(ProjectInfo::projectName, "hi");
 	//systemTray->setIconTooltip("");
@@ -282,6 +286,7 @@ InterfaceComponent::~InterfaceComponent()
     aboutComponent = nullptr;
     drawable1 = nullptr;
     drawable2 = nullptr;
+    drawable3 = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -317,6 +322,12 @@ void InterfaceComponent::paint (Graphics& g)
                                        true));
     g.fillRect (4, 4, 636, 524);
 
+    g.setColour (Colours::black);
+    jassert (drawable3 != 0);
+    if (drawable3 != 0)
+        drawable3->drawWithin (g, Rectangle<float> (12, 12, 64, 24),
+                               RectanglePlacement::centred, 1.000f);
+
     //[UserPaint] Add your own custom painting code here..
 	*/
 	g.fillAll(Colour(0xff535353));
@@ -329,18 +340,27 @@ void InterfaceComponent::paint (Graphics& g)
 	g.fillRect(0, 0, getWidth(), getHeight());
 
 	g.setColour(Colours::black);
+
+
+	// BURST
+	jassert(drawable3 != 0);
+	if (drawable3 != 0)
+		drawable3->drawWithin(g, leftTopCorner1,
+		RectanglePlacement::centred, 1.000f);
+
+	// LOGO
 	if (isPro == false)
 	{
 		jassert(drawable1 != 0);
 		if (drawable1 != 0)
-			drawable1->drawWithin(g, juce::Rectangle<float>(10, 5, 100, 45).reduced(5),
+			drawable1->drawWithin(g, leftTopCorner2,
 			RectanglePlacement::centred | RectanglePlacement::onlyReduceInSize, 1.000f);
 	}
 	else
 	{
 		jassert(drawable2 != 0);
 		if (drawable2 != 0)
-			drawable2->drawWithin(g, juce::Rectangle<float>(10, 5, 100, 45).reduced(5),
+			drawable2->drawWithin(g, leftTopCorner2,
 			RectanglePlacement::centred | RectanglePlacement::onlyReduceInSize, 1.000f);
 	}
     //[/UserPaint]
@@ -371,19 +391,12 @@ void InterfaceComponent::resized()
 	const float topH = rowH * 4.f;
 	const float rowH2 = 35.f;
 	const int w = (int)r.getWidth();
-
-
+	
 	if (pinComponent) pinComponent->setBounds(r.toNearestInt());
 	aboutComponent->setBounds(r.toNearestInt());
-
-
-	//serverComboBox->setBounds(r.withTrimmedTop(rowH / 2).withHeight(rowH).withTrimmedLeft(120.f).withTrimmedRight(70.f).reduced(1.f).toNearestInt());
-	//versionLabel->setBounds(r.withTrimmedTop(rowH / 2).withHeight(rowH).withX((float)serverComboBox->getRight()).withWidth(70.f).reduced(3.f).toNearestInt());
-	versionLabel->setBounds(juce::Rectangle<int>(100, 10, 50, 40));
-
-//	accountButton->setBounds(juce::Rectangle<int>(versionLabel->getRight(), 0, w - versionLabel->getRight() - (2 * rowH), (int)rowH).reduced(3));
-//	balanceLabel->setBounds(juce::Rectangle<int>(versionLabel->getRight(), accountButton->getBottom(), w - versionLabel->getRight() - (2 * rowH), (int)rowH).reduced(3));
-
+	
+	versionLabel->setBounds(juce::Rectangle<int>(20, 50, leftTopCorner2.getRight() - 20, 20));
+	
 	balanceComponent->setBounds(juce::Rectangle<int>(versionLabel->getRight(), 0, w - versionLabel->getRight() - (2 * rowH), (int)rowH * 2).reduced(3));
 
 	settingsButton->setBounds(juce::Rectangle<int>(w - (2 * rowH), 0, (2 * rowH), (2 * rowH)).reduced(15));
@@ -395,7 +408,6 @@ void InterfaceComponent::resized()
 	sendComponent->setBounds(r.withTrimmedTop(sendButton->getBottom()).withTrimmedBottom(rowH2).toNearestInt());
 	historyComponent->setBounds(r.withTrimmedTop(sendButton->getBottom()).withTrimmedBottom(rowH2).toNearestInt());
 
-	//shoutComponent->setBounds(r.withHeight(rowH2).withTrimmedLeft(120.f).reduced(1.f).toNearestInt());
 	shoutComponent->setBounds(r.withTrimmedTop(r.getHeight() - rowH2).toNearestInt());
     //[/UserResized]
 }
@@ -434,7 +446,7 @@ void InterfaceComponent::buttonClicked (Button* buttonThatWasClicked)
 void InterfaceComponent::mouseUp (const MouseEvent& e)
 {
     //[UserCode_mouseUp] -- Add your code here...
-	if (juce::Rectangle<int>(10, 5, 100, 50).contains(e.getPosition())) // clicked logo
+	if (leftTopCorner1.toNearestInt().contains(e.getPosition()) || leftTopCorner2.toNearestInt().contains(e.getPosition())) // clicked logo
 		aboutComponent->setVisible(aboutComponent->isVisible() == false);
     //[/UserCode_mouseUp]
 }
@@ -711,21 +723,22 @@ void InterfaceComponent::timerCallback()
 void InterfaceComponent::SetNode(const String address)
 {
 	burstExt.SetNode(address);
+	String checkedAddress = burstExt.GetNode();
 
-	String constants;
-	if (address.isNotEmpty())
-		constants = burstExt.getConstants();
+	String v;
+	if (checkedAddress.isNotEmpty())
+		v = burstExt.getMyInfo();
 
-	if (constants.isEmpty())
+	if (v.isEmpty())
 	{
 		NativeMessageBox::showMessageBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "Node address seems invalid !");
 	}
 	else
 	{
-		transactionsComponentListeners.call(&TransactionsComponentListener::SetNode, address);
-		shoutComponentListeners.call(&ShoutComponentListener::SetNode, address);
-		settingsListeners.call(&SettingsListener::SetNode, address);
-		balanceComponentListeners.call(&BalanceComponentListener::SetNode, address);
+		transactionsComponentListeners.call(&TransactionsComponentListener::SetNode, checkedAddress, false);
+		shoutComponentListeners.call(&ShoutComponentListener::SetNode, checkedAddress, false);
+		settingsListeners.call(&SettingsListener::SetNode, checkedAddress, false);
+		balanceComponentListeners.call(&BalanceComponentListener::SetNode, checkedAddress, false);
 	}
 }
 
@@ -758,9 +771,7 @@ void InterfaceComponent::MakeCoupon(couponArgs args)
 	String dispName;
 	GetAccountDisplayName(0, args.recipient, dispName);
 
-	// TODO simple balance call
 	String balance = String(burstExt.GetBalance(0));
-	//UpdateBalance(balance);
 
 	if (dispName.isEmpty() || dispName.compare("BURST-2222-2222-2222-22222") == 0)
 		errorStr = "Incorrect recipient address, Use a BURST-XXXX-XXXX-XXXX-XXXXX address, numeric ID or an existing alias.";
@@ -769,7 +780,9 @@ void InterfaceComponent::MakeCoupon(couponArgs args)
 	else if (args.feeNQT.getLargeIntValue() <= 0)
 		errorStr = "Incorrect fee !";
 	else if (args.amountNQT.getLargeIntValue() + args.feeNQT.getLargeIntValue() > balance.getLargeIntValue())
-		errorStr = "Your balance is too low for this transaction !";
+	{
+		errorStr = "Your balance (" + String(balance.getLargeIntValue()) + ") is too low for this transaction !";
+	}
 	else if (args.password.isEmpty())
 		errorStr = "the coupon password cannot be empty !";
 
@@ -810,6 +823,11 @@ void InterfaceComponent::MakeCoupon(couponArgs args)
 	}
 }
 
+void InterfaceComponent::RedeemCoupon(const String couponCode, const String password)
+{
+	burstExt.RedeemCoupon(couponCode, password);
+}
+
 void InterfaceComponent::SendHotWalletLicense(const String recipient)
 {
 	String dispName;
@@ -838,8 +856,56 @@ void InterfaceComponent::SendHotWalletLicense(const String recipient)
 		String transferAssetResp = burstExt.transferAsset(recipient, assetID, "1", "normal", "1440", true, 0);
 		String transactionID = burstExt.GetJSONvalue(transferAssetResp, "transaction");
 		if (transactionID.isNotEmpty())
-			NativeMessageBox::showMessageBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "License send " + transactionID);
-		else NativeMessageBox::showMessageBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "License send FAILED !");
+			NativeMessageBox::showMessageBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "License sent" + transactionID);
+		else NativeMessageBox::showMessageBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "Send license FAILED !");
+	}
+}
+
+void InterfaceComponent::SendAsset(const String recipient, const String assetID, const String amountNQT, const String feeNQT, const String msg, const bool encrypted)
+{
+	String errorStr;
+	String dispName;
+	GetAccountDisplayName(0, recipient, dispName);
+
+	String balance = String(burstExt.GetBalance(0));
+	uint64 balanceAsset = (burstExt.GetAssetBalance(assetID, 0));
+	int whitelistIdx = assetWhitelist.indexOf(assetID);
+	int dec = assetWhitelistDecimals[whitelistIdx].getLargeIntValue();
+
+	// asset can have less decimals than the default 8. convert if needed
+	uint64 amountNQT_Asset = amountNQT.getLargeIntValue() / (uint64)(pow(10., 8 - dec));
+
+
+	if (dispName.isEmpty() || dispName.compare("BURST-2222-2222-2222-22222") == 0)
+		errorStr = "Incorrect recipient address, Use a BURST-XXXX-XXXX-XXXX-XXXXX address, numeric ID or an existing alias.";
+	else if (amountNQT_Asset <= 0)
+		errorStr = "Incorrect amount ! use numeric values. Like 123.45";
+	else if (feeNQT.getLargeIntValue() <= 0)
+		errorStr = "Incorrect fee !";
+	else if (feeNQT.getLargeIntValue() > balance.getLargeIntValue())
+		errorStr = "Your balance is too low to make this transaction ! (check BURST fee)";
+	else if (amountNQT_Asset > balanceAsset)
+	{
+		errorStr = "Your balance (" + String(balanceAsset / pow(10., dec), dec) + ") is too low to make this transaction !";
+	}
+
+	if (errorStr.isNotEmpty())
+		NativeMessageBox::showMessageBox(AlertWindow::WarningIcon, ProjectInfo::projectName, errorStr);
+	else
+	{
+		if (dispName.containsChar(';'))
+			dispName = dispName.upToFirstOccurrenceOf(";", false, true);
+		if (dispName.compare(recipient) != 0)
+			dispName = dispName + " (" + recipient + ")"; // add RS to text
+
+		if (NativeMessageBox::showOkCancelBox(AlertWindow::QuestionIcon, ProjectInfo::projectName, "Send " + String(amountNQT_Asset / (pow(10., dec)), dec) + " " + assetWhitelistNames[whitelistIdx] + " to " + dispName + " ?"))
+		{
+			String transferAssetResp = burstExt.transferAsset(recipient, assetID, String(amountNQT_Asset), feeNQT, "1440", msg, encrypted, "", true, 0);
+			String transactionID = burstExt.GetJSONvalue(transferAssetResp, "transaction");
+			if (transactionID.isNotEmpty())
+				NativeMessageBox::showMessageBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "Asset sent!\ntransaction id: " + transactionID);
+			else NativeMessageBox::showMessageBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "Send asset FAILED ! Cannot create transaction.");
+		}
 	}
 }
 
@@ -851,8 +917,6 @@ void InterfaceComponent::SendBurstcoin(const String recipient, const String amou
 	GetAccountDisplayName(0, recipient, dispName);
 
 	String balance = String(burstExt.GetBalance(0));
-	//UpdateBalance(balance);
-
 	if (dispName.isEmpty() || dispName.compare("BURST-2222-2222-2222-22222") == 0)
 		errorStr = "Incorrect recipient address, Use a BURST-XXXX-XXXX-XXXX-XXXXX address, numeric ID or an existing alias.";
 	else if (amountNQT.getLargeIntValue() <= 0 && amountNQT.compare("0") != 0)
@@ -891,6 +955,14 @@ void InterfaceComponent::SendBurstcoin(const String recipient, const String amou
 		}
 	}
 }
+
+void InterfaceComponent::SetAssetsBalances(const StringPairArray assetsBalances)
+{
+	this->assetsBalances = assetsBalances;
+
+	UpdateAssetData();
+}
+
 void InterfaceComponent::Broke(const bool show, const String pubKey_b64, const bool isPro)
 { // show the secure account option, if the wallet is empty and has no pubkey
 	this->isPro = isPro;
@@ -967,6 +1039,59 @@ void InterfaceComponent::SetupSendView()
 
 	StringArray amounts = StringArray::fromTokens(GetAppValue("amounts"), ";", "");
 	sendComponentListeners.call(&SendComponentListener::SetAmounts, amounts);
+}
+
+void InterfaceComponent::UpdateAssetData()
+{
+	StringArray assets;
+	StringArray assetsNames;
+	StringArray assetsDescription;
+	StringArray assetsDecimals;
+	GetAssetWhitelist(assets, assetsNames, assetsDescription, assetsDecimals);
+	sendComponentListeners.call(&SendComponentListener::SetAssets, assets, assetsNames, assetsDescription, assetsDecimals, assetsBalances);
+	transactionsComponentListeners.call(&TransactionsComponentListener::SetAssets, assets, assetsNames, assetsDescription, assetsDecimals, assetsBalances);
+}
+
+void InterfaceComponent::GetAssetWhitelist(StringArray &assets, StringArray &assetsNames, StringArray &assetsDescription, StringArray &assetsDecimals)
+{
+	if (assetWhitelist.size() <= 0)
+	{
+		assets = assetsBalances.getAllKeys();
+		assets.sortNatural();
+		assets.move(assets.indexOf("0"), 0); // put Burst up front
+
+		for (int i = 0; i < assets.size(); i++)
+		{
+			if (assets[i].compare("0") == 0)
+			{
+				assetsNames.add("BURST");
+				assetsDescription.add("Burstcoin");
+				assetsDecimals.add("8");
+			}
+			else
+			{
+				String assetStr = burstExt.getAsset(assets[i]);
+				var assetJson;
+				Result r = JSON::parse(assetStr, assetJson);
+
+				assetsNames.add(assetJson["name"].toString());
+				assetsDescription.add(assetJson["description"].toString());
+				assetsDecimals.add(assetJson["decimals"].toString());
+			}
+		}
+
+		assetWhitelist = assets;
+		assetWhitelistNames = assetsNames;
+		assetWhitelistDescription = assetsDescription;
+		assetWhitelistDecimals = assetsDecimals;
+	}
+	else
+	{
+		assets = assetWhitelist;
+		assetsNames = assetWhitelistNames;
+		assetsDescription = assetWhitelistDescription;
+		assetsDecimals = assetWhitelistDecimals;
+	}
 }
 
 /*********************************************************************************/
@@ -1059,6 +1184,8 @@ BEGIN_JUCER_METADATA
            mode="2"/>
     <RECT pos="4 4 636 524" fill=" radial: 624 528, 100 100, 0=ff004578, 1=ff00432f"
           hasStroke="0"/>
+    <IMAGE pos="12 12 64 24" resource="burst_logo_white_svg" opacity="1"
+           mode="1"/>
   </BACKGROUND>
   <GENERICCOMPONENT name="balanceComponent" id="dccea979d2f05486" memberName="balanceComponent"
                     virtualName="" explicitFocusOrder="0" pos="136 24 416 24" class="BalanceComponent"
@@ -1079,8 +1206,8 @@ BEGIN_JUCER_METADATA
               radioGroupId="0"/>
   <TEXTBUTTON name="sendButton" id="411c767fae4dc759" memberName="sendButton"
               virtualName="" explicitFocusOrder="0" pos="0 96 112 24" bgColOff="ff84cb16"
-              bgColOn="ff84cb16" buttonText="send Burst" connectedEdges="0"
-              needsCallback="1" radioGroupId="0"/>
+              bgColOn="ff84cb16" buttonText="send" connectedEdges="0" needsCallback="1"
+              radioGroupId="0"/>
   <GENERICCOMPONENT name="historyComponent" id="78be139897394c8f" memberName="historyComponent"
                     virtualName="" explicitFocusOrder="0" pos="296 72 168 224" class="HistoryComponent"
                     params=""/>
@@ -1600,6 +1727,62 @@ static const unsigned char resource_InterfaceComponent_burstHotWalletPrologo_svg
 
 const char* InterfaceComponent::burstHotWalletPrologo_svg = (const char*) resource_InterfaceComponent_burstHotWalletPrologo_svg;
 const int InterfaceComponent::burstHotWalletPrologo_svgSize = 14333;
+
+// JUCER_RESOURCE: burst_logo_white_svg, 3258, "img/burst_logo_white.svg"
+static const unsigned char resource_InterfaceComponent_burst_logo_white_svg[] = { 60,63,120,109,108,32,118,101,114,115,105,111,110,61,34,49,46,48,34,32,101,110,99,111,100,105,110,103,61,34,117,116,102,
+45,56,34,63,62,13,10,60,33,45,45,32,71,101,110,101,114,97,116,111,114,58,32,65,100,111,98,101,32,73,108,108,117,115,116,114,97,116,111,114,32,49,52,46,48,46,48,44,32,83,86,71,32,69,120,112,111,114,116,
+32,80,108,117,103,45,73,110,32,46,32,83,86,71,32,86,101,114,115,105,111,110,58,32,54,46,48,48,32,66,117,105,108,100,32,52,51,51,54,51,41,32,32,45,45,62,13,10,60,33,68,79,67,84,89,80,69,32,115,118,103,
+32,80,85,66,76,73,67,32,34,45,47,47,87,51,67,47,47,68,84,68,32,83,86,71,32,49,46,49,47,47,69,78,34,32,34,104,116,116,112,58,47,47,119,119,119,46,119,51,46,111,114,103,47,71,114,97,112,104,105,99,115,47,
+83,86,71,47,49,46,49,47,68,84,68,47,115,118,103,49,49,46,100,116,100,34,62,13,10,60,115,118,103,32,118,101,114,115,105,111,110,61,34,49,46,49,34,32,105,100,61,34,67,97,108,113,117,101,95,49,34,32,120,
+109,108,110,115,61,34,104,116,116,112,58,47,47,119,119,119,46,119,51,46,111,114,103,47,50,48,48,48,47,115,118,103,34,32,120,109,108,110,115,58,120,108,105,110,107,61,34,104,116,116,112,58,47,47,119,119,
+119,46,119,51,46,111,114,103,47,49,57,57,57,47,120,108,105,110,107,34,32,120,61,34,48,112,120,34,32,121,61,34,48,112,120,34,13,10,9,32,119,105,100,116,104,61,34,55,48,48,46,52,54,53,112,120,34,32,104,
+101,105,103,104,116,61,34,50,49,56,46,57,56,57,112,120,34,32,118,105,101,119,66,111,120,61,34,48,32,48,32,55,48,48,46,52,54,53,32,50,49,56,46,57,56,57,34,32,101,110,97,98,108,101,45,98,97,99,107,103,114,
+111,117,110,100,61,34,110,101,119,32,48,32,48,32,55,48,48,46,52,54,53,32,50,49,56,46,57,56,57,34,13,10,9,32,120,109,108,58,115,112,97,99,101,61,34,112,114,101,115,101,114,118,101,34,62,13,10,60,103,62,
+13,10,9,60,112,97,116,104,32,102,105,108,108,61,34,35,70,70,70,70,70,70,34,32,100,61,34,77,50,51,48,46,53,53,53,44,51,53,46,53,51,56,99,45,54,46,56,49,57,45,56,46,49,57,55,45,49,57,46,51,52,49,45,49,50,
+46,49,56,50,45,51,56,46,50,56,49,45,49,50,46,49,56,50,104,45,53,48,46,56,54,53,76,49,50,56,46,55,57,49,44,57,49,46,52,52,108,45,53,48,46,53,53,55,45,48,46,48,50,53,13,10,9,9,76,55,50,46,53,57,54,44,49,
+49,55,46,55,72,49,53,46,54,54,50,108,56,53,46,49,49,55,44,50,55,46,49,56,57,108,53,46,55,56,54,45,50,52,46,54,51,57,104,49,54,46,56,56,54,108,45,49,51,46,57,51,56,44,55,53,46,50,52,104,53,51,46,56,52,
+52,99,51,51,46,52,55,50,44,48,44,53,51,46,56,51,50,45,49,52,46,52,48,54,44,53,56,46,56,55,55,45,52,49,46,54,54,51,108,50,46,53,49,55,45,49,51,46,54,50,53,13,10,9,9,99,51,46,51,52,45,49,56,46,48,48,51,
+45,49,46,50,53,51,45,50,57,46,57,49,57,45,49,52,46,48,51,50,45,51,54,46,50,53,53,99,49,51,46,48,54,55,45,54,46,50,48,52,44,50,48,46,54,52,55,45,49,54,46,56,57,55,44,50,51,46,54,56,56,45,51,51,46,50,53,
+51,108,49,46,49,48,55,45,53,46,57,55,50,13,10,9,9,67,50,51,55,46,56,56,44,53,49,46,57,51,57,44,50,51,54,46,50,53,56,44,52,50,46,51,57,51,44,50,51,48,46,53,53,53,44,51,53,46,53,51,56,122,32,77,49,56,55,
+46,56,56,56,44,49,51,55,46,54,51,52,108,45,50,46,55,44,49,52,46,53,54,56,99,45,49,46,57,50,51,44,49,48,46,52,49,56,45,54,46,56,48,50,44,49,52,46,52,55,57,45,49,55,46,52,48,51,44,49,52,46,52,55,57,104,
+45,49,53,46,53,56,51,13,10,9,9,108,56,46,54,48,51,45,52,54,46,52,52,57,104,49,50,46,51,55,49,99,55,46,49,48,55,44,48,44,49,49,46,51,57,50,44,49,46,49,55,50,44,49,51,46,52,56,52,44,51,46,54,56,57,67,49,
+56,56,46,55,51,52,44,49,50,54,46,52,49,55,44,49,56,57,46,49,51,54,44,49,51,48,46,57,48,49,44,49,56,55,46,56,56,56,44,49,51,55,46,54,51,52,122,32,77,49,57,55,46,56,52,51,44,54,54,46,52,53,13,10,9,9,108,
+45,49,46,55,50,53,44,57,46,51,49,50,99,45,50,46,48,51,54,44,49,48,46,57,56,54,45,56,46,49,48,50,44,49,53,46,54,55,52,45,50,48,46,50,56,50,44,49,53,46,54,55,52,104,45,57,46,54,57,55,108,55,46,50,55,55,
+45,51,57,46,50,57,54,104,49,51,46,53,53,52,99,52,46,56,52,52,44,48,44,56,46,48,49,53,44,48,46,57,56,44,57,46,54,57,51,44,50,46,57,57,57,13,10,9,9,67,49,57,56,46,52,54,53,44,53,55,46,51,48,54,44,49,57,
+56,46,56,53,50,44,54,49,46,48,48,55,44,49,57,55,46,56,52,51,44,54,54,46,52,53,122,34,47,62,13,10,9,60,112,97,116,104,32,102,105,108,108,61,34,35,70,70,70,70,70,70,34,32,100,61,34,77,50,55,49,46,53,50,
+52,44,49,57,55,46,54,52,50,99,45,49,55,46,50,53,51,44,48,45,50,57,46,54,54,53,45,52,46,51,57,45,51,54,46,56,57,45,49,51,46,48,52,57,99,45,54,46,52,51,52,45,55,46,55,49,49,45,56,46,52,53,54,45,49,56,46,
+52,51,55,45,54,46,48,48,57,45,51,49,46,56,55,56,13,10,9,9,108,50,51,46,53,54,57,45,49,50,57,46,51,49,53,104,51,55,46,50,56,108,45,50,52,46,48,51,44,49,51,49,46,56,54,50,99,45,48,46,56,53,51,44,52,46,54,
+55,57,45,48,46,52,48,55,44,56,46,49,48,52,44,49,46,51,50,53,44,49,48,46,49,56,99,49,46,55,53,50,44,50,46,49,44,53,46,49,50,56,44,51,46,49,54,53,44,49,48,46,48,51,53,44,51,46,49,54,53,13,10,9,9,99,49,48,
+46,49,54,49,44,48,44,49,53,46,52,57,45,52,46,51,56,55,44,49,55,46,50,56,45,49,52,46,50,50,52,108,50,51,46,56,55,51,45,49,51,48,46,57,56,51,104,51,53,46,53,49,55,108,45,50,51,46,55,50,49,44,49,51,48,46,
+49,57,52,67,51,50,52,46,53,55,51,44,49,56,49,46,57,57,57,44,51,48,51,46,56,57,52,44,49,57,55,46,54,52,50,44,50,55,49,46,53,50,52,44,49,57,55,46,54,52,50,13,10,9,9,76,50,55,49,46,53,50,52,44,49,57,55,46,
+54,52,50,122,34,47,62,13,10,9,60,112,97,116,104,32,102,105,108,108,61,34,35,70,70,70,70,70,70,34,32,100,61,34,77,52,53,50,46,50,48,54,44,51,53,46,53,54,50,99,45,54,46,56,50,56,45,56,46,49,56,55,45,49,
+57,46,51,51,52,45,49,50,46,49,54,55,45,51,56,46,50,51,49,45,49,50,46,49,54,55,72,51,54,51,46,50,108,45,51,49,46,51,53,52,44,49,55,50,46,48,56,55,104,51,55,46,50,55,108,49,50,46,52,49,50,45,54,56,46,48,
+53,57,13,10,9,9,104,57,46,49,48,54,99,54,46,55,54,49,44,48,44,49,49,46,49,50,53,44,49,46,50,57,51,44,49,51,46,51,52,50,44,51,46,57,53,49,99,50,46,50,56,53,44,50,46,55,51,57,44,50,46,55,55,57,44,55,46,
+52,53,50,44,49,46,53,49,49,44,49,52,46,52,48,56,108,45,52,46,55,57,53,44,50,54,46,50,54,53,13,10,9,9,99,45,50,46,53,50,53,44,49,51,46,56,54,57,45,49,46,56,53,44,49,54,46,56,50,51,45,48,46,56,50,55,44,
+50,49,46,50,57,53,108,48,46,52,56,56,44,50,46,49,52,104,51,56,46,50,53,51,108,45,49,46,48,57,56,45,51,46,50,51,57,99,45,49,46,57,52,49,45,53,46,55,50,54,45,49,46,49,53,57,45,49,49,46,50,55,49,44,48,46,
+50,53,54,45,49,57,46,48,55,53,108,52,46,55,48,54,45,50,53,46,55,57,53,13,10,9,9,99,50,46,49,52,54,45,49,49,46,55,53,56,44,51,46,48,52,45,50,55,46,55,51,45,49,49,46,55,51,45,51,53,46,57,49,49,99,49,51,
+46,50,51,50,45,54,46,50,53,50,44,50,49,46,49,51,54,45,49,55,46,50,57,44,50,52,46,49,45,51,51,46,53,57,50,108,50,46,51,57,52,45,49,51,46,49,50,52,13,10,9,9,67,52,53,57,46,53,54,53,44,53,49,46,57,53,57,
+44,52,53,55,46,57,50,49,44,52,50,46,52,49,52,44,52,53,50,46,50,48,54,44,51,53,46,53,54,50,122,32,77,52,49,57,46,54,53,44,54,54,46,52,57,108,45,51,46,48,48,57,44,49,54,46,52,56,54,99,45,49,46,57,57,57,
+44,49,48,46,57,55,53,45,56,46,48,51,53,44,49,53,46,54,53,54,45,50,48,46,49,56,52,44,49,53,46,54,53,54,104,45,57,46,54,56,55,13,10,9,9,108,56,46,52,55,49,45,52,54,46,52,52,52,104,49,51,46,53,49,52,99,52,
+46,56,51,44,48,44,55,46,57,57,54,44,48,46,57,55,57,44,57,46,54,55,57,44,50,46,57,57,54,67,52,50,48,46,50,52,51,44,53,55,46,51,53,49,44,52,50,48,46,54,52,49,44,54,49,46,48,53,44,52,49,57,46,54,53,44,54,
+54,46,52,57,122,34,47,62,13,10,9,60,112,97,116,104,32,102,105,108,108,61,34,35,70,70,70,70,70,70,34,32,100,61,34,77,52,57,48,46,50,53,51,44,49,57,55,46,51,57,54,99,45,49,55,46,50,53,53,44,48,45,50,57,
+46,54,54,54,45,52,46,51,57,45,51,54,46,56,56,57,45,49,51,46,48,52,55,99,45,54,46,52,51,51,45,55,46,55,48,57,45,56,46,52,53,50,45,49,56,46,52,51,51,45,54,46,48,48,53,45,51,49,46,56,55,52,13,10,9,9,108,
+50,46,50,52,52,45,49,50,46,50,55,54,104,51,53,46,53,49,49,108,45,50,46,55,48,52,44,49,52,46,56,50,52,99,45,48,46,56,53,50,44,52,46,54,56,50,45,48,46,52,48,52,44,56,46,49,48,57,44,49,46,51,50,57,44,49,
+48,46,49,56,55,99,49,46,55,53,51,44,50,46,49,48,50,44,53,46,49,50,57,44,51,46,49,54,55,44,49,48,46,48,51,51,44,51,46,49,54,55,13,10,9,9,99,49,48,46,49,54,50,44,48,44,49,53,46,52,57,49,45,52,46,51,57,44,
+49,55,46,50,55,55,45,49,52,46,50,51,50,99,49,46,56,52,55,45,49,48,46,49,48,52,45,48,46,55,53,56,45,49,56,46,49,51,50,45,50,48,46,49,49,54,45,51,51,46,57,54,54,99,45,50,51,46,51,52,49,45,49,57,46,50,50,
+51,45,51,48,46,54,49,55,45,51,52,46,48,51,49,45,50,54,46,56,53,54,45,53,52,46,54,52,51,13,10,9,9,99,53,46,49,55,56,45,50,56,46,52,48,52,44,50,53,46,54,52,54,45,52,52,46,48,52,55,44,53,55,46,54,51,52,45,
+52,52,46,48,52,55,99,49,54,46,57,55,57,44,48,44,50,57,46,50,48,53,44,52,46,51,51,53,44,51,54,46,51,51,57,44,49,50,46,56,56,52,99,54,46,52,51,50,44,55,46,55,48,56,44,56,46,52,52,50,44,49,56,46,52,56,57,
+44,53,46,57,55,54,44,51,50,46,48,52,50,13,10,9,9,108,45,49,46,51,50,56,44,55,46,50,54,56,104,45,51,53,46,53,48,56,108,49,46,55,56,45,57,46,56,49,54,99,48,46,57,45,52,46,57,51,55,44,48,46,52,55,51,45,56,
+46,53,45,49,46,50,55,50,45,49,48,46,53,57,50,99,45,49,46,54,56,49,45,50,46,48,49,54,45,52,46,55,55,49,45,50,46,57,57,53,45,57,46,52,52,55,45,50,46,57,57,53,13,10,9,9,99,45,57,46,55,53,54,44,48,45,49,52,
+46,57,50,49,44,52,46,52,54,49,45,49,54,46,55,52,54,44,49,52,46,52,54,53,99,45,49,46,56,51,57,44,49,48,46,49,48,52,44,48,46,55,54,57,44,49,56,46,49,51,50,44,50,48,46,49,50,54,44,51,51,46,57,54,55,99,50,
+51,46,51,51,56,44,49,57,46,50,49,55,44,51,48,46,54,49,52,44,51,52,46,48,50,53,44,50,54,46,56,53,52,44,53,52,46,54,52,51,13,10,9,9,67,53,52,51,46,50,57,55,44,49,56,49,46,55,53,53,44,53,50,50,46,54,49,54,
+44,49,57,55,46,51,57,54,44,52,57,48,46,50,53,51,44,49,57,55,46,51,57,54,76,52,57,48,46,50,53,51,44,49,57,55,46,51,57,54,122,34,47,62,13,10,9,60,112,97,116,104,32,102,105,108,108,61,34,35,70,70,70,70,70,
+70,34,32,100,61,34,77,54,49,51,46,48,53,51,44,49,57,53,46,52,56,49,104,45,51,55,46,50,55,55,108,50,54,46,49,49,49,45,49,52,51,46,50,57,51,104,45,51,51,46,55,54,57,108,53,46,50,54,45,50,56,46,55,56,57,
+104,49,48,52,46,55,57,54,108,45,53,46,50,52,56,44,50,56,46,55,56,57,104,45,51,51,46,55,53,55,13,10,9,9,76,54,49,51,46,48,53,51,44,49,57,53,46,52,56,49,76,54,49,51,46,48,53,51,44,49,57,53,46,52,56,49,122,
+34,47,62,13,10,60,47,103,62,13,10,60,47,115,118,103,62,13,10,0,0};
+
+const char* InterfaceComponent::burst_logo_white_svg = (const char*) resource_InterfaceComponent_burst_logo_white_svg;
+const int InterfaceComponent::burst_logo_white_svgSize = 3258;
 
 
 //[EndFile] You can add extra defines here...

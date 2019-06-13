@@ -99,7 +99,7 @@ SendComponent::SendComponent ()
     recipientLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (amountLabel = new Label ("amountLabel",
-                                                TRANS("Amount in BURST")));
+                                                TRANS("Amount")));
     amountLabel->setFont (Font (15.00f, Font::plain));
     amountLabel->setJustificationType (Justification::centredRight);
     amountLabel->setEditable (false, false, false);
@@ -207,8 +207,18 @@ SendComponent::SendComponent ()
     minLabel->setColour (TextEditor::textColourId, Colours::black);
     minLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
+    addAndMakeVisible (currencyComboBox = new ComboBox ("currencyComboBox"));
+    currencyComboBox->setTooltip (TRANS("Use Burst or whitelisted assets"));
+    currencyComboBox->setEditableText (false);
+    currencyComboBox->setJustificationType (Justification::centredLeft);
+    currencyComboBox->setTextWhenNothingSelected (TRANS("BURST"));
+    currencyComboBox->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
+    currencyComboBox->addItem (TRANS("BURST"), 1);
+    currencyComboBox->addListener (this);
+
 
     //[UserPreSize]
+	currencyComboBox->setSelectedItemIndex(0);
 	//amountComboBox->setInputRestrictions(20, "0.123456789");
 	messageTextEditor->setInputRestrictions(999);
 
@@ -259,6 +269,7 @@ SendComponent::~SendComponent()
     couponToggleButton = nullptr;
     minSlider = nullptr;
     minLabel = nullptr;
+    currencyComboBox = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -308,6 +319,7 @@ void SendComponent::resized()
     couponToggleButton->setBounds (16, 296, 96, 24);
     minSlider->setBounds (424, 296, 80, 24);
     minLabel->setBounds (512, 296, 118, 24);
+    currencyComboBox->setBounds (288, 40, 72, 24);
     //[UserResized] Add your own custom resize handling here..
 	*/
 	const float rowH = 28.f;
@@ -320,7 +332,8 @@ void SendComponent::resized()
 	recipientComboBox->setBounds(r.withTrimmedTop(rowH * 1).withHeight(rowH).toNearestInt());
 
 	amountLabel->setBounds(r.withTrimmedTop(rowH * 2).withHeight(rowH).toNearestInt());
-	amountComboBox->setBounds(r.withTrimmedTop(rowH * 3).withHeight(rowH).toNearestInt());
+	amountComboBox->setBounds(r.withTrimmedTop(rowH * 3).withHeight(rowH).withWidth(r.getWidth() / 3 * 2).toNearestInt());
+	currencyComboBox->setBounds(r.withTrimmedTop(rowH * 3).withHeight(rowH).translated(r.getWidth() / 3 * 2, 0).withWidth(r.getWidth() / 3).toNearestInt());
 
 	feeLabel->setBounds(r.withTrimmedTop(rowH * 4).withHeight(rowH).toNearestInt());
 	feeSlider->setBounds(r.withTrimmedTop(rowH * 5).withHeight(rowH).withWidth(r.getWidth() / 3 * 2).toNearestInt());
@@ -446,6 +459,12 @@ void SendComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 		UpdateTotalLabel(amountComboBox->getText(), String(feeSlider->getValue()));
         //[/UserComboBoxCode_amountComboBox]
     }
+    else if (comboBoxThatHasChanged == currencyComboBox)
+    {
+        //[UserComboBoxCode_currencyComboBox] -- add your combo box handling code here..
+		UpdateTotalLabel(amountComboBox->getText(), String(feeSlider->getValue()));
+		//[/UserComboBoxCode_currencyComboBox]
+    }
 
     //[UsercomboBoxChanged_Post]
     //[/UsercomboBoxChanged_Post]
@@ -460,6 +479,7 @@ void SendComponent::SetupTransaction(const String requestHeader, const String re
 
 	recipientComboBox->setText(recipient, dontSendNotification);
 	amountComboBox->setText(NQT2Burst(amountNQT), dontSendNotification);
+	currencyComboBox->setSelectedItemIndex(0);
 
 	paymentLabel->setText(requestHeader, dontSendNotification);
 	recipientFixedLabel->setText("Recipient: " + recipient, dontSendNotification);
@@ -553,6 +573,23 @@ void SendComponent::SetPrice(String currency, double price)
 	this->price = price;
 }
 
+void SendComponent::SetAssets(const StringArray assetIDs, const StringArray assetsNames, const StringArray assetsDescription, const StringArray assetsDecimals, const StringPairArray assetsBalances)
+{
+	assetWhitelist = assetIDs;
+	assetWhitelistNames = assetsNames;
+	assetWhitelistDescription = assetsDescription;
+	assetWhitelistDecimals = assetsDescription;
+
+	this->assetsBalances = assetsBalances;
+
+	int idx = currencyComboBox->getSelectedItemIndex();
+
+	currencyComboBox->clear();
+	currencyComboBox->addItemList(assetWhitelistNames, 1);
+
+	currencyComboBox->setSelectedItemIndex(idx);
+}
+
 String SendComponent::NQT2Burst(const String value)
 {
 	bool minus = value.startsWithChar('-');
@@ -580,10 +617,20 @@ void SendComponent::UpdateTotalLabel(const String amount, const String fee)
 {
 	int64 amountNQT = Burst2NQT(amount).getLargeIntValue();
 	int64 feeNQT = Burst2NQT(fee).getLargeIntValue();
-	String totalNQT(amountNQT + feeNQT);
-
+	
+	String totalNQT;
+	String assetStr;
+	if (currencyComboBox->getSelectedItemIndex() > 0)
+	{
+		totalNQT = String(feeNQT);
+		int decimals = assetWhitelistDecimals[currencyComboBox->getSelectedItemIndex()].getLargeIntValue();
+		assetStr = String(String(amountNQT / 100000000., decimals) + " " + assetWhitelistNames[currencyComboBox->getSelectedItemIndex()] + " + ");
+	}
+	else totalNQT = String(amountNQT + feeNQT);
+	
 	String balance_t(NQT2Burst(totalNQT) + " BURST");
 	String balance_t_ext;
+	
 	//if (amountNQT > 0)
 	{
 		if (currency.compare("BTC") == 0)
@@ -610,25 +657,36 @@ void SendComponent::UpdateTotalLabel(const String amount, const String fee)
 			balance_t_ext = (" (" + convertedStr + " " + currency + ")");
 		}
 	}
-	totalLabel->setText("total: " + balance_t + balance_t_ext, dontSendNotification);
+
+	totalLabel->setText("total costs: " + assetStr + balance_t + balance_t_ext, dontSendNotification);
 }
 
 void SendComponent::SendBurst()
 {
-	if (amountComboBox->getText().compare("HotWalletToken") == 0)
-	{ // conveniance function to send a token
-		String recipient = recipientComboBox->getText().trim();
-		listeners.call(&InterfaceListener::SendHotWalletLicense, recipient);
+	String recipient = recipientComboBox->getText().trim();
+	String amount = Burst2NQT(amountComboBox->getText());
+	String fee = Burst2NQT(String(feeSlider->getValue()));
+	String message = fixedMessageLabel->getText() + (fixedMessageLabel->getText().isNotEmpty() ? " " : String::empty) + messageTextEditor->getText();
+	if (message.length() >= 1000)
+		message = message.substring(0, 999);
+	bool encrypt = encryptToggleButton->getToggleState();
+
+	//if (amountComboBox->getText().compare("HotWalletToken") == 0)
+	if (currencyComboBox->getSelectedItemIndex() > 0)
+	{
+		if (couponToggleButton->getToggleState())
+		{
+			NativeMessageBox::showMessageBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "Coupons not implemented yet for Assets !");
+		}
+		else
+		{
+		//	listeners.call(&InterfaceListener::SendHotWalletLicense, recipient);
+			const String assetID = assetWhitelist[currencyComboBox->getSelectedItemIndex()];
+			listeners.call(&InterfaceListener::SendAsset, recipient, assetID, amount, fee, message, encrypt);
+		}
 	}
 	else
 	{
-		String recipient = recipientComboBox->getText().trim();
-		String amount = Burst2NQT(amountComboBox->getText());
-		String fee = Burst2NQT(String(feeSlider->getValue()));
-		String message = fixedMessageLabel->getText() + (fixedMessageLabel->getText().isNotEmpty() ? " " : String::empty) + messageTextEditor->getText();
-		if (message.length() >= 1000)
-			message = message.substring(0, 999);
-		bool encrypt = encryptToggleButton->getToggleState();
 
 		if (couponToggleButton->getToggleState())
 		{
@@ -682,6 +740,7 @@ void SendComponent::SetView(int v)
 
 	amountLabel->setVisible(v == 0);
 	amountComboBox->setVisible(v == 0);
+	currencyComboBox->setVisible(v == 0);
 
 	fixedMessageLabel->setVisible(v == 1);
 	paymentLabel->setVisible(v == 1);
@@ -753,9 +812,9 @@ BEGIN_JUCER_METADATA
          bold="0" italic="0" justification="34"/>
   <LABEL name="amountLabel" id="6df1b7e24a75bc15" memberName="amountLabel"
          virtualName="" explicitFocusOrder="0" pos="24 40 71 24" edTextCol="ff000000"
-         edBkgCol="0" labelText="Amount in BURST" editableSingleClick="0"
-         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
-         fontsize="15" bold="0" italic="0" justification="34"/>
+         edBkgCol="0" labelText="Amount" editableSingleClick="0" editableDoubleClick="0"
+         focusDiscardsChanges="0" fontname="Default font" fontsize="15"
+         bold="0" italic="0" justification="34"/>
   <LABEL name="feeLabel" id="eb8589e135b07e36" memberName="feeLabel" virtualName=""
          explicitFocusOrder="0" pos="15 72 80 24" edTextCol="ff000000"
          edBkgCol="0" labelText="+ Fee in BURST" editableSingleClick="0"
@@ -810,6 +869,10 @@ BEGIN_JUCER_METADATA
          edTextCol="ff000000" edBkgCol="0" labelText="min" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15" bold="0" italic="0" justification="33"/>
+  <COMBOBOX name="currencyComboBox" id="7b75468f9920ed54" memberName="currencyComboBox"
+            virtualName="" explicitFocusOrder="0" pos="288 40 72 24" tooltip="Use Burst or whitelisted assets"
+            editable="0" layout="33" items="BURST" textWhenNonSelected="BURST"
+            textWhenNoItems="(no choices)"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

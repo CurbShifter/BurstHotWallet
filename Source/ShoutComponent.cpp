@@ -42,6 +42,13 @@ ShoutComponent::ShoutComponent ()
     textButton->setColour (TextButton::buttonOnColourId, Colour (0xff77b517));
     textButton->setColour (TextButton::textColourOffId, Colours::white);
 
+    addAndMakeVisible (shoutMessageButton = new TextButton ("shoutMessageButton"));
+    shoutMessageButton->setButtonText (TRANS("_"));
+    shoutMessageButton->addListener (this);
+    shoutMessageButton->setColour (TextButton::buttonColourId, Colour (0x0077b517));
+    shoutMessageButton->setColour (TextButton::buttonOnColourId, Colour (0xff77b517));
+    shoutMessageButton->setColour (TextButton::textColourOffId, Colours::white);
+
 
     //[UserPreSize]
     //[/UserPreSize]
@@ -50,11 +57,14 @@ ShoutComponent::ShoutComponent ()
 
 
     //[Constructor] You can add your own custom stuff here..
-	timerDelay = 0;
 	totalShowTime = 0;
 	totalShowTimeLoop = 60;
 	totalAmountNQTs = 0;
-	startTimer(100);
+
+	const int timerInterval = 100;
+	timerDelay = (totalShowTimeLoop - 5) * (1000 / timerInterval);
+
+	startTimer(timerInterval);
 
     //[/Constructor]
 }
@@ -66,6 +76,7 @@ ShoutComponent::~ShoutComponent()
     //[/Destructor_pre]
 
     textButton = nullptr;
+    shoutMessageButton = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -94,8 +105,8 @@ void ShoutComponent::paint (Graphics& g)
 					timerDelay < si + (int)(shouts[i].showtime * rate) && drawn == false)
 				{
 					drawn = true;
-					g.setColour(Colours::white);
-					g.drawText(shouts[i].message, getBounds().withZeroOrigin().withTrimmedLeft(5).withTrimmedRight(135).toFloat(), Justification::centredLeft);
+				//	g.setColour(Colours::white);
+				//	g.drawText(shouts[i].message, getBounds().withZeroOrigin().withTrimmedLeft(5).withTrimmedRight(135).toFloat(), Justification::centredLeft);
 
 					g.setColour(Colours::dimgrey);
 					float frac = (timerDelay - si) / (float)(shouts[i].showtime * rate);
@@ -117,8 +128,10 @@ void ShoutComponent::resized()
     //[/UserPreResize]
 
     textButton->setBounds (408, 0, 78, 24);
+    shoutMessageButton->setBounds (0, 0, 416, 24);
     //[UserResized] Add your own custom resize handling here..
 	*/
+	shoutMessageButton->setBounds(0, 5, getWidth() - 100, getHeight() - 10);
 	textButton->setBounds(getWidth() - 100, 5, 94, getHeight() - 10);
     //[/UserResized]
 }
@@ -139,29 +152,47 @@ void ShoutComponent::buttonClicked (Button* buttonThatWasClicked)
 		ScopedPointer<PopupMenu> contextMenu;
 		contextMenu = new PopupMenu;
 
-		contextMenu->addItem(10, "The shout price is based on the usage", false);
+		double sec[3];
+		sec[0] = 5;
+		sec[1] = 15;
+		sec[2] = 30;
+		
+		double ratio[3];
+		for (int i = 0; i < 3;i++)
+			ratio[i] = (1. / (1. - (sec[i] / totalShowTimeLoop))) * (sec[i] / totalShowTimeLoop);
+
+		contextMenu->addItem(10, "Price based on the current sold seconds", false);
 		String amount;
 		if (total <= 0)
 		{
-			contextMenu->addItem(1, "FREE shout ! Get the full 60 seconds !", true);
-		//	amount = "0";
+			contextMenu->addItem(1, "FREE shout! Get the 60 seconds @ 1 BURST for FREE !", true);
 		}
 		else
 		{
-			contextMenu->addItem(2, "Buy " + String((int)(totalShowTime * 0.1)) + " sec (24h) for " + String((total / 100000000.) * 0.2, 2) + " BURST", true);
-			contextMenu->addItem(3, "Buy " + String((int)(totalShowTime * 0.25)) + " sec (24h) for " + String((total / 100000000.) * 0.5, 2) + " BURST", true);
-			contextMenu->addItem(4, "Buy " + String((int)(totalShowTime * 0.5)) + " sec (24h) for " + String((total / 100000000.), 2) + " BURST", true);
+			double price[3];
+			double time[3];
 
+			price[0] = ((total * (1. + ratio[0])) - total) / 100000000.;
+			price[1] = ((total * (1. + ratio[1])) - total) / 100000000.;
+			price[2] = ((total * (1. + ratio[2])) - total) / 100000000.;
+
+			time[0] = totalShowTime - (totalShowTime / (1. + ratio[0]));
+			time[1] = totalShowTime - (totalShowTime / (1. + ratio[1]));
+			time[2] = totalShowTime - (totalShowTime / (1. + ratio[2]));
+			for (int i = 0; i < 3; i++)
+			{
+				contextMenu->addItem(2 + i, "Buy " + String((int)time[i]) + " sec (24h) for " + String(price[i], 2) + " BURST", true);
+			}
 		}
 		int result = contextMenu->show();
 		if (result == 1)
 			amount = "0";
 		if (result == 2)
-			amount = String((int64)(total * 0.2));
+			amount = String((int64)((total * (1. + ratio[0])) - total));// (total * 0.2));
 		if (result == 3)
-			amount = String((int64)(total * 0.5));
+			amount = String((int64)((total * (1. + ratio[1])) - total));// (total * 0.5));
 		if (result == 4)
-			amount = String((int64)(total));
+			amount = String((int64)((total * (1. + ratio[2])) - total));// (total));
 
 		if (amount.isNotEmpty())
 		{
@@ -172,6 +203,33 @@ void ShoutComponent::buttonClicked (Button* buttonThatWasClicked)
 
 		contextMenu = nullptr;
         //[/UserButtonCode_textButton]
+    }
+    else if (buttonThatWasClicked == shoutMessageButton)
+    {
+        //[UserButtonCode_shoutMessageButton] -- add your button handler code here..
+		String msg = shoutMessageButton->getButtonText();
+		if (msg.isNotEmpty())
+		{
+			// extract link
+			String link = msg.fromFirstOccurrenceOf("http", true, true).upToFirstOccurrenceOf(" ", false, true);
+
+			ScopedPointer<PopupMenu> contextMenu;
+			contextMenu = new PopupMenu;
+			contextMenu->addItem(1, "copy shout message", true);
+			contextMenu->addItem(2, "open link: " + link, (link.isNotEmpty()));
+
+			int result = contextMenu->show();
+			if (result == 1)
+			{
+				SystemClipboard::copyTextToClipboard(msg);
+			}
+			else if (result == 2)
+			{
+				if (NativeMessageBox::showOkCancelBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "Open this link?\n" + link + "\n\nThe internet is a wild place, be careful."))
+					URL(link).launchInDefaultBrowser();
+			}
+		}
+		//[/UserButtonCode_shoutMessageButton]
     }
 
     //[UserbuttonClicked_Post]
@@ -200,22 +258,52 @@ void ShoutComponent::SetNodeHop(const bool hopOn)
 	burstExt.EnableNodeHop(hopOn ? 7 : 0);
 }
 
-void ShoutComponent::SetNode(const String server)
+void ShoutComponent::SetNode(const String server, const bool allowNonSSL)
 {
 	stopThread(500);
 	const ScopedLock lock(burstExtLock);
-	burstExt.SetNode(server);
-	startThread();
+	burstExt.SetNode(server, allowNonSSL);
+//	startThread();
 }
 
 void ShoutComponent::timerCallback()
 {
-	const ScopedTryLock lock(shoutsLock);
-	if (timerDelay++ > totalShowTime * (1000 / getTimerInterval()))
+	{ // update shout text shown
+		String senderRS;
+		String msg;
+		const ScopedTryLock lock(shoutsLock);
+		if (lock.isLocked())
+		{
+			int idx = -1;
+			int si = 0;
+			float rate = (1000.f / getTimerInterval());
+			for (int i = 0; i < shouts.size(); i++)
+			{
+				if (timerDelay >= si &&
+					timerDelay < si + (int)(shouts[i].showtime * rate) && idx < 0)
+				{
+					idx = i;
+				}
+				si += (int)shouts[i].showtime * rate;
+			}
+			msg = shouts[idx].message;
+			senderRS = shouts[idx].senderRS + ":\n";
+			
+		}
+		if (msg.isNotEmpty())
+		{
+			shoutMessageButton->setButtonText(msg);
+			shoutMessageButton->setTooltip(senderRS + msg);
+		}
+	}
+	
+	// refresh shouts
+	if (timerDelay++ > totalShowTimeLoop * (1000 / getTimerInterval()))
 	{
 		timerDelay = 0;
 		startThread();
 	}
+
 	repaint();
 }
 
@@ -231,7 +319,7 @@ void ShoutComponent::run()
 		timestamp = String((Time::currentTimeMillis() / 1000) - BURSTCOIN_GENESIS_EPOCH - (60 * 60 * 24)); // is the earliest block(in seconds since the genesis block) to retrieve(optional)
 	}
 
-	int freeTokenBase = 10000000; // 0.1 burst
+	int freeTokenBase = 100000000; // 1.0 burst - 1st buy is free 60 sec = 1 burst
 	uint64 alivetimes = 0;
 	uint64 amountNQTs = 0;
 	Array<shout> compiledShouts;
@@ -251,32 +339,39 @@ void ShoutComponent::run()
 			if (accountTransactionsJson[arrayName.toUTF8()].isArray())
 			{
 				int freeToken = freeTokenBase;
+				bool freeTokenTaken = false;
 				for (int i = 0; i < accountTransactionsJson[arrayName.toUTF8()].size() && !threadShouldExit(); i++)
 				{
 					int index = accountTransactionsJson[arrayName.toUTF8()].size() - 1 - i; // reverse order, bcz free token
 					if (accountTransactionsJson[arrayName.toUTF8()][index]["attachment"]["messageIsText"])
 					{
 					//	const String senderID = accountTransactionsJson[arrayName.toUTF8()][index]["sender"];
+						const String senderRS = accountTransactionsJson[arrayName.toUTF8()][index]["senderRS"];
 						const String recipientID = accountTransactionsJson[arrayName.toUTF8()][index]["recipient"];
 						const String amountNQT = accountTransactionsJson[arrayName.toUTF8()][index]["amountNQT"].toString();
 						const String message = accountTransactionsJson[arrayName.toUTF8()][index]["attachment"]["message"].toString().trim();
 						const String timestamp = accountTransactionsJson[arrayName.toUTF8()][index]["timestamp"].toString();
-						if (message.isNotEmpty() && 
-							amountNQT.getLargeIntValue() >= freeTokenBase - freeToken && 
+						if (message.isNotEmpty() &&
+							amountNQT.getLargeIntValue() >= (freeTokenBase - freeToken) / 60 && // div 60 for 1 sec minimum
 							accountID.compare(recipientID) == 0) // only incoming tx
 						{
 							shout s;
-							s.message = message.startsWith(SHOUT_PREFIX) ? message.substring(String(SHOUT_PREFIX).length()) : String::empty;
+							s.message = message.startsWith(SHOUT_PREFIX) ? message.substring(String(SHOUT_PREFIX).length()).trim() : String::empty;
 							s.amountNQT = (uint64)amountNQT.getLargeIntValue();
 							s.alivetime = (Time::currentTimeMillis() / 1000) - ((uint64)timestamp.getLargeIntValue() + BURSTCOIN_GENESIS_EPOCH);
+							s.senderRS = senderRS;
 
-							if (s.amountNQT < freeToken)
-							{ // first one below 1 burst gets 1 burst free
-								s.amountNQT = freeToken;
-								freeToken = 0;
+							if (s.message.isNotEmpty())
+							{
+								if (s.amountNQT < (freeTokenBase / 60) && !freeTokenTaken)
+								{ // first one below 1 burst gets 1 burst free
+									s.amountNQT = freeTokenBase;
+									freeToken = 0;
+									freeTokenTaken = true;
+								}
+
+								compiledShouts.add(s);
 							}
-
-							compiledShouts.add(s);
 						}
 					}
 				}
@@ -294,6 +389,7 @@ void ShoutComponent::run()
 			amountNQTs += compiledShouts[i].amountNQT;
 		}
 
+		//StringArray tooltipStrAry;
 		for (int i = 0; i < compiledShouts.size(); i++)
 		{
 			float alive = (float)compiledShouts[i].alivetime;
@@ -303,12 +399,15 @@ void ShoutComponent::run()
 			compiledShouts.getReference(i).showtime = jmax<float>(showtime, 1.f);
 
 			totalShowTimeSum += compiledShouts[i].showtime;
+
+		//	tooltipStrAry.add(compiledShouts[i].message);
 		}
+	//	shoutMessageButton->setTooltip(tooltipStrAry.joinIntoString("\n"));
 	}
 	else
 	{
 		shout s;
-		s.message = "Reach the community, a FREE blockchain shout space available !";
+		s.message = "Reach the community, a FREE Burst blockchain shout space available !";
 		s.amountNQT = freeTokenBase;
 		s.alivetime = (Time::currentTimeMillis() / 1000) - ((uint64)timestamp.getLargeIntValue() + BURSTCOIN_GENESIS_EPOCH);
 		s.showtime = totalShowTimeLoop;
@@ -317,6 +416,7 @@ void ShoutComponent::run()
 
 		amountNQTs = 0;
 		totalShowTimeSum = totalShowTimeLoop;
+	//	shoutMessageButton->setTooltip(s.message);
 	}
 
 	{
@@ -350,6 +450,10 @@ BEGIN_JUCER_METADATA
   <TEXTBUTTON name="new button" id="b480356a07fca6d6" memberName="textButton"
               virtualName="" explicitFocusOrder="0" pos="408 0 78 24" bgColOff="77b517"
               bgColOn="ff77b517" textCol="ffffffff" buttonText="shout" connectedEdges="0"
+              needsCallback="1" radioGroupId="0"/>
+  <TEXTBUTTON name="shoutMessageButton" id="c2da55cec0c3d8d3" memberName="shoutMessageButton"
+              virtualName="" explicitFocusOrder="0" pos="0 0 416 24" bgColOff="77b517"
+              bgColOn="ff77b517" textCol="ffffffff" buttonText="_" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
 </JUCER_COMPONENT>
 

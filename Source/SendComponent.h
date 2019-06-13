@@ -57,13 +57,13 @@ public:
 	void SetAmounts(StringArray amounts) override;
 	void SetSuggestedFees(uint64 cheap, uint64 normal, uint64 priority) override;
 	void SetPrice(String currency, double price) override;
+	void SetAssets(const StringArray assetIDs, const StringArray assetsNames, const StringArray assetsDescription, const StringArray assetsDecimals, const StringPairArray assetsBalances) override;
 
 	String NQT2Burst(const String value);
 	String Burst2NQT(const String value);
 	void UpdateTotalLabel(const String amount, const String fee);
 	void SendBurst();
 	void SetView(int v);
-
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -83,7 +83,14 @@ private:
 	String currency;
 	double price;
 	String notifierURL;
-    //[/UserVariables]
+
+	StringArray assetWhitelist;
+	StringArray assetWhitelistNames;
+	StringArray assetWhitelistDescription;
+	StringArray assetWhitelistDecimals;
+
+	StringPairArray assetsBalances;
+	//[/UserVariables]
 
     //==============================================================================
     ScopedPointer<Label> fixedMessageLabel;
@@ -107,6 +114,7 @@ private:
     ScopedPointer<ToggleButton> couponToggleButton;
     ScopedPointer<Slider> minSlider;
     ScopedPointer<Label> minLabel;
+    ScopedPointer<ComboBox> currencyComboBox;
 
 
     //==============================================================================

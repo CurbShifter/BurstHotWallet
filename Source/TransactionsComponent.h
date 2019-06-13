@@ -42,7 +42,7 @@ public:
     void paint (Graphics&) override;
     void resized() override;
 
-	void SetNode(const String address) override;
+	void SetNode(const String address, const bool allowNonSSL = true) override;
 	void SetSecretPhrase(const String pp) override;
 	void SetForceSSL_TSL(const bool forceSSLOn) override;
 	void SetNodeHop(const bool hopOn) override;
@@ -85,9 +85,30 @@ public:
 	void timerCallback() override;
 	void run() override;
 
+	enum col
+	{ // txDetails
+		time = 0,
+		contact,
+		amount,
+		fee,
+		details,
+		confirmations,
+		transaction,
+		block,
+		blockTimestamp,
+		height,
+		type,
+		subtype,
+		asset,
+	//	assetName,
+		assetQuantityQNT,
+		assetPriceNQT,
+	//	assetDecimals,
+		total
+	};
 	struct txDetails
 	{
-		var value[11];
+		var value[col::total];
 	};
 
 	TransactionsComponent::txDetails GetCache(int i);
@@ -99,10 +120,15 @@ public:
 	void SetPrice(String currency, double price);
 	String NeatNr(const String balance);
 	
+	String GetAssetName(const String assetID);
+	String GetAssetDecimals(const String assetID);
+	
 	void ExportCSV();
 	void ShowPopupMenu(int rowNr);
 
 	String ConvertedValue(String balance);
+	void SetAssets(const StringArray assetIDs, const StringArray assetsNames, const StringArray assetsDescription, const StringArray assetsDecimals, const StringPairArray assetsBalances) override;
+	int GetAssetIndex(const String assetID);
 
 private:
 	TableListBox table;
@@ -123,6 +149,8 @@ private:
 	int64 latestCMCtimestamp;
 	String currentCurrencyType;
 
+	StringPairArray accountDisplayNames;
+
 	String currency;
 	double price;
 
@@ -139,6 +167,13 @@ private:
 	txDetails FillTxStruct(String txDetailsStr);
 	String GetAccountDisplayName(const String account);
 	HashMap<String, String> displayNames;
+
+	StringArray assetWhitelist;
+	StringArray assetWhitelistNames;
+	StringArray assetWhitelistDescription;
+	StringArray assetWhitelistDecimals;
+
+	StringPairArray assetsBalances;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TransactionsComponent)
 };

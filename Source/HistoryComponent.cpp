@@ -181,7 +181,7 @@ void HistoryComponent::ShowSecureAccount(const bool show, const String pubKey_b6
 	showSecureAccount = show;
 	pubKey_b64SecureAccount = pubKey_b64;
 
-	copyTextEditor->setText(TRANS("I need to secure my #Burstcoin wallet.  Please send me a #hotwallet.pro license at " + pubKey_b64SecureAccount));
+	copyTextEditor->setText(TRANS("Requesting a hotwallet.pro license to secure my $Burstcoin wallet " + pubKey_b64SecureAccount));
 
 	transactionsComponent->setVisible(!show);
 	secureHeaderLabel->setVisible(show);

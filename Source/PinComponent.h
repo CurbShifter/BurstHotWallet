@@ -38,6 +38,8 @@
 class PinComponent  : public TextEditorListener,
                       public Component,
                       public PinComponentListener,
+                      public Thread,
+                      public Timer,
                       public ButtonListener
 {
 public:
@@ -60,9 +62,14 @@ public:
 	void SavePassPhrase();
 	void setViewMode(const int mode, const String passPhrase = String::empty);
 
+	void ExportWallet();
 	void CheckPassPhrase();
 
 	String NewPassPhrase();
+
+	void run();
+	void ToggleVanityView(const bool togg);
+	void timerCallback() override;
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -86,12 +93,17 @@ private:
 	bool importOn;
 	bool savePinOn;
 	bool unlockOn;
-	bool checkOn;	
+	bool checkOn;
 
 	BurstKit burstKit;
+	BurstKit burstKitVanity;
 
 	bool failedWordCheck;
 	int checkIter;
+
+	int vanityItt;
+	String passPhraseVanity;
+	String vanityWord;
     //[/UserVariables]
 
     //==============================================================================
@@ -128,6 +140,13 @@ private:
     ScopedPointer<TextEditor> checkTextEditor;
     ScopedPointer<Label> checkHeaderLabel;
     ScopedPointer<TextButton> checkButton;
+    ScopedPointer<Label> addressHeaderLabel;
+    ScopedPointer<Label> passHeaderLabel;
+    ScopedPointer<TextButton> copyNewButton;
+    ScopedPointer<TextButton> fileSaveButton;
+    ScopedPointer<TextEditor> vanityTextEditor;
+    ScopedPointer<TextButton> searchButton;
+    ScopedPointer<TextButton> searchCancelButton;
     ScopedPointer<Drawable> drawable1;
     ScopedPointer<Drawable> drawable2;
 
