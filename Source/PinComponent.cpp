@@ -28,7 +28,6 @@
 
 //==============================================================================
 PinComponent::PinComponent ()
-    : Thread("PinComponent")
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
@@ -357,8 +356,8 @@ PinComponent::PinComponent ()
 	pinInputTextEditor->setPasswordCharacter(0x2022);
 	pinInputTextEditor->grabKeyboardFocus();
 
-	vanityTextEditor->setInputRestrictions(7, "*abcdefghjklmnpqrstuvwABCDEFGHJKLMNPQRSTUVWXYZ23456789");
-	vanityTextEditor->setTextToShowWhenEmpty("optional: Vanity address", Colours::grey);
+	vanityTextEditor->setInputRestrictions(7, "*abcdefghjklmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789");
+	vanityTextEditor->setTextToShowWhenEmpty("optional: BURST Vanity address (takes time)", Colours::grey);
 
 	firstOn = false;
 	newOn = false;
@@ -367,8 +366,10 @@ PinComponent::PinComponent ()
 	unlockOn = false;
 	checkOn = false;
 
+	startVanity = 0;
 	checkIter = 0;
 	failedWordCheck = false;
+	threadcount = jmax<int>(1, SystemStats::getNumCpus() - 2);
     //[/Constructor]
 }
 
@@ -455,12 +456,22 @@ void PinComponent::paint (Graphics& g)
 
     //[UserPaint] Add your own custom painting code here..
 	*/
-	g.setGradientFill(ColourGradient(Colour(0xff93c3ff),
-		80.0f, 200.0f,
-		Colour(0xff537088),
-		104.0f, 528.0f,
-		false));
-	g.fillAll();
+	if (startVanity == 0)
+	{
+		/*g.setGradientFill(ColourGradient(Colour(0xff93c3ff),
+			80.0f, 200.0f,
+			Colour(0xff537088),
+			104.0f, 528.0f,
+			false));*/
+		g.setGradientFill(ColourGradient(Colour(0xff1e5362),
+			getWidth(), getHeight(),
+			Colour(0xff1e5492),
+			-100.0f, -100.0f,
+			true));
+
+		g.fillAll();
+	}
+	else g.fillAll(Colours::grey);
 
 	int buttonSize = 50;
 	Rectangle<int> r = getBounds().withPosition(0, 0).reduced(25);
@@ -573,13 +584,18 @@ void PinComponent::resized()
 	Rectangle<int> r_new = r.reduced(40);
 	refreshButton->setBounds(r_new.withWidth(100).withHeight(30));
 
-	vanityTextEditor->setBounds(r_new.withTrimmedLeft(refreshButton->getWidth() + 50).withWidth(r_new.getWidth() - (refreshButton->getWidth() + 190)).withHeight(30));
-	searchButton->setBounds(r_new.withTrimmedLeft(r_new.getWidth() - 140).withWidth(70).withHeight(30));
-	searchCancelButton->setBounds(r_new.withTrimmedLeft(r_new.getWidth() - 70).withWidth(70).withHeight(30));
-
 	int rowH = refreshButton->getHeight() + pad;
 	importantLabel->setBounds(r_new.withTrimmedTop(rowH).withHeight(150));
 	rowH += importantLabel->getHeight() + pad;
+
+	const int b1 = 120;
+	const int b2 = 70;
+	const int b12 = b1 + b2;
+	vanityTextEditor->setBounds(r_new.withTrimmedTop(rowH).withWidth(r_new.getWidth() - (b12)).withHeight(30));
+	searchButton->setBounds(r_new.withTrimmedTop(rowH).withTrimmedLeft(r_new.getWidth() - b12).withWidth(b1).withHeight(30));
+	searchCancelButton->setBounds(r_new.withTrimmedTop(rowH).withTrimmedLeft(r_new.getWidth() - b2).withWidth(b2).withHeight(30));
+	rowH += searchCancelButton->getHeight();
+
 	addressHeaderLabel->setBounds(r_new.withTrimmedTop(rowH).withWidth(r_new.getWidth() - 140).withHeight(30));
 	rowH += refreshButton->getHeight();
 	addressLabel->setBounds(r_new.withTrimmedTop(rowH).withHeight(30));
@@ -587,7 +603,7 @@ void PinComponent::resized()
 
 	passHeaderLabel->setBounds(r_new.withTrimmedTop(rowH).withHeight(30));
 	rowH += passHeaderLabel->getHeight();
-	passPhraseLabel->setBounds(r_new.withTrimmedTop(rowH).withHeight(200));
+	passPhraseLabel->setBounds(r_new.withTrimmedTop(rowH).withHeight(160));
 	rowH += passPhraseLabel->getHeight() + pad;
 
 	copyNewButton->setBounds(r_new.withTrimmedTop(rowH).withTrimmedLeft(r_new.getWidth()/2).withHeight(30));
@@ -773,22 +789,13 @@ void PinComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == searchButton)
     {
         //[UserButtonCode_searchButton] -- add your button handler code here..
-		stopThread(100);
-		vanityWord = vanityTextEditor->getText();
-
-		ToggleVanityView(true);
-
-		startThread(8);
-		startTimer(100);
+		StartVanity();
         //[/UserButtonCode_searchButton]
     }
     else if (buttonThatWasClicked == searchCancelButton)
     {
         //[UserButtonCode_searchCancelButton] -- add your button handler code here..
-		stopThread(100);
-		stopTimer();
-
-		ToggleVanityView(false);
+		StopVanity();
         //[/UserButtonCode_searchCancelButton]
     }
 
@@ -1044,7 +1051,18 @@ void PinComponent::CheckPassPhrase()
 	checkTextEditor->setText(String::empty);
 }
 
-void PinComponent::run()
+PinComponent::VanityThread::VanityThread(String vanityWord)
+	: Thread("PinComponent")
+{
+	this->vanityWord = vanityWord;
+}
+
+PinComponent::VanityThread::~VanityThread()
+{
+
+}
+
+void PinComponent::VanityThread::run()
 {
 	passPhraseVanity.clear();
 
@@ -1072,7 +1090,10 @@ void PinComponent::run()
 		}
 		passPhrase = passPhrase.substring(0, passPhrase.length() - 1); // del last space
 
+		Crypto crypto;
 		BurstAddress burstAddress;
+		int vanityItt_ = 0;
+		setVanityItt(vanityItt_);
 		while (!threadShouldExit() && passPhraseVanity.isEmpty())
 		{
 			passPhrase = passPhrase.fromFirstOccurrenceOf(" ", false, true); // remove 1st random word
@@ -1080,9 +1101,9 @@ void PinComponent::run()
 			passPhrase += " " + wordList[randInt]; // add new random word
 
 			// calc address
-			burstKitVanity.CalcPubKeys(MemoryBlock(passPhrase.toUTF8(), passPhrase.getNumBytesAsUTF8()), pubKey_HEX, pubKey_b64, addressID);
-
-			addressRS = burstAddress.encode(addressID).removeCharacters("-");
+			MemoryBlock pubKey(32, true);
+			crypto.getPublicKey(MemoryBlock(passPhrase.toUTF8(), passPhrase.getNumBytesAsUTF8()), pubKey);
+			addressRS = burstAddress.encode(ConvertPubKeyToNumerical(pubKey), false);
 
 			if (shouldStartWith == shouldEndWith)
 			{
@@ -1103,26 +1124,89 @@ void PinComponent::run()
 				}
 			}
 
-			vanityItt++;
+			vanityItt_++;
+			if (vanityItt_ %1000 == 0)
+				setVanityItt(vanityItt_);
 		}
 	}
 }
 
-void PinComponent::timerCallback()
+String PinComponent::VanityThread::ConvertPubKeyToNumerical(const MemoryBlock pubKey)
 {
+	SHA256 shapub(pubKey);// take SHA256 of pubKey
+	MemoryBlock shapubMem = shapub.getRawData();
+
+	MemoryBlock shapubMemSwapped(shapubMem.getData(), 8);
+	BigInteger bi;
+	bi.loadFromMemoryBlock(shapubMemSwapped);
+
+	return bi.toString(10, 1);
+}
+
+void PinComponent::StartVanity()
+{
+	for (int i = 0; i < vanityThreads.size(); i++)
+		vanityThreads[i]->stopThread(100);
+	vanityThreads.clear();
+
+	ToggleVanityView(true);
+
+	String vanityWord = vanityTextEditor->getText();
+	for (int i = 0; i < threadcount; i++)
+	{
+		vanityThreads.add(new VanityThread(vanityWord));
+		vanityThreads.getReference(i)->startThread(8);
+	}
+	startVanity = Time::currentTimeMillis();
+
+	startTimer(100);
+}
+
+void PinComponent::StopVanity()
+{
+	stopTimer();
+	for (int i = 0; i < vanityThreads.size(); i++)
+		vanityThreads[i]->stopThread(100);
+	vanityThreads.clear();
+	startVanity = 0;
+	ToggleVanityView(false);
+}
+
+void PinComponent::timerCallback()
+{	
+	String passPhraseVanity;
+	int vanityItt = 0;
+	bool stop = false;
+	for (int i = 0; i < vanityThreads.size(); i++)
+	{
+		if (vanityThreads.getReference(i)->isThreadRunning() == false)
+		{
+			passPhraseVanity = vanityThreads.getReference(i)->passPhraseVanity;
+			stop = true;
+		}
+		if (passPhraseVanity.isEmpty())
+			vanityItt += vanityThreads.getReference(i)->getVanityItt();
+	}
+	if (stop)
+		StopVanity();
+
 	if (passPhraseVanity.isNotEmpty())
 	{
-		ToggleVanityView(false);
-
 		passPhraseLabel->setText(passPhraseVanity, dontSendNotification);
 		burstKit.SetSecretPhrase(passPhraseVanity);
 		addressLabel->setText(burstKit.GetAccountRS(), dontSendNotification);
 
 		passPhraseVanity.clear();
-
-		stopTimer();
 	}
-	else searchButton->setButtonText(String(vanityItt));
+	else
+	{
+		int64 busyTimeMs = (Time::currentTimeMillis() - startVanity);
+		int dots = (busyTimeMs / 1000) % 4;
+		String dotStr;
+		dotStr = dotStr.paddedRight('.', dots);
+		float keys_a_sec = ((float)vanityItt / jmax<float>(1.f, (busyTimeMs / 1000))) / 1000.f;
+		searchButton->setButtonText(String(keys_a_sec, 1) + "K key/s" + dotStr);
+	}
 }
 
 void PinComponent::ToggleVanityView(const bool togg)
@@ -1130,8 +1214,14 @@ void PinComponent::ToggleVanityView(const bool togg)
 	if (!togg)
 	{
 		searchButton->setButtonText(String("search"));
+		searchCancelButton->setColour(TextButton::buttonColourId, Colour(0xffa8a8a8));
+		searchCancelButton->setColour(TextButton::buttonOnColourId, Colour(0xff8d8d8d));
 	}
-
+	else
+	{
+		searchCancelButton->setColour(TextButton::buttonColourId, Colours::palevioletred);
+		searchCancelButton->setColour(TextButton::buttonOnColourId, Colours::palevioletred);
+	}
 //	searchButton->setVisible(!togg);
 	searchButton->setEnabled(!togg);
 //	searchCancelButton->setVisible(togg);
@@ -1149,6 +1239,8 @@ void PinComponent::ToggleVanityView(const bool togg)
 	copiedTextButton->setEnabled(!togg);
 
 	backToStartButton->setEnabled(!togg);
+
+	repaint();
 }
 
 //[/MiscUserCode]
@@ -1164,10 +1256,10 @@ void PinComponent::ToggleVanityView(const bool togg)
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="PinComponent" componentName=""
-                 parentClasses="public TextEditorListener, public Component, public PinComponentListener, public Thread, public Timer"
-                 constructorParams="" variableInitialisers="Thread(&quot;PinComponent&quot;)"
-                 snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
-                 fixedSize="0" initialWidth="600" initialHeight="400">
+                 parentClasses="public TextEditorListener, public Component, public PinComponentListener, public Timer"
+                 constructorParams="" variableInitialisers="" snapPixels="8" snapActive="1"
+                 snapShown="1" overlayOpacity="0.330" fixedSize="0" initialWidth="600"
+                 initialHeight="400">
   <METHODS>
     <METHOD name="keyPressed (const KeyPress&amp; key)"/>
   </METHODS>

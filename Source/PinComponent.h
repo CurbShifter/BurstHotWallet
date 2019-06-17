@@ -38,7 +38,6 @@
 class PinComponent  : public TextEditorListener,
                       public Component,
                       public PinComponentListener,
-                      public Thread,
                       public Timer,
                       public ButtonListener
 {
@@ -67,9 +66,37 @@ public:
 
 	String NewPassPhrase();
 
-	void run();
 	void ToggleVanityView(const bool togg);
 	void timerCallback() override;
+	
+	void StartVanity();
+	void StopVanity();
+
+	class VanityThread : public Thread
+	{
+	public:
+		VanityThread(String vanityWord);
+		~VanityThread();
+
+		void setVanityItt(int v)
+		{
+			const ScopedLock lock(ittLock);
+			vanityItt = v;
+		}
+		int getVanityItt()
+		{
+			const ScopedLock lock(ittLock);
+			return vanityItt;
+		};
+		void run() override;
+
+		String ConvertPubKeyToNumerical(const MemoryBlock pubKey);
+
+		CriticalSection ittLock;
+		String passPhraseVanity;
+		String vanityWord;
+		int vanityItt;
+	};
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -96,15 +123,13 @@ private:
 	bool checkOn;
 
 	BurstKit burstKit;
-	BurstKit burstKitVanity;
+	Array<ScopedPointer<VanityThread>> vanityThreads;
 
 	bool failedWordCheck;
 	int checkIter;
-
-	int vanityItt;
-	String passPhraseVanity;
-	String vanityWord;
-    //[/UserVariables]
+	int threadcount;
+	int64 startVanity;
+	//[/UserVariables]
 
     //==============================================================================
     ScopedPointer<TextButton> textButton_1;

@@ -210,13 +210,22 @@ void ShoutComponent::buttonClicked (Button* buttonThatWasClicked)
 		String msg = shoutMessageButton->getButtonText();
 		if (msg.isNotEmpty())
 		{
-			// extract link
-			String link = msg.fromFirstOccurrenceOf("http", true, true).upToFirstOccurrenceOf(" ", false, true);
+			// extract link, cut start and end
+			String link = msg.fromLastOccurrenceOf("http", true, true);
+			if (link.isEmpty())
+				link = msg.fromLastOccurrenceOf("www", true, true);
+			if(link.isNotEmpty())
+			{
+				link.append(" ", 1);
+				link = link.upToFirstOccurrenceOf(" ", false, true);
+			}
 
 			ScopedPointer<PopupMenu> contextMenu;
 			contextMenu = new PopupMenu;
 			contextMenu->addItem(1, "copy shout message", true);
-			contextMenu->addItem(2, "open link: " + link, (link.isNotEmpty()));
+			if (link.isNotEmpty() && (link.startsWith("http") || link.startsWith("www")))
+				contextMenu->addItem(2, "open link: " + link, true);
+			else contextMenu->addItem(2, "If message has a link it will be clickable here", false);
 
 			int result = contextMenu->show();
 			if (result == 1)
@@ -225,8 +234,8 @@ void ShoutComponent::buttonClicked (Button* buttonThatWasClicked)
 			}
 			else if (result == 2)
 			{
-				if (NativeMessageBox::showOkCancelBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "Open this link?\n" + link + "\n\nThe internet is a wild place, be careful."))
-					URL(link).launchInDefaultBrowser();
+				if (NativeMessageBox::showOkCancelBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "Open this link?\n" + link.trim() + "\n\nThe internet is a wild place, be careful."))
+					URL(link.trim()).launchInDefaultBrowser();
 			}
 		}
 		//[/UserButtonCode_shoutMessageButton]

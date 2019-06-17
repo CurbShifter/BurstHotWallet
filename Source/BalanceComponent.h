@@ -68,6 +68,9 @@ public:
     void resized() override;
     void buttonClicked (Button* buttonThatWasClicked) override;
 
+    // Binary resources:
+    static const char* diamond_svg;
+    static const int diamond_svgSize;
 
 
 private:
@@ -75,7 +78,7 @@ private:
 	ListenerList <InterfaceListener> interfaceListeners;
 	CriticalSection burstExtLock;
 	BurstExt burstExt; // used to securely temp store the pass phrase in mem
-	
+
 	bool updated;
 	String balance;
 	String balance_converted;
@@ -93,12 +96,16 @@ private:
 	StringPairArray assetWhitelistNames;
 	StringPairArray assetWhitelistDecimals;
 
+	bool iOwnKhoinoor;
+	uint64 khoinoor_priceNQT;
+
 	String NQT2Burst(const String value);
     //[/UserVariables]
 
     //==============================================================================
     ScopedPointer<Label> balanceLabel;
     ScopedPointer<TextButton> accountButton;
+    ScopedPointer<Drawable> drawable1;
 
 
     //==============================================================================

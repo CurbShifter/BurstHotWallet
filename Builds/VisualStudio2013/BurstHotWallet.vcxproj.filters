@@ -1,4 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
+
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="BurstHotWallet">
@@ -37,6 +38,9 @@
       <Filter>BurstHotWallet\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\ShoutComponent.cpp">
+      <Filter>BurstHotWallet\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\TradeComponent.cpp">
       <Filter>BurstHotWallet\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\TransactionsComponent.cpp">
@@ -135,6 +139,9 @@
     <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.cpp">
       <Filter>Juce Modules\juce_audio_devices</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.mm">
+      <Filter>Juce Modules\juce_audio_devices</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\JuceLibraryCode\BinaryData.cpp">
       <Filter>Juce Library Code</Filter>
     </ClCompile>
@@ -183,6 +190,9 @@
       <Filter>BurstHotWallet\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\ShoutComponent.h">
+      <Filter>BurstHotWallet\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\TradeComponent.h">
       <Filter>BurstHotWallet\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\TransactionsComponent.h">
@@ -263,8 +273,6 @@
     <ClInclude Include="..\..\JuceLibraryCode\JuceHeader.h">
       <Filter>Juce Library Code</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.h" />
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Source\BurstHotWallet-icon.svg">

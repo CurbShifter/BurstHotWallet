@@ -314,17 +314,19 @@ function base64ToHex(str) {
 function hex2a(hexx) {
     var hex = hexx.toString();//force conversion
     var str = '';
-    for (var i = 0; (i < hex.length && hex.substr(i, 2) !== '00'); i += 2)
+    for (var i = 0; (i < hex.length 
+		//&& hex.substr(i, 2) !== '00' //
+		); i += 2)
         str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
     return str;
 }
 
 function a2hex(str) {
-  var arr = [];
-  for (var i = 0, l = str.length; i < l; i ++) {
-    var hex = Number(str.charCodeAt(i)).toString(16);
-	arr.push(hex.length > 1 && hex || "0" + hex);
-  }
+	var arr = [];
+	for (var i = 0, l = str.length; i < l; i ++) {
+		var hex = Number(str.charCodeAt(i)).toString(16);
+		arr.push(hex.length > 1 && hex || "0" + hex);
+	}
   return arr.join('');
 }
 
@@ -336,21 +338,28 @@ function RedeemFunction() {
 	var password = x.elements[2].value;
 
 	var txHex = DecryptCoupon(couponCodeB64, password);
-	
-	if(password.length > 0)
+	console.log("txHex:" + txHex);
+
+	if(txHex.length > 0)
 	{
-		var postdata = {requestType: 'broadcastTransaction', transactionBytes: txHex};
-		post(walletUrl + "burst", postdata, "post");
+		if(password.length > 0)
+		{
+			var postdata = {requestType: 'broadcastTransaction', transactionBytes: txHex};
+			post(walletUrl + "burst", postdata, "post");
+				
+			resultText = 'The coupon has been send to the selected node !<p>A window with the raw transation details should have opened.<br>If any error occured then try again using another node. The coupon can be expired.</p>';
+		}
+		else
+		{
+			var postdata = {requestType: 'parseTransaction', transactionBytes: txHex};
+			post(walletUrl + "burst", postdata, "post");
 			
-		resultText = 'The coupon has been send to the selected node !<p>A window with the raw transation details should have opened.<br>If any error occured then try again using another node. The coupon can be expired.</p>';
+			resultText = 'A window with the parsed transation details should have opened. It has not been claimed ! But you can view the transaction details.<br>If any error occured then try again using another node.</p>';
+		}
 	}
 	else
 	{
-		var postdata = {requestType: 'parseTransaction', transactionBytes: txHex};
-		post(walletUrl + "burst", postdata, "post");
-		
-		resultText = 'A window with the parsed transation details should have opened. It has not been claimed ! But you can view the transaction details.<br>If any error occured then try again using another node.</p>';
-		document.getElementById("result_output").innerHTML = resultText;
+		resultText = 'unable to decrypt the coupon !';
 	}
 	document.getElementById("result_output").innerHTML = resultText;
 }
@@ -359,23 +368,37 @@ function DecryptCoupon(couponCodeB64, password) {
 	var shaHex = sha256(password);
 	var shaBytes = toByteArray(shaHex);	
 	var bf = new Blowfish(shaBytes, "cbc");	
-		
+				
+	// TODO. chance steps : base64 to bin (without hex)
 	var couponHex = base64ToHex(couponCodeB64); // decode coupon from base64 to hex
+	//console.log("couponHex:" + couponHex);
 	var encryptedSignatureHex = couponHex.substring(couponHex.length - (80 * 2)); // get last 80 bytes, is a nonce + 64byte signature
+	//console.log("encryptedSignatureHex:" + encryptedSignatureHex);
 	var encryptedSignatureString = hex2a(encryptedSignatureHex);
-
 	// decrypt the signature
+	//console.log("encryptedSignatureString.length " + encryptedSignatureString.length);
 	var decryptedSignature = bf.decrypt(encryptedSignatureString.substring(8), encryptedSignatureString.substring(0, 8)); 
-
-	var decryptedSignatureHex = a2hex(decryptedSignature);
-	// insert signature byte 96 to 160
-	var txHex = couponHex.substring(0, 96 * 2) + decryptedSignatureHex.substring(0, 64 * 2).padStart(64, '0') + couponHex.substring(96 * 2, couponHex.length - (80 * 2));
-	console.log(txHex);
-
-	var resultText = 'invalid coupon or password !';
-	var re = /[0-9A-Fa-f]{6}/g;
-	if(re.test(txHex)) // if only hex
+	var decryptedSignatureHex = a2hex(decryptedSignature).substring(0, 64 * 2);
+	//console.log("decryptedSignatureHex:" + decryptedSignatureHex);
+	
+	if(decryptedSignatureHex.length == 64 * 2 && password.length > 0)
 	{
+		// insert signature byte 96 to 160
+		var txHex = couponHex.substring(0, 96 * 2) + decryptedSignatureHex + couponHex.substring(96 * 2, couponHex.length - (80 * 2));
+
+		var resultText = 'invalid coupon or password !';
+		var re = /[0-9A-Fa-f]{6}/g;
+		if(re.test(txHex)) // if only hex
+		{
+			return txHex;
+		}
+	}
+	else 
+	{
+		if (password.length > 0)
+			window.alert("This page is unable to decrypt this coupon !" + password + "!");
+		var zero = '0';
+		var txHex = couponHex.substring(0, 96 * 2) + zero.padStart(64 * 2, '0') + couponHex.substring(96 * 2, couponHex.length - (80 * 2));
 		return txHex;
 	}
 }

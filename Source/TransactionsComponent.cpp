@@ -290,15 +290,19 @@ void TransactionsComponent::backgroundClicked(const MouseEvent &e)
 
 void TransactionsComponent::sortOrderChanged(int newSortColumnId, bool isForwards)
 {
+	const ScopedLock lock(tldLock);
+	const int s = txDetailArray.size();// GetCacheSize();
+
+	if (s == sortedRowIndex.size() && sortColumnId == newSortColumnId && sortIsForwards == isForwards)
+		return;
+
 	sortColumnId = newSortColumnId;
 	sortIsForwards = isForwards;
 
-	Array<TransactionsComponent::txDetails> arr;
-	const int s = GetCacheSize();
+	Array<TransactionsComponent::txDetails> arr = txDetailArray;
 	sortedRowIndex.clearQuick();
 	for (int idx = 0; idx < s; idx++)
 	{
-		arr.add(GetCache(idx));
 		sortedRowIndex.add(idx);
 	}
 	for (int baseidx = 0; baseidx < s; baseidx++)
@@ -350,7 +354,9 @@ void TransactionsComponent::sortOrderChanged(int newSortColumnId, bool isForward
 
 int TransactionsComponent::getIndexWhenSorted(const int idx)
 {
-	const int s = GetCacheSize();
+	const ScopedLock lock(tldLock);
+
+	const int s = txDetailArray.size();// GetCacheSize();
 	if (sortedRowIndex.size() != s) // check to update the sort
 		sortOrderChanged(sortColumnId, sortIsForwards);
 
@@ -370,7 +376,9 @@ int TransactionsComponent::getIndexWhenSorted(const int idx)
 
 int TransactionsComponent::getIndexOfSorted(const int idx)
 {
-	const int s = GetCacheSize();
+	const ScopedLock lock(tldLock);
+
+	const int s = txDetailArray.size();// GetCacheSize();
 	if (sortedRowIndex.size() != s) // check to update the sort
 		sortOrderChanged(sortColumnId, sortIsForwards);
 

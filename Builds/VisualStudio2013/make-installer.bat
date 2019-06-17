@@ -10,7 +10,8 @@ msbuild.exe "BurstHotWallet.sln" /t:rebuild /maxcpucount:8 /flp1:logfile=errors3
 del "%CD%\HotWallet-r%revNr%.msi"
 
 "%ProgramFiles(x86)%\WiX Toolset v3.10\bin\candle.exe" "%CD%\HotWallet-r%revNr%.wxs" -ext WixUIExtension -ext WixUtilExtension
-"%ProgramFiles(x86)%\WiX Toolset v3.10\bin\light.exe" "%CD%\HotWallet-r%revNr%.wixobj" -out "%CD%\HotWallet-r%revNr%.msi" -ext WixUIExtension -ext WixUtilExtension
+mkdir "%CD%\..\..\bin\"
+"%ProgramFiles(x86)%\WiX Toolset v3.10\bin\light.exe" "%CD%\HotWallet-r%revNr%.wixobj" -out "%CD%\..\..\bin\BurstHotWallet-r%revNr%.msi" -ext WixUIExtension -ext WixUtilExtension
 
 del "%CD%\HotWallet-r%revNr%.wixpdb"
 del "%CD%\HotWallet-r%revNr%.wxs"

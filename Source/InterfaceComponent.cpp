@@ -18,6 +18,7 @@
 */
 
 //[Headers] You can add your own extra header files here...
+#define TRADE_BIRB 0
 //[/Headers]
 
 #include "InterfaceComponent.h"
@@ -42,6 +43,12 @@ InterfaceComponent::InterfaceComponent ()
     //[Constructor_pre] You can add your own custom stuff here..
 	//  : Thread("InterfaceComponent")
     //[/Constructor_pre]
+
+    addAndMakeVisible (tradeButton = new TextButton ("tradeButton"));
+    tradeButton->setButtonText (TRANS("trade"));
+    tradeButton->addListener (this);
+    tradeButton->setColour (TextButton::buttonColourId, Colour (0xff84cb16));
+    tradeButton->setColour (TextButton::buttonOnColourId, Colour (0xff84cb16));
 
     addAndMakeVisible (balanceComponent = new BalanceComponent());
     balanceComponent->setName ("balanceComponent");
@@ -77,7 +84,7 @@ InterfaceComponent::InterfaceComponent ()
 
     addAndMakeVisible (versionLabel = new Label ("versionLabel",
                                                  TRANS("v0.1")));
-    versionLabel->setFont (Font (11.00f, Font::plain));
+    versionLabel->setFont (Font (11.50f, Font::plain));
     versionLabel->setJustificationType (Justification::topLeft);
     versionLabel->setEditable (false, false, false);
     versionLabel->setColour (Label::textColourId, Colours::white);
@@ -87,11 +94,14 @@ InterfaceComponent::InterfaceComponent ()
     addAndMakeVisible (settingsComponent = new SettingsComponent());
     settingsComponent->setName ("settingsComponent");
 
-    addAndMakeVisible (pinComponent = new PinComponent());
-    pinComponent->setName ("pinComponent");
-
     addAndMakeVisible (aboutComponent = new AboutComponent());
     aboutComponent->setName ("aboutComponent");
+
+    addAndMakeVisible (tradeComponent = new TradeComponent());
+    tradeComponent->setName ("tradeComponent");
+
+    addAndMakeVisible (pinComponent = new PinComponent());
+    pinComponent->setName ("pinComponent");
 
     drawable1 = Drawable::createFromImageData (burstHotWalletlogo_svg, burstHotWalletlogo_svgSize);
     drawable2 = Drawable::createFromImageData (burstHotWalletPrologo_svg, burstHotWalletPrologo_svgSize);
@@ -273,6 +283,7 @@ InterfaceComponent::~InterfaceComponent()
 
     //[/Destructor_pre]
 
+    tradeButton = nullptr;
     balanceComponent = nullptr;
     settingsButton = nullptr;
     shoutComponent = nullptr;
@@ -282,8 +293,9 @@ InterfaceComponent::~InterfaceComponent()
     historyComponent = nullptr;
     versionLabel = nullptr;
     settingsComponent = nullptr;
-    pinComponent = nullptr;
     aboutComponent = nullptr;
+    tradeComponent = nullptr;
+    pinComponent = nullptr;
     drawable1 = nullptr;
     drawable2 = nullptr;
     drawable3 = nullptr;
@@ -372,6 +384,7 @@ void InterfaceComponent::resized()
 	/*
     //[/UserPreResize]
 
+    tradeButton->setBounds (0, 120, 112, 24);
     balanceComponent->setBounds (136, 24, 416, 24);
     settingsButton->setBounds (576, 8, 56, 56);
     shoutComponent->setBounds (120, 496, 416, 24);
@@ -381,8 +394,9 @@ void InterfaceComponent::resized()
     historyComponent->setBounds (296, 72, 168, 224);
     versionLabel->setBounds (48, 40, 64, 24);
     settingsComponent->setBounds (472, 72, 168, 224);
-    pinComponent->setBounds (296, 304, 168, 179);
     aboutComponent->setBounds (120, 304, 168, 179);
+    tradeComponent->setBounds (472, 304, 168, 176);
+    pinComponent->setBounds (296, 304, 168, 179);
     //[UserResized] Add your own custom resize handling here..
 	*/
 	juce::Rectangle<float> r = getBounds().toFloat();
@@ -391,22 +405,29 @@ void InterfaceComponent::resized()
 	const float topH = rowH * 4.f;
 	const float rowH2 = 35.f;
 	const int w = (int)r.getWidth();
-	
+
 	if (pinComponent) pinComponent->setBounds(r.toNearestInt());
 	aboutComponent->setBounds(r.toNearestInt());
-	
+
 	versionLabel->setBounds(juce::Rectangle<int>(20, 50, leftTopCorner2.getRight() - 20, 20));
-	
+
 	balanceComponent->setBounds(juce::Rectangle<int>(versionLabel->getRight(), 0, w - versionLabel->getRight() - (2 * rowH), (int)rowH * 2).reduced(3));
 
 	settingsButton->setBounds(juce::Rectangle<int>(w - (2 * rowH), 0, (2 * rowH), (2 * rowH)).reduced(15));
 
+#if TRADE_BIRB == 0
 	historyButton->setBounds(0, balanceComponent->getBottom(), w / 2, (int)rowH);
 	sendButton->setBounds(w / 2, balanceComponent->getBottom(), w / 2, (int)rowH);
+#else
+	historyButton->setBounds(0, balanceComponent->getBottom(), w / 3, (int)rowH);
+	sendButton->setBounds(w / 3, balanceComponent->getBottom(), w / 3, (int)rowH);
+	tradeButton->setBounds(w / 3 * 2, balanceComponent->getBottom(), w / 3, (int)rowH);
+#endif
 
 	settingsComponent->setBounds(r.withTrimmedTop(sendButton->getBottom()).withTrimmedBottom(rowH2).toNearestInt());
 	sendComponent->setBounds(r.withTrimmedTop(sendButton->getBottom()).withTrimmedBottom(rowH2).toNearestInt());
 	historyComponent->setBounds(r.withTrimmedTop(sendButton->getBottom()).withTrimmedBottom(rowH2).toNearestInt());
+	tradeComponent->setBounds(r.withTrimmedTop(sendButton->getBottom()).withTrimmedBottom(rowH2).toNearestInt());
 
 	shoutComponent->setBounds(r.withTrimmedTop(r.getHeight() - rowH2).toNearestInt());
     //[/UserResized]
@@ -417,7 +438,13 @@ void InterfaceComponent::buttonClicked (Button* buttonThatWasClicked)
     //[UserbuttonClicked_Pre]
     //[/UserbuttonClicked_Pre]
 
-    if (buttonThatWasClicked == settingsButton)
+    if (buttonThatWasClicked == tradeButton)
+    {
+        //[UserButtonCode_tradeButton] -- add your button handler code here..
+		SetView(3);
+        //[/UserButtonCode_tradeButton]
+    }
+    else if (buttonThatWasClicked == settingsButton)
     {
         //[UserButtonCode_settingsButton] -- add your button handler code here..
 		SetView(-1);
@@ -556,10 +583,12 @@ void InterfaceComponent::SetView(int nr)
 		transactionsComponentListeners.call(&TransactionsComponentListener::Refresh);
 
 	sendComponent->setVisible(nr == 2);
+	tradeComponent->setVisible(nr == 3);
 
 	settingsButton->setColour(TextButton::ColourIds::buttonColourId, settingsButton->findColour(TextButton::ColourIds::buttonColourId).withAlpha(nr == -1 ? 1.0f : 0.0f));
 	historyButton->setColour(TextButton::ColourIds::buttonColourId, historyButton->findColour(TextButton::ColourIds::buttonColourId).withAlpha(nr == 1 ? 1.0f : 0.0f));
 	sendButton->setColour(TextButton::ColourIds::buttonColourId, sendButton->findColour(TextButton::ColourIds::buttonColourId).withAlpha(nr == 2 ? 1.0f : 0.0f));
+	tradeButton->setColour(TextButton::ColourIds::buttonColourId, tradeButton->findColour(TextButton::ColourIds::buttonColourId).withAlpha(nr == 3 ? 1.0f : 0.0f));
 
 	repaint();
 }
@@ -1187,6 +1216,10 @@ BEGIN_JUCER_METADATA
     <IMAGE pos="12 12 64 24" resource="burst_logo_white_svg" opacity="1"
            mode="1"/>
   </BACKGROUND>
+  <TEXTBUTTON name="tradeButton" id="c66545c977e55339" memberName="tradeButton"
+              virtualName="" explicitFocusOrder="0" pos="0 120 112 24" bgColOff="ff84cb16"
+              bgColOn="ff84cb16" buttonText="trade" connectedEdges="0" needsCallback="1"
+              radioGroupId="0"/>
   <GENERICCOMPONENT name="balanceComponent" id="dccea979d2f05486" memberName="balanceComponent"
                     virtualName="" explicitFocusOrder="0" pos="136 24 416 24" class="BalanceComponent"
                     params=""/>
@@ -1215,15 +1248,18 @@ BEGIN_JUCER_METADATA
          virtualName="" explicitFocusOrder="0" pos="48 40 64 24" textCol="ffffffff"
          edTextCol="ff000000" edBkgCol="0" labelText="v0.1" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
-         fontsize="11" bold="0" italic="0" justification="9"/>
+         fontsize="11.5" bold="0" italic="0" justification="9"/>
   <GENERICCOMPONENT name="settingsComponent" id="205c6171ce3a77a7" memberName="settingsComponent"
                     virtualName="" explicitFocusOrder="0" pos="472 72 168 224" class="SettingsComponent"
                     params=""/>
-  <GENERICCOMPONENT name="pinComponent" id="33c6370b679be6dc" memberName="pinComponent"
-                    virtualName="" explicitFocusOrder="0" pos="296 304 168 179" class="PinComponent"
-                    params=""/>
   <GENERICCOMPONENT name="aboutComponent" id="ab42d58ceea79f04" memberName="aboutComponent"
                     virtualName="" explicitFocusOrder="0" pos="120 304 168 179" class="AboutComponent"
+                    params=""/>
+  <GENERICCOMPONENT name="tradeComponent" id="5c1b1d0d1081e914" memberName="tradeComponent"
+                    virtualName="" explicitFocusOrder="0" pos="472 304 168 176" class="TradeComponent"
+                    params=""/>
+  <GENERICCOMPONENT name="pinComponent" id="33c6370b679be6dc" memberName="pinComponent"
+                    virtualName="" explicitFocusOrder="0" pos="296 304 168 179" class="PinComponent"
                     params=""/>
 </JUCER_COMPONENT>
 

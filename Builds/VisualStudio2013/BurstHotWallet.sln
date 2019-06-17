@@ -1,8 +1,6 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BurstHotWallet", "BurstHotWallet.vcxproj", "{59DBACFE-8155-2BEC-1EA8-167B9EA30AB7}"
+Project("{9207D310-4250-0997-442F-A2B316CD42D4}") = "BurstHotWallet", "BurstHotWallet.vcxproj", "{59DBACFE-8155-2BEC-1EA8-167B9EA30AB7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,8 +15,5 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

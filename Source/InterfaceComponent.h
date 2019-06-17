@@ -31,6 +31,7 @@
 #include "AboutComponent.h"
 #include "ShoutComponent.h"
 #include "BalanceComponent.h"
+#include "TradeComponent.h"
 #include "Listeners.h"
 
 #include "HttpServer.h"
@@ -244,6 +245,7 @@ private:
     //[/UserVariables]
 
     //==============================================================================
+    ScopedPointer<TextButton> tradeButton;
     ScopedPointer<BalanceComponent> balanceComponent;
     ScopedPointer<TextButton> settingsButton;
     ScopedPointer<ShoutComponent> shoutComponent;
@@ -253,8 +255,9 @@ private:
     ScopedPointer<HistoryComponent> historyComponent;
     ScopedPointer<Label> versionLabel;
     ScopedPointer<SettingsComponent> settingsComponent;
-    ScopedPointer<PinComponent> pinComponent;
     ScopedPointer<AboutComponent> aboutComponent;
+    ScopedPointer<TradeComponent> tradeComponent;
+    ScopedPointer<PinComponent> pinComponent;
     ScopedPointer<Drawable> drawable1;
     ScopedPointer<Drawable> drawable2;
     ScopedPointer<Drawable> drawable3;

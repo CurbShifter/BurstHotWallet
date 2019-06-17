@@ -139,6 +139,22 @@ public:
 	virtual void SetAssets(const StringArray assetIDs, const StringArray assetsNames, const StringArray assetsDescription, const StringArray assetsDecimals, const StringPairArray assetsBalances) {};
 };
 
+class TradeComponentListener
+{
+public:
+	TradeComponentListener() {};
+	virtual ~TradeComponentListener() {};
+	virtual void SetNode(const String, const bool) {};
+	virtual void SetSecretPhrase(const String) {};
+	virtual void SetForceSSL_TSL(const bool forceSSLOn) {};
+	virtual void SetNodeHop(const bool hopOn) {};
+	virtual void SetAssets(const StringArray assetIDs, const StringArray assetsNames, const StringArray assetsDescription, const StringArray assetsDecimals, const StringPairArray assetsBalances) {};
+/*	virtual void Refresh() {};
+	virtual void SetCMCkey(const String key) {};
+	virtual void SetCurrencyType(const String currency) {};
+	virtual void ResetPriceTimer() {};*/
+};
+
 class BalanceComponentListener
 {
 public:

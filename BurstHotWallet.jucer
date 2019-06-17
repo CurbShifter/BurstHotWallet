@@ -18,6 +18,10 @@
             file="Source/ShoutComponent.cpp"/>
       <FILE id="Nc2cHS" name="ShoutComponent.h" compile="0" resource="0"
             file="Source/ShoutComponent.h"/>
+      <FILE id="MZB5B8" name="TradeComponent.cpp" compile="1" resource="0"
+            file="Source/TradeComponent.cpp"/>
+      <FILE id="hA9zjB" name="TradeComponent.h" compile="0" resource="0"
+            file="Source/TradeComponent.h"/>
       <FILE id="Uc0DyG" name="TransactionsComponent.cpp" compile="1" resource="0"
             file="Source/TransactionsComponent.cpp"/>
       <FILE id="VO6TiQ" name="TransactionsComponent.h" compile="0" resource="0"
