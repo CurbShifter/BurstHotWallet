@@ -15,21 +15,23 @@
 
 #if BEAST_SERVER == 1
 
-//#include <boost/beast.hpp>
-//#include <boost/container/detail/workaround.hpp>
-#include "../JuceLibraryCode/JuceHeader.h"
-#include "Listeners.h"
+//#define WIN32_LEAN_AND_MEAN
 
+#include <boost/asio.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
-#include <boost/asio.hpp>
 #include <chrono>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
 #include <memory>
 #include <string>
+
+//#include <boost/beast.hpp>
+//#include <boost/container/detail/workaround.hpp>
+#include "../JuceLibraryCode/JuceHeader.h"
+#include "Listeners.h"
 
 class http_connection : public std::enable_shared_from_this<http_connection>, public HttpServerListener
 {

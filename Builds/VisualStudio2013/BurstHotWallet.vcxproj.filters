@@ -8,32 +8,41 @@
     <Filter Include="BurstHotWallet\Source">
       <UniqueIdentifier>{44B86C64-670D-14E2-D197-670A3BFF4D38}</UniqueIdentifier>
     </Filter>
+    <Filter Include="BurstHotWallet\Source\chat">
+      <UniqueIdentifier>{D381CE99-66A8-5EDF-FB60-19EE5E7F2CC7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BurstHotWallet\Source\QR-code">
+      <UniqueIdentifier>{AD6B1047-C02C-6E78-E98F-7F756FD11D87}</UniqueIdentifier>
+    </Filter>
     <Filter Include="BurstHotWallet\Source\img">
       <UniqueIdentifier>{AE870B2E-EE3F-E39C-9E5A-716D8A0DE5F9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Juce Modules">
-      <UniqueIdentifier>{422C46B7-0467-2DB0-BF3C-16DFCAFD69AC}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Juce Modules\juce_audio_devices">
-      <UniqueIdentifier>{CACD7B50-4DB3-76AF-A6E8-90DF94F8F594}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Juce Modules\juce_audio_devices\audio_io">
-      <UniqueIdentifier>{9D270B31-2425-8FDB-84A4-6A2288FF5B2F}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Juce Modules\juce_audio_devices\midi_io">
-      <UniqueIdentifier>{0F766DD4-A277-CB86-5647-42498C8B41E1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Juce Modules\juce_audio_devices\native">
-      <UniqueIdentifier>{01603E05-423B-5FC3-1BEE-E15ED33B5688}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Juce Modules\juce_audio_devices\sources">
-      <UniqueIdentifier>{D64942B4-6984-3623-3347-45D472AE1C61}</UniqueIdentifier>
     </Filter>
     <Filter Include="Juce Library Code">
       <UniqueIdentifier>{8B4D1BAA-6DB4-CAEC-A0FA-271F354D5C61}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\chat\ChatBox.cpp">
+      <Filter>BurstHotWallet\Source\chat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\chat\ChatComponent.cpp">
+      <Filter>BurstHotWallet\Source\chat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\chat\Menu.cpp">
+      <Filter>BurstHotWallet\Source\chat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\chat\MessageList.cpp">
+      <Filter>BurstHotWallet\Source\chat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\QR-code\BitBuffer.cpp">
+      <Filter>BurstHotWallet\Source\QR-code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\QR-code\QrCode.cpp">
+      <Filter>BurstHotWallet\Source\QR-code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\QR-code\QrSegment.cpp">
+      <Filter>BurstHotWallet\Source\QR-code</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\BalanceComponent.cpp">
       <Filter>BurstHotWallet\Source</Filter>
     </ClCompile>
@@ -44,6 +53,9 @@
       <Filter>BurstHotWallet\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\TransactionsComponent.cpp">
+      <Filter>BurstHotWallet\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\TradeInterfaceComponent.cpp">
       <Filter>BurstHotWallet\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\AboutComponent.cpp">
@@ -75,72 +87,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source\Main.cpp">
       <Filter>BurstHotWallet\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\audio_io\juce_AudioDeviceManager.cpp">
-      <Filter>Juce Modules\juce_audio_devices\audio_io</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\audio_io\juce_AudioIODevice.cpp">
-      <Filter>Juce Modules\juce_audio_devices\audio_io</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\audio_io\juce_AudioIODeviceType.cpp">
-      <Filter>Juce Modules\juce_audio_devices\audio_io</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\midi_io\juce_MidiMessageCollector.cpp">
-      <Filter>Juce Modules\juce_audio_devices\midi_io</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\midi_io\juce_MidiOutput.cpp">
-      <Filter>Juce Modules\juce_audio_devices\midi_io</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_android_Audio.cpp">
-      <Filter>Juce Modules\juce_audio_devices\native</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_android_Midi.cpp">
-      <Filter>Juce Modules\juce_audio_devices\native</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_android_OpenSL.cpp">
-      <Filter>Juce Modules\juce_audio_devices\native</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_ios_Audio.cpp">
-      <Filter>Juce Modules\juce_audio_devices\native</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_linux_ALSA.cpp">
-      <Filter>Juce Modules\juce_audio_devices\native</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_linux_JackAudio.cpp">
-      <Filter>Juce Modules\juce_audio_devices\native</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_linux_Midi.cpp">
-      <Filter>Juce Modules\juce_audio_devices\native</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_mac_CoreAudio.cpp">
-      <Filter>Juce Modules\juce_audio_devices\native</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_mac_CoreMidi.cpp">
-      <Filter>Juce Modules\juce_audio_devices\native</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_win32_ASIO.cpp">
-      <Filter>Juce Modules\juce_audio_devices\native</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_win32_DirectSound.cpp">
-      <Filter>Juce Modules\juce_audio_devices\native</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_win32_Midi.cpp">
-      <Filter>Juce Modules\juce_audio_devices\native</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_win32_WASAPI.cpp">
-      <Filter>Juce Modules\juce_audio_devices\native</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\sources\juce_AudioSourcePlayer.cpp">
-      <Filter>Juce Modules\juce_audio_devices\sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\sources\juce_AudioTransportSource.cpp">
-      <Filter>Juce Modules\juce_audio_devices\sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.cpp">
-      <Filter>Juce Modules\juce_audio_devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.mm">
-      <Filter>Juce Modules\juce_audio_devices</Filter>
     </ClCompile>
     <ClCompile Include="..\..\JuceLibraryCode\BinaryData.cpp">
       <Filter>Juce Library Code</Filter>
@@ -186,6 +132,30 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\chat\ChatBox.h">
+      <Filter>BurstHotWallet\Source\chat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\chat\ChatComponent.h">
+      <Filter>BurstHotWallet\Source\chat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\chat\Menu.h">
+      <Filter>BurstHotWallet\Source\chat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\chat\MessageList.h">
+      <Filter>BurstHotWallet\Source\chat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\QR-code\BitBuffer.hpp">
+      <Filter>BurstHotWallet\Source\QR-code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\QR-code\JuceQrCodeGenerator.h">
+      <Filter>BurstHotWallet\Source\QR-code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\QR-code\QrCode.hpp">
+      <Filter>BurstHotWallet\Source\QR-code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\QR-code\QrSegment.hpp">
+      <Filter>BurstHotWallet\Source\QR-code</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\BalanceComponent.h">
       <Filter>BurstHotWallet\Source</Filter>
     </ClInclude>
@@ -196,6 +166,9 @@
       <Filter>BurstHotWallet\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\TransactionsComponent.h">
+      <Filter>BurstHotWallet\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\TradeInterfaceComponent.h">
       <Filter>BurstHotWallet\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\AboutComponent.h">
@@ -228,42 +201,6 @@
     <ClInclude Include="..\..\Source\HttpServer.h">
       <Filter>BurstHotWallet\Source</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\audio_io\juce_AudioDeviceManager.h">
-      <Filter>Juce Modules\juce_audio_devices\audio_io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\audio_io\juce_AudioIODevice.h">
-      <Filter>Juce Modules\juce_audio_devices\audio_io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\audio_io\juce_AudioIODeviceType.h">
-      <Filter>Juce Modules\juce_audio_devices\audio_io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\audio_io\juce_SystemAudioVolume.h">
-      <Filter>Juce Modules\juce_audio_devices\audio_io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\midi_io\juce_MidiInput.h">
-      <Filter>Juce Modules\juce_audio_devices\midi_io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\midi_io\juce_MidiMessageCollector.h">
-      <Filter>Juce Modules\juce_audio_devices\midi_io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\midi_io\juce_MidiOutput.h">
-      <Filter>Juce Modules\juce_audio_devices\midi_io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_MidiDataConcatenator.h">
-      <Filter>Juce Modules\juce_audio_devices\native</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\sources\juce_AudioSourcePlayer.h">
-      <Filter>Juce Modules\juce_audio_devices\sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\sources\juce_AudioTransportSource.h">
-      <Filter>Juce Modules\juce_audio_devices\sources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.h">
-      <Filter>Juce Modules\juce_audio_devices</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.h">
-      <Filter>Juce Modules\juce_audio_devices</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\JuceLibraryCode\AppConfig.h">
       <Filter>Juce Library Code</Filter>
     </ClInclude>
@@ -279,6 +216,18 @@
       <Filter>BurstHotWallet\Source\img</Filter>
     </None>
     <None Include="..\..\Source\img\cog.svg">
+      <Filter>BurstHotWallet\Source\img</Filter>
+    </None>
+    <None Include="..\..\Source\img\groupchat.svg">
+      <Filter>BurstHotWallet\Source\img</Filter>
+    </None>
+    <None Include="..\..\Source\img\hatnu-bg-p1.svg">
+      <Filter>BurstHotWallet\Source\img</Filter>
+    </None>
+    <None Include="..\..\Source\img\hatnu-bg-p2.svg">
+      <Filter>BurstHotWallet\Source\img</Filter>
+    </None>
+    <None Include="..\..\Source\img\Ubuntu Medium Nerd Font Complete.ttf">
       <Filter>BurstHotWallet\Source\img</Filter>
     </None>
     <None Include="..\..\Source\NotoSans-Regular.ttf">

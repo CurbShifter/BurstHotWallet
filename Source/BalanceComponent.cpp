@@ -59,11 +59,27 @@ BalanceComponent::BalanceComponent ()
     accountButton->setColour (TextButton::buttonOnColourId, Colour (0xff77b517));
     accountButton->setColour (TextButton::textColourOffId, Colours::white);
 
+    addAndMakeVisible (accountComboBox = new ComboBox ("accountComboBox"));
+    accountComboBox->setEditableText (false);
+    accountComboBox->setJustificationType (Justification::centredLeft);
+    accountComboBox->setTextWhenNothingSelected (TRANS("BURST-XXXX-XXXX-XXXX-XXXXX"));
+    accountComboBox->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
+    accountComboBox->addItem (TRANS("new/import account"), 1);
+    accountComboBox->addItem (TRANS("remove account"), 2);
+    accountComboBox->addListener (this);
+
     drawable1 = Drawable::createFromImageData (diamond_svg, diamond_svgSize);
 
     //[UserPreSize]
+	accountComboBox->setColour(ComboBox::ColourIds::backgroundColourId, Colour(0x00ffffff));
+	accountComboBox->setColour(ComboBox::ColourIds::textColourId, Colour(0xffffffff));
+	accountComboBox->setColour(ComboBox::ColourIds::outlineColourId, Colour(0x00ffffff));
+	accountComboBox->setColour(ComboBox::ColourIds::arrowColourId, Colour(0xffffffff));
+
+	accountComboBox->clear();
 	updated = false;
 	balanceLabel->setFont(Font(22.00f, Font::plain));
+	balanceLabel->setText(String::empty, dontSendNotification);
     //[/UserPreSize]
 
     setSize (600, 400);
@@ -74,6 +90,8 @@ BalanceComponent::BalanceComponent ()
 	timerDelay = -5;
 	iOwnKhoinoor = false;
 	khoinoor_priceNQT = 0;
+
+	accountButton->setVisible(false);
 
 	startTimer(1000);
     //[/Constructor]
@@ -87,6 +105,7 @@ BalanceComponent::~BalanceComponent()
 
     balanceLabel = nullptr;
     accountButton = nullptr;
+    accountComboBox = nullptr;
     drawable1 = nullptr;
 
 
@@ -116,10 +135,8 @@ void BalanceComponent::paint (Graphics& g)
 		const int pad = 15;
 		if (drawable1 != 0)
 			drawable1->drawWithin(g, Rectangle<float>(pad, pad / 2, getHeight() - (pad * 2), getHeight() - (pad * 2)), RectanglePlacement::centred, 1.000f);
-	
-		//g.drawText("KOH-I-NOOR", Rectangle<float>(0, getHeight() - 10, 150, pad * 3 / 2), Justification::centredLeft);
 	}
-	//[/UserPaint]
+    //[/UserPaint]
 }
 
 void BalanceComponent::resized()
@@ -129,11 +146,14 @@ void BalanceComponent::resized()
     //[/UserPreResize]
 
     balanceLabel->setBounds (155, 45, 152, 24);
-    accountButton->setBounds (27, 13, 272, 24);
+    accountButton->setBounds (56, 128, 272, 24);
+    accountComboBox->setBounds (104, 8, 248, 24);
     //[UserResized] Add your own custom resize handling here..
 	*/
-	accountButton->setBounds(getBounds().withZeroOrigin().withHeight(getHeight() / 2).reduced(3));
-	balanceLabel->setBounds(accountButton->getBounds().withY(getHeight() / 2));
+	//accountButton->setBounds(getBounds().withZeroOrigin().withHeight(getHeight() / 2).reduced(3));
+	const int pad = 15;
+	accountComboBox->setBounds(getBounds().withZeroOrigin().withHeight(getHeight() / 2).withLeft(getHeight() - (pad * 2)).reduced(3));
+	balanceLabel->setBounds(accountComboBox->getBounds().withY(getHeight() / 2));
     //[/UserResized]
 }
 
@@ -145,12 +165,23 @@ void BalanceComponent::buttonClicked (Button* buttonThatWasClicked)
     if (buttonThatWasClicked == accountButton)
     {
         //[UserButtonCode_accountButton] -- add your button handler code here..
-		ScopedPointer<PopupMenu> contextMenu;
+        //[/UserButtonCode_accountButton]
+    }
+
+    //[UserbuttonClicked_Post]
+    //[/UserbuttonClicked_Post]
+}
+
+void BalanceComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
+{
+    //[UsercomboBoxChanged_Pre]
+	/*
+			ScopedPointer<PopupMenu> contextMenu;
 		contextMenu = new PopupMenu;
 
 		contextMenu->addItem(1, "Copy Address", true, false);
 	//	contextMenu->addItem(2, "Redeem Coupon", true, false);
-		
+
 		if (kohinoor_MAINNET || (kohinoor_TESTNET && burstExt.GetNode().contains("testnet")))
 		{
 			contextMenu->addItem(3, "Buy the Koh-i-noor diamond " + String(kohinoor_TESTNET ? "TESTNET ONLY " : " ") + "for: " + NQT2Burst(String(khoinoor_priceNQT)) + " BURST", !iOwnKhoinoor, false);
@@ -164,11 +195,6 @@ void BalanceComponent::buttonClicked (Button* buttonThatWasClicked)
 			SystemClipboard::copyTextToClipboard(addressRS);
 			NativeMessageBox::showMessageBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "Address " + addressRS + "\nis copied to clipboard");
 		}
-	/*	else if (result == 2)
-		{ // redeem coupon
-			String str = SystemClipboard::getTextFromClipboard();
-			//burstExt.RedeemCoupon();
-		}*/
 		else if (result == 3)
 		{
 			interfaceListeners.call(&InterfaceListener::SetupTransaction, "Buy the Koh-i-noor diamond.", String(AT_khoinoor), String(khoinoor_priceNQT), "normal", "", false);
@@ -177,11 +203,36 @@ void BalanceComponent::buttonClicked (Button* buttonThatWasClicked)
 			URL(khoinoor_URL).launchInDefaultBrowser();
 
 		contextMenu = nullptr;
-        //[/UserButtonCode_accountButton]
+		
+		*/
+	//[/UsercomboBoxChanged_Pre]
+
+    if (comboBoxThatHasChanged == accountComboBox)
+    {
+        //[UserComboBoxCode_accountComboBox] -- add your combo box handling code here..
+		balanceLabel->setTooltip(String::empty);
+		balanceLabel->setText(String::empty, dontSendNotification);
+
+		int numItems = accountComboBox->getNumItems();
+		int index = accountComboBox->getSelectedItemIndex();
+		if (index < numItems - 2)
+			interfaceListeners.call(&InterfaceListener::SetAccountIndex, index);
+		else if (index == numItems - 2)
+		{
+			// new/import account
+			interfaceListeners.call(&InterfaceListener::SetAccountIndex, index);
+			interfaceListeners.call(&InterfaceListener::CreateWallet);
+		}
+		else if (index == numItems - 1)
+		{
+			// remove account
+			interfaceListeners.call(&InterfaceListener::RemoveWallet);
+		}
+		//[/UserComboBoxCode_accountComboBox]
     }
 
-    //[UserbuttonClicked_Post]
-    //[/UserbuttonClicked_Post]
+    //[UsercomboBoxChanged_Post]
+    //[/UsercomboBoxChanged_Post]
 }
 
 
@@ -192,27 +243,30 @@ void BalanceComponent::AddAssetWhitelist(const StringArray assetIDs)
 	externalAssetWhitelist.addArray(assetIDs);
 }
 
-void BalanceComponent::SetNode(const String server, const bool allowNonSSL)
-{
-	stopThread(500);
-	const ScopedLock lock(burstExtLock);
-
-	assetID.clear();
-	burstExt.SetNode(server, allowNonSSL);
-
-	startThread();
-}
-
 void BalanceComponent::SetPrice(String currency, double price)
 {
 	this->currency = currency;
 	this->price = price;
 }
 
+void BalanceComponent::SetNode(const String server, const bool allowNonSSL)
+{
+	stopThread(2000);
+	{
+		const ScopedLock lock(burstExtLock);
+		assetID.clear();
+		burstExt.SetNode(server, allowNonSSL);
+	}
+
+	startThread();
+}
+
 void BalanceComponent::SetSecretPhrase(const String passphrase)
 {
 	const ScopedLock lock(burstExtLock);
 	burstExt.SetSecretPhrase(passphrase, 0);
+
+	UpdateBalance();
 }
 
 void BalanceComponent::SetForceSSL_TSL(const bool forceSSLOn)
@@ -254,24 +308,15 @@ void BalanceComponent::timerCallback()
 				tooltip += nr + " " + assetName + "\n";
 			}
 			balanceLabel->setTooltip(tooltip);
-
-
 			balanceLabel->setText(balance_converted, dontSendNotification);
 
 			{ // show the secure account option, if the wallet is empty and has no pubkey
-				interfaceListeners.call(&InterfaceListener::Broke, (hasPubKey == false), pubKey_b64, isPro);
+				interfaceListeners.call(&InterfaceListener::Broke, (hasPubKey == false), myBurstRS, pubKey_b64, isPro);
 				interfaceListeners.call(&InterfaceListener::SetAssetsBalances, assetsBalances);
 			}
 			repaint();
 		}
 	}
-}
-
-void BalanceComponent::run()
-{
-	const ScopedLock lock(burstExtLock);
-	UpdateBalanceRun();
-	updated = true;
 }
 
 String BalanceComponent::NQT2Burst(const String value)
@@ -287,6 +332,13 @@ void BalanceComponent::UpdateBalance()
 	startThread();
 }
 
+void BalanceComponent::run()
+{
+	const ScopedLock lock(burstExtLock);
+	UpdateBalanceRun();
+	updated = true;
+}
+
 void BalanceComponent::UpdateBalanceRun()
 {
 	// check / update balance
@@ -294,13 +346,13 @@ void BalanceComponent::UpdateBalanceRun()
 	if (myBurstRS.isEmpty())
 		return;
 
-	// extract the balances for the assets. and allow these to be whitelisted
+	// extract the balances for the assets. and whitelist these
 	assetsBalances.clear();
 	String accountStr = burstExt.getAccount(myBurstRS);
 	var accountJson;
 	Result r = JSON::parse(accountStr, accountJson);
 
-	uint64 balance_root = accountJson["balanceNQT"].toString().getLargeIntValue();
+	uint64 balance_root = accountJson["unconfirmedBalanceNQT"].toString().getLargeIntValue();//"balanceNQT"
 	balance = String(balance_root);
 	assetsBalances.set("0", balance); // 0 is BURST
 
@@ -316,8 +368,6 @@ void BalanceComponent::UpdateBalanceRun()
 
 	for (int i = 0; i < externalAssetWhitelist.size(); i++)
 		assetsBalances.set(externalAssetWhitelist[i], "0");
-
-
 
 	if (threadShouldExit())
 		return;
@@ -368,7 +418,7 @@ void BalanceComponent::UpdateBalanceRun()
 	// determine if pro
 	if (assetID.isEmpty())
 	{ // find the HotWallet asset
-		String assetsByCurb = burstExt.getAssetsByIssuer(burstExt.ensureAccountID("HotWallet"));
+		String assetsByCurb = burstExt.getAssetsByIssuer(burstExt.convertToAccountID("HotWallet"));
 		var assetsByCurbJson;
 		Result r = JSON::parse(assetsByCurb, assetsByCurbJson);
 		if (assetsByCurbJson["assets"].isArray() && assetsByCurbJson["assets"][0].isArray())
@@ -391,7 +441,7 @@ void BalanceComponent::UpdateBalanceRun()
 	}
 
 	//
-	String atData = burstExt.getAT(AT_khoinoor);
+	/*String atData = burstExt.getAT(AT_khoinoor);
 	String machineData = atData.fromFirstOccurrenceOf("\"machineData\":\"", false, true).upToFirstOccurrenceOf("\"", false, true);
 	String accountHex;
 	String priceHex;
@@ -405,14 +455,14 @@ void BalanceComponent::UpdateBalanceRun()
 	iOwnKhoinoor = burstExt.GetAccountRS().compareIgnoreCase(currentOwnerRS) == 0;
 
 	priceHex = machineData.substring((2 * 8 * 2), (2 * 8 * 3));
-	MemoryBlock priceMem; 
+	MemoryBlock priceMem;
 	priceMem.loadFromHexString(priceHex);
 	if (priceMem.getSize() >= 8)
-		khoinoor_priceNQT = *((uint64*)priceMem.getData());
+		khoinoor_priceNQT = *((uint64*)priceMem.getData());*/
 
 
 	/* jjos:
-	extract a long from the first 8 bytes, it contains the current owner.	 
+	extract a long from the first 8 bytes, it contains the current owner.
 	 Current price is the third variable, each one is 8 bytes. hexadecimal and little endian.
 
 	 {
@@ -468,6 +518,24 @@ String BalanceComponent::GetAssetName(const String assetID, String &decimals)
 	}
 }
 
+void BalanceComponent::InitAccountSelection(const int index)
+{
+	//StringArray addresses;
+	StringArray names;
+	//interfaceListeners.call(&InterfaceListener::GetAccountAddresses, addresses);
+	interfaceListeners.call(&InterfaceListener::GetAccountNames, names);
+	
+	int selectedItemIndex = (index < 0) ? accountComboBox->getSelectedItemIndex() : jmin<int>(index, names.size());
+
+	accountComboBox->clear();
+	accountComboBox->addItemList(names, 1);
+	accountComboBox->addSeparator();
+	accountComboBox->addItem(TRANS("new/import account"), names.size() + 2);
+	accountComboBox->addItem(TRANS("remove current account"), names.size() + 3);
+
+	accountComboBox->setSelectedItemIndex(jmax<int>(0, selectedItemIndex));
+}
+
 //[/MiscUserCode]
 
 
@@ -494,9 +562,13 @@ BEGIN_JUCER_METADATA
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="18" bold="0" italic="0" justification="10"/>
   <TEXTBUTTON name="accountButton" id="ae4f12654e0537ec" memberName="accountButton"
-              virtualName="" explicitFocusOrder="0" pos="27 13 272 24" tooltip="show account options"
+              virtualName="" explicitFocusOrder="0" pos="56 128 272 24" tooltip="show account options"
               bgColOff="77b517" bgColOn="ff77b517" textCol="ffffffff" buttonText="BURST-XXXX-XXXX-XXXX-XXXXX"
               connectedEdges="0" needsCallback="1" radioGroupId="0"/>
+  <COMBOBOX name="accountComboBox" id="f53eb928e1072a47" memberName="accountComboBox"
+            virtualName="" explicitFocusOrder="0" pos="104 8 248 24" editable="0"
+            layout="33" items="new/import account&#10;remove account" textWhenNonSelected="BURST-XXXX-XXXX-XXXX-XXXXX"
+            textWhenNoItems="(no choices)"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

@@ -23,6 +23,7 @@
 //[Headers]     -- You can add your own extra header files here --
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "TransactionsComponent.h"
+#include "./QR-code/JuceQrCodeGenerator.h"
 //[/Headers]
 
 
@@ -47,32 +48,28 @@ public:
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
 	TransactionsComponent *getTransactionComponent() { return transactionsComponent; };
-	void ShowSecureAccount(const bool show, const String pubKey_b64, const bool isPro) override;
+	void ShowSecureAccount(const bool show, const String addressRS, const String pubKey_b64, const bool isPro) override;
     //[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
     void buttonClicked (Button* buttonThatWasClicked) override;
 
-    // Binary resources:
-    static const char* twitter_svg;
-    static const int twitter_svgSize;
 
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
 	bool showSecureAccount;
 	String pubKey_b64SecureAccount;
-
-
+	String addressRS;
+	JuceQrCodeGenerator qrCodeGenerator;
+	ScopedPointer<Drawable> qrDrawable;
     //[/UserVariables]
 
     //==============================================================================
-    ScopedPointer<TextEditor> copyTextEditor;
     ScopedPointer<Label> secureHeaderLabel;
     ScopedPointer<TextButton> twitterButton;
     ScopedPointer<TransactionsComponent> transactionsComponent;
-    ScopedPointer<Drawable> drawable1;
 
 
     //==============================================================================

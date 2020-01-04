@@ -43,6 +43,7 @@ PinComponent::PinComponent ()
     unlockHeaderLabel->setFont (Font (18.00f, Font::plain));
     unlockHeaderLabel->setJustificationType (Justification::centred);
     unlockHeaderLabel->setEditable (false, false, false);
+    unlockHeaderLabel->setColour (Label::textColourId, Colour (0xfff0f0f0));
     unlockHeaderLabel->setColour (TextEditor::textColourId, Colour (0xffd2d2d2));
     unlockHeaderLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
@@ -114,6 +115,7 @@ PinComponent::PinComponent ()
     newWalletLabel->setFont (Font (18.00f, Font::plain));
     newWalletLabel->setJustificationType (Justification::centred);
     newWalletLabel->setEditable (false, false, false);
+    newWalletLabel->setColour (Label::textColourId, Colours::white);
     newWalletLabel->setColour (TextEditor::textColourId, Colour (0xffd2d2d2));
     newWalletLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
@@ -162,11 +164,8 @@ PinComponent::PinComponent ()
 
     addAndMakeVisible (importantLabel = new Label ("importantLabel",
                                                    TRANS("IMPORTANT !\n"
-                                                   "Copy your 24 word pass phrase on paper.\n"
-                                                   "All words are lowercase and seperated by a space.\n"
-                                                   "Store it securely !\n"
-                                                   "\n"
-                                                   "This ensures you can always recover your wallet.")));
+                                                   "Make a pen+paper recovery copy of your pass phrase ! \n"
+                                                   "All words are lowercase and seperated by a space.")));
     importantLabel->setFont (Font (18.00f, Font::plain));
     importantLabel->setJustificationType (Justification::centred);
     importantLabel->setEditable (false, false, false);
@@ -182,6 +181,7 @@ PinComponent::PinComponent ()
     protectHeaderLabel->setFont (Font (18.00f, Font::plain));
     protectHeaderLabel->setJustificationType (Justification::centred);
     protectHeaderLabel->setEditable (false, false, false);
+    protectHeaderLabel->setColour (Label::textColourId, Colours::white);
     protectHeaderLabel->setColour (TextEditor::textColourId, Colour (0xffd2d2d2));
     protectHeaderLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
@@ -190,11 +190,12 @@ PinComponent::PinComponent ()
     addressLabel->setFont (Font (25.00f, Font::plain));
     addressLabel->setJustificationType (Justification::centredLeft);
     addressLabel->setEditable (false, false, false);
+    addressLabel->setColour (Label::textColourId, Colours::white);
     addressLabel->setColour (TextEditor::textColourId, Colour (0xffd2d2d2));
     addressLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (refreshButton = new TextButton ("refreshButton"));
-    refreshButton->setTooltip (TRANS("Generate a new one, if you dont like this one"));
+    refreshButton->setTooltip (TRANS("Refresh, generate a new phrase."));
     refreshButton->setButtonText (TRANS("new"));
     refreshButton->addListener (this);
     refreshButton->setColour (TextButton::buttonColourId, Colour (0xffa8a8a8));
@@ -227,6 +228,7 @@ PinComponent::PinComponent ()
     enterPassPhraseLabel->setFont (Font (18.00f, Font::plain));
     enterPassPhraseLabel->setJustificationType (Justification::centred);
     enterPassPhraseLabel->setEditable (false, false, false);
+    enterPassPhraseLabel->setColour (Label::textColourId, Colours::white);
     enterPassPhraseLabel->setColour (TextEditor::textColourId, Colour (0xffd2d2d2));
     enterPassPhraseLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
@@ -241,6 +243,7 @@ PinComponent::PinComponent ()
     enterAddressLabel->setFont (Font (25.00f, Font::plain));
     enterAddressLabel->setJustificationType (Justification::centred);
     enterAddressLabel->setEditable (false, false, false);
+    enterAddressLabel->setColour (Label::textColourId, Colours::white);
     enterAddressLabel->setColour (TextEditor::textColourId, Colour (0xffd2d2d2));
     enterAddressLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
@@ -272,6 +275,7 @@ PinComponent::PinComponent ()
     checkHeaderLabel->setFont (Font (18.00f, Font::plain));
     checkHeaderLabel->setJustificationType (Justification::centred);
     checkHeaderLabel->setEditable (false, false, false);
+    checkHeaderLabel->setColour (Label::textColourId, Colours::white);
     checkHeaderLabel->setColour (TextEditor::textColourId, Colour (0xffd2d2d2));
     checkHeaderLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
@@ -287,6 +291,7 @@ PinComponent::PinComponent ()
     addressHeaderLabel->setFont (Font (20.00f, Font::plain));
     addressHeaderLabel->setJustificationType (Justification::centredLeft);
     addressHeaderLabel->setEditable (false, false, false);
+    addressHeaderLabel->setColour (Label::textColourId, Colour (0xffdfdfdf));
     addressHeaderLabel->setColour (TextEditor::textColourId, Colour (0xffd2d2d2));
     addressHeaderLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
@@ -295,11 +300,12 @@ PinComponent::PinComponent ()
     passHeaderLabel->setFont (Font (20.00f, Font::plain));
     passHeaderLabel->setJustificationType (Justification::centredLeft);
     passHeaderLabel->setEditable (false, false, false);
+    passHeaderLabel->setColour (Label::textColourId, Colour (0xffdfdfdf));
     passHeaderLabel->setColour (TextEditor::textColourId, Colour (0xffd2d2d2));
     passHeaderLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (copyNewButton = new TextButton ("copyNewButton"));
-    copyNewButton->setTooltip (TRANS("save this data to file"));
+    copyNewButton->setTooltip (TRANS("copy the passphrase to the clipboard. PLEASE NOTE: COPY SOMETHING ELSE TO CLEAR THE CLIPBOARD AFTER"));
     copyNewButton->setButtonText (TRANS("copy to clipboard"));
     copyNewButton->addListener (this);
     copyNewButton->setColour (TextButton::buttonColourId, Colour (0xffa8a8a8));
@@ -313,7 +319,7 @@ PinComponent::PinComponent ()
     fileSaveButton->setColour (TextButton::buttonOnColourId, Colour (0xff8d8d8d));
 
     addAndMakeVisible (vanityTextEditor = new TextEditor ("vanityTextEditor"));
-    vanityTextEditor->setTooltip (TRANS("Enter a word to search for an address containing it. Longer words will take longer to find. Best to use 5 characters or less. Put an * at end or front to force the search to it."));
+    vanityTextEditor->setTooltip (TRANS("Enter a word to search for an address containing the word. Longer words will take longer to find. Best to use 5 characters or less. Put an * character at end or front of the word to force the search to it. ie. CURB* to only search an address starting with \'curb\'."));
     vanityTextEditor->setMultiLine (false);
     vanityTextEditor->setReturnKeyStartsNewLine (false);
     vanityTextEditor->setReadOnly (false);
@@ -336,6 +342,11 @@ PinComponent::PinComponent ()
     searchCancelButton->setColour (TextButton::buttonColourId, Colour (0xffa8a8a8));
     searchCancelButton->setColour (TextButton::buttonOnColourId, Colour (0xff8d8d8d));
 
+    addAndMakeVisible (vanityToggleButton = new ToggleButton ("vanityToggleButton"));
+    vanityToggleButton->setButtonText (TRANS("make vanity address"));
+    vanityToggleButton->addListener (this);
+    vanityToggleButton->setColour (ToggleButton::textColourId, Colours::white);
+
     drawable1 = Drawable::createFromImageData (burstHotWalletlogo_svg, burstHotWalletlogo_svgSize);
     drawable2 = Drawable::createFromImageData (burst_logo_white_svg, burst_logo_white_svgSize);
 
@@ -356,8 +367,11 @@ PinComponent::PinComponent ()
 	pinInputTextEditor->setPasswordCharacter(0x2022);
 	pinInputTextEditor->grabKeyboardFocus();
 
-	vanityTextEditor->setInputRestrictions(7, "*abcdefghjklmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789");
-	vanityTextEditor->setTextToShowWhenEmpty("optional: BURST Vanity address (takes time)", Colours::grey);
+	vanityTextEditor->setInputRestrictions(6, "*abcdefghjklmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789");
+	vanityTextEditor->setTextToShowWhenEmpty("optional: search for BURST Vanity address (7 char max)", Colours::grey);
+	vanityTextEditor->setVisible(false);
+	searchButton->setVisible(false);
+	searchCancelButton->setVisible(false);
 
 	firstOn = false;
 	newOn = false;
@@ -418,6 +432,7 @@ PinComponent::~PinComponent()
     vanityTextEditor = nullptr;
     searchButton = nullptr;
     searchCancelButton = nullptr;
+    vanityToggleButton = nullptr;
     drawable1 = nullptr;
     drawable2 = nullptr;
 
@@ -488,12 +503,12 @@ void PinComponent::paint (Graphics& g)
 		g.setColour(Colours::black);
 		jassert(drawable2 != 0);
 		if (drawable2 != 0)
-			drawable2->drawWithin(g, Rectangle<float>(getBounds().withTrimmedTop(50).withHeight(45).withTrimmedRight((getWidth() / 2) + 10).toFloat()),
+			drawable2->drawWithin(g, Rectangle<float>(getBounds().withTrimmedTop(5).withHeight(45).withTrimmedRight((getWidth() / 2) + 10).toFloat()),
 			RectanglePlacement::xRight | RectanglePlacement::onlyReduceInSize, 1.000f);
 
 		jassert(drawable1 != 0);
 		if (drawable1 != 0)
-			drawable1->drawWithin(g, Rectangle<float>(getBounds().withTrimmedTop(50).withHeight(80).withTrimmedLeft((getWidth() / 2) + 10).toFloat()),
+			drawable1->drawWithin(g, Rectangle<float>(getBounds().withTrimmedTop(5).withHeight(40).withTrimmedLeft((getWidth() / 2) + 10).toFloat()),
 			RectanglePlacement::xLeft | RectanglePlacement::onlyReduceInSize, 1.000f);
 	}
     //[/UserPaint]
@@ -506,7 +521,7 @@ void PinComponent::resized()
     //[/UserPreResize]
 
     textButton_1->setBounds (120, 664, 32, 24);
-    unlockHeaderLabel->setBounds (48, 520, 264, 24);
+    unlockHeaderLabel->setBounds (48, 504, 264, 24);
     textButton_2->setBounds (160, 664, 32, 24);
     textButton_3->setBounds (200, 664, 32, 24);
     textButton_4->setBounds (120, 632, 32, 24);
@@ -542,9 +557,10 @@ void PinComponent::resized()
     passHeaderLabel->setBounds (32, 312, 312, 24);
     copyNewButton->setBounds (248, 440, 184, 24);
     fileSaveButton->setBounds (32, 440, 208, 24);
-    vanityTextEditor->setBounds (216, 80, 150, 24);
+    vanityTextEditor->setBounds (288, 80, 78, 24);
     searchButton->setBounds (368, 80, 80, 24);
     searchCancelButton->setBounds (448, 80, 80, 24);
+    vanityToggleButton->setBounds (152, 80, 128, 24);
     //[UserResized] Add your own custom resize handling here..
 	*/
 
@@ -581,18 +597,17 @@ void PinComponent::resized()
 
 	// new
 	int pad = 10;
-	Rectangle<int> r_new = r.reduced(40);
+	Rectangle<int> r_new = r.reduced(40).translated(0, -20);
 	refreshButton->setBounds(r_new.withWidth(100).withHeight(30));
+	vanityToggleButton->setBounds(r_new.withTrimmedLeft(100).withWidth(200).withHeight(30));
 
 	int rowH = refreshButton->getHeight() + pad;
-	importantLabel->setBounds(r_new.withTrimmedTop(rowH).withHeight(150));
-	rowH += importantLabel->getHeight() + pad;
-
+	const int b0 = 0;
 	const int b1 = 120;
 	const int b2 = 70;
-	const int b12 = b1 + b2;
-	vanityTextEditor->setBounds(r_new.withTrimmedTop(rowH).withWidth(r_new.getWidth() - (b12)).withHeight(30));
-	searchButton->setBounds(r_new.withTrimmedTop(rowH).withTrimmedLeft(r_new.getWidth() - b12).withWidth(b1).withHeight(30));
+	const int b12 = b1 + b2 + b0;
+	vanityTextEditor->setBounds(r_new.withTrimmedTop(rowH).withTrimmedLeft(b0).withWidth(r_new.getWidth() - (b12)).withHeight(30));
+	searchButton->setBounds(r_new.withTrimmedTop(rowH).withTrimmedLeft((r_new.getWidth() - b12) + b0).withWidth(b1).withHeight(30));
 	searchCancelButton->setBounds(r_new.withTrimmedTop(rowH).withTrimmedLeft(r_new.getWidth() - b2).withWidth(b2).withHeight(30));
 	rowH += searchCancelButton->getHeight();
 
@@ -603,24 +618,17 @@ void PinComponent::resized()
 
 	passHeaderLabel->setBounds(r_new.withTrimmedTop(rowH).withHeight(30));
 	rowH += passHeaderLabel->getHeight();
-	passPhraseLabel->setBounds(r_new.withTrimmedTop(rowH).withHeight(160));
+	passPhraseLabel->setBounds(r_new.withTrimmedTop(rowH).withHeight(120));
 	rowH += passPhraseLabel->getHeight() + pad;
+
+	importantLabel->setBounds(r_new.withTrimmedTop(rowH).withHeight(100));
+	rowH += importantLabel->getHeight() + pad;
 
 	copyNewButton->setBounds(r_new.withTrimmedTop(rowH).withTrimmedLeft(r_new.getWidth()/2).withHeight(30));
 	fileSaveButton->setBounds(r_new.withTrimmedTop(rowH).withWidth(r_new.getWidth() / 2).withHeight(30));
 	rowH += copyNewButton->getHeight() + pad;
 	copiedTextButton->setBounds(r_new.withTrimmedTop(rowH).withHeight(30));
 
-
-	/*addressHeaderLabel->setBounds(r.reduced(20).withTrimmedTop(importantLabel->getBottom() + pad).withWidth(getWidth() - 140).withHeight(30));
-	refreshButton->setBounds(r.reduced(20).withTrimmedTop(importantLabel->getBottom()).withTrimmedLeft(getWidth() - 140).withHeight(30));
-	addressLabel->setBounds(r.reduced(20).withTrimmedTop(addressHeaderLabel->getBottom()).withWidth(getWidth() - 140).withHeight(30));
-
-	passHeaderLabel->setBounds(r.reduced(20).withTrimmedTop(addressLabel->getBottom()).withHeight(150));
-	passPhraseLabel->setBounds(r.reduced(20).withTrimmedTop(passHeaderLabel->getBottom()).reduced(50).withHeight(200));
-
-	copiedTextButton->setBounds(r.reduced(20).withTrimmedTop(passPhraseLabel->getBottom()).withHeight(30));
-	*/
 	// import
 	enterPassPhraseLabel->setBounds(r.reduced(20).withHeight(80));
 	passPhraseTextEditor->setBounds(r.reduced(20).withTrimmedTop(enterPassPhraseLabel->getBottom() + pad).withHeight(120));
@@ -798,6 +806,12 @@ void PinComponent::buttonClicked (Button* buttonThatWasClicked)
 		StopVanity();
         //[/UserButtonCode_searchCancelButton]
     }
+    else if (buttonThatWasClicked == vanityToggleButton)
+    {
+        //[UserButtonCode_vanityToggleButton] -- add your button handler code here..
+		ToggleVanityVisible(vanityToggleButton->getToggleState());
+        //[/UserButtonCode_vanityToggleButton]
+    }
 
     //[UserbuttonClicked_Post]
     //[/UserbuttonClicked_Post]
@@ -929,7 +943,7 @@ void PinComponent::setViewMode(const int mode, const String passPhrase)
 
 	{
 		// first
-		newWalletLabel->setVisible(firstOn);
+		newWalletLabel->setVisible(false);// (firstOn);
 		newButton->setVisible(firstOn);
 		importButton->setVisible(firstOn);
 
@@ -952,9 +966,10 @@ void PinComponent::setViewMode(const int mode, const String passPhrase)
 
 		// new
 		refreshButton->setVisible(newOn);
-		vanityTextEditor->setVisible(newOn);
-		searchButton->setVisible(newOn);
-		searchCancelButton->setVisible(newOn);
+		vanityToggleButton->setVisible(newOn);
+		vanityTextEditor->setVisible(newOn ? vanityToggleButton->getToggleState() : false);
+		searchButton->setVisible(newOn ? vanityToggleButton->getToggleState() : false);
+		searchCancelButton->setVisible(newOn ? vanityToggleButton->getToggleState() : false);
 		importantLabel->setVisible(newOn);
 		addressHeaderLabel->setVisible(newOn);
 		addressLabel->setVisible(newOn);
@@ -1007,9 +1022,9 @@ String PinComponent::NewPassPhrase()
 
 void PinComponent::SavePassPhrase()
 {
-	if (NativeMessageBox::showOkCancelBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "Use this PIN code to protect your pass phrase?") == 1)
+	if (NativeMessageBox::showOkCancelBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "Use the new PIN code to protect your pass phrase?") == 1)
 	{
-		interfaceListeners.call(&InterfaceListener::SavePassPhrase, burstKit.GetSecretPhraseString(), pinInputTextEditor->getText());
+		interfaceListeners.call(&InterfaceListener::SavePassPhrase, burstKit.GetSecretPhraseString(), pinInputTextEditor->getText(), burstKit.GetAccountRS());
 		ClearMemory();
 	}
 }
@@ -1068,7 +1083,8 @@ void PinComponent::VanityThread::run()
 
 	MemoryBlock wordListMb = MemoryBlock(brswordlist_txt, brswordlist_txtSize);
 	StringArray wordList = StringArray::fromLines(wordListMb.toString());
-	juce::Random r(Time::currentTimeMillis());
+	bitwiseCheck = false;
+	//r = juce::Random(Time::currentTimeMillis());
 	r.setSeedRandomly();
 	String passPhrase;
 	String pubKey_HEX;
@@ -1090,45 +1106,97 @@ void PinComponent::VanityThread::run()
 		}
 		passPhrase = passPhrase.substring(0, passPhrase.length() - 1); // del last space
 
-		Crypto crypto;
-		BurstAddress burstAddress;
 		int vanityItt_ = 0;
 		setVanityItt(vanityItt_);
-		while (!threadShouldExit() && passPhraseVanity.isEmpty())
+
+		if (shouldStartWith == shouldEndWith)
 		{
-			passPhrase = passPhrase.fromFirstOccurrenceOf(" ", false, true); // remove 1st random word
-			const unsigned int randInt = r.nextInt(wordList.size());
-			passPhrase += " " + wordList[randInt]; // add new random word
-
-			// calc address
-			MemoryBlock pubKey(32, true);
-			crypto.getPublicKey(MemoryBlock(passPhrase.toUTF8(), passPhrase.getNumBytesAsUTF8()), pubKey);
-			addressRS = burstAddress.encode(ConvertPubKeyToNumerical(pubKey), false);
-
-			if (shouldStartWith == shouldEndWith)
+			while (!threadShouldExit() && passPhraseVanity.isEmpty())
 			{
+				UpdatePassPhrase(wordList, passPhrase);
+				addressRS = CalcAddress(passPhrase);
+
 				if (addressRS.contains(localVanityWord))
 					passPhraseVanity = passPhrase;
+
+				vanityItt_++;
+				if (vanityItt_ % 1000 == 0)
+					setVanityItt(vanityItt_);
 			}
-			else
+		}
+		else
+		{
+			const int total_length = 4 + 4 + 4 + 5;
+			uint64 bitRequest = 0;
+			uint64 bitMask = 0;
+
+			if (shouldStartWith)
 			{
-				if (shouldStartWith)
+				bitMask = burstAddress.decode(String("Z").paddedLeft('Z', localVanityWord.length()).paddedRight('2', total_length), true);
+				bitRequest = burstAddress.decode(localVanityWord.paddedRight('2', total_length), true) &bitMask;
+			}
+			else if (shouldEndWith)
+			{
+				bitMask = burstAddress.decode(String("Z").paddedRight('Z', localVanityWord.length()).paddedLeft('2', total_length), true);
+				bitRequest = burstAddress.decode(localVanityWord.paddedLeft('2', total_length), true) &bitMask;
+			}
+
+			while (!threadShouldExit() && passPhraseVanity.isEmpty())
+			{
+				UpdatePassPhrase(wordList, passPhrase);
+
+				// compare RAW uint64 account ID
+		/*		MemoryBlock pubKey(32, true);
+				crypto.getPublicKey(MemoryBlock(passPhrase.toUTF8(), passPhrase.getNumBytesAsUTF8()), pubKey);
+				SHA256 shapub(pubKey);// take SHA256 of pubKey
+
+				if (bitRequest == (*((uint64*)shapub.getRawData().getData()) &bitMask))
 				{
-					if (addressRS.startsWith(localVanityWord))
+				//	passPhraseVanity = passPhrase;
+					addressRS = CalcAddress(passPhrase); // full check
+					if (shouldEndWith && addressRS.endsWith(localVanityWord))
 						passPhraseVanity = passPhrase;
-				}
-				else if (shouldEndWith)
-				{
-					if (addressRS.endsWith(localVanityWord))
+					else if (shouldStartWith && addressRS.startsWith(localVanityWord))
 						passPhraseVanity = passPhrase;
+				}*/
+
+				//	passPhraseVanity = passPhrase;
+				addressRS = CalcAddress(passPhrase); // full check
+				if (shouldEndWith && addressRS.endsWith(localVanityWord))
+					passPhraseVanity = passPhrase;
+				else if (shouldStartWith && addressRS.startsWith(localVanityWord))
+					passPhraseVanity = passPhrase;
+
+				vanityItt_++;
+				if (vanityItt_ % 1000 == 0)
+					setVanityItt(vanityItt_);
+			}
+
+			if (passPhraseVanity.isNotEmpty())
+			{
+				// compare RAW uint64 account ID
+				MemoryBlock pubKey(32, true);
+				crypto.getPublicKey(MemoryBlock(passPhraseVanity.toUTF8(), passPhraseVanity.getNumBytesAsUTF8()), pubKey);
+				SHA256 shapub(pubKey);// take SHA256 of pubKey
+				if (bitRequest == (*((uint64*)shapub.getRawData().getData()) &bitMask))
+				{ // check if works
+					bitwiseCheck = true;
 				}
 			}
 
-			vanityItt_++;
-			if (vanityItt_ %1000 == 0)
-				setVanityItt(vanityItt_);
 		}
 	}
+}
+void PinComponent::VanityThread::UpdatePassPhrase(const StringArray &wordList, String &passPhrase)
+{
+	passPhrase = passPhrase.fromFirstOccurrenceOf(" ", false, true) + " " + wordList[r.nextInt(wordList.size())]; // remove 1st random word // add new random word at back
+}
+
+String PinComponent::VanityThread::CalcAddress(const String &passPhrase)
+{
+	MemoryBlock pubKey(32, true);
+	crypto.getPublicKey(MemoryBlock(passPhrase.toUTF8(), passPhrase.getNumBytesAsUTF8()), pubKey);
+	return burstAddress.encode(ConvertPubKeyToNumerical(pubKey), false);
 }
 
 String PinComponent::VanityThread::ConvertPubKeyToNumerical(const MemoryBlock pubKey)
@@ -1149,7 +1217,7 @@ void PinComponent::StartVanity()
 		vanityThreads[i]->stopThread(100);
 	vanityThreads.clear();
 
-	ToggleVanityView(true);
+	ToggleVanityEnabled(true);
 
 	String vanityWord = vanityTextEditor->getText();
 	for (int i = 0; i < threadcount; i++)
@@ -1169,11 +1237,11 @@ void PinComponent::StopVanity()
 		vanityThreads[i]->stopThread(100);
 	vanityThreads.clear();
 	startVanity = 0;
-	ToggleVanityView(false);
+	ToggleVanityEnabled(false);
 }
 
 void PinComponent::timerCallback()
-{	
+{
 	String passPhraseVanity;
 	int vanityItt = 0;
 	bool stop = false;
@@ -1209,7 +1277,15 @@ void PinComponent::timerCallback()
 	}
 }
 
-void PinComponent::ToggleVanityView(const bool togg)
+
+void PinComponent::ToggleVanityVisible(const bool togg)
+{
+	vanityTextEditor->setVisible(togg);
+	searchButton->setVisible(togg);
+	searchCancelButton->setVisible(togg);
+}
+
+void PinComponent::ToggleVanityEnabled(const bool togg)
 {
 	if (!togg)
 	{
@@ -1222,11 +1298,10 @@ void PinComponent::ToggleVanityView(const bool togg)
 		searchCancelButton->setColour(TextButton::buttonColourId, Colours::palevioletred);
 		searchCancelButton->setColour(TextButton::buttonOnColourId, Colours::palevioletred);
 	}
-//	searchButton->setVisible(!togg);
 	searchButton->setEnabled(!togg);
-//	searchCancelButton->setVisible(togg);
 	searchCancelButton->setEnabled(togg);
 
+	vanityToggleButton->setEnabled(!togg);
 	vanityTextEditor->setEnabled(!togg);
 	refreshButton->setEnabled(!togg);
 	importantLabel->setEnabled(!togg);
@@ -1276,10 +1351,10 @@ BEGIN_JUCER_METADATA
               bgColOn="ffbebebe" buttonText="1" connectedEdges="0" needsCallback="1"
               radioGroupId="0"/>
   <LABEL name="unlockHeaderLabel" id="9f31257814ffb142" memberName="unlockHeaderLabel"
-         virtualName="" explicitFocusOrder="0" pos="48 520 264 24" edTextCol="ffd2d2d2"
-         edBkgCol="0" labelText="Enter PIN to unlock" editableSingleClick="0"
-         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
-         fontsize="18" bold="0" italic="0" justification="36"/>
+         virtualName="" explicitFocusOrder="0" pos="48 504 264 24" textCol="fff0f0f0"
+         edTextCol="ffd2d2d2" edBkgCol="0" labelText="Enter PIN to unlock"
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default font" fontsize="18" bold="0" italic="0" justification="36"/>
   <TEXTBUTTON name="pinButton" id="e452bd5566ed72cb" memberName="textButton_2"
               virtualName="" explicitFocusOrder="0" pos="160 664 32 24" bgColOff="ff8d8d8d"
               bgColOn="ffbebebe" buttonText="2" connectedEdges="0" needsCallback="1"
@@ -1321,8 +1396,8 @@ BEGIN_JUCER_METADATA
               multiline="0" retKeyStartsLine="0" readonly="0" scrollbars="0"
               caret="1" popupmenu="0"/>
   <LABEL name="newWalletLabel" id="244a523d3fc4027" memberName="newWalletLabel"
-         virtualName="" explicitFocusOrder="0" pos="104 8 408 32" edTextCol="ffd2d2d2"
-         edBkgCol="0" labelText="Make new or import a Burstcoin wallet"
+         virtualName="" explicitFocusOrder="0" pos="104 8 408 32" textCol="ffffffff"
+         edTextCol="ffd2d2d2" edBkgCol="0" labelText="Make new or import a Burstcoin wallet"
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="18" bold="0" italic="0" justification="36"/>
   <TEXTBUTTON name="unlockButton" id="33e3372e57fc5d7c" memberName="unlockButton"
@@ -1352,21 +1427,21 @@ BEGIN_JUCER_METADATA
   <LABEL name="importantLabel" id="2d0de8ef31015c72" memberName="importantLabel"
          virtualName="" explicitFocusOrder="0" pos="40 112 408 136" bkgCol="ffffffff"
          textCol="fffa0d0d" outlineCol="ffff0000" edTextCol="ffffffff"
-         edBkgCol="0" labelText="IMPORTANT !&#10;Copy your 24 word pass phrase on paper.&#10;All words are lowercase and seperated by a space.&#10;Store it securely !&#10;&#10;This ensures you can always recover your wallet."
+         edBkgCol="0" labelText="IMPORTANT !&#10;Make a pen+paper recovery copy of your pass phrase ! &#10;All words are lowercase and seperated by a space."
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="18" bold="0" italic="0" justification="36"/>
   <LABEL name="protectHeaderLabel" id="7231f81c9a91ac23" memberName="protectHeaderLabel"
-         virtualName="" explicitFocusOrder="0" pos="328 520 320 88" edTextCol="ffd2d2d2"
-         edBkgCol="0" labelText="Protect the wallet pass phrase by entering a personal PIN code. &#10;The PIN may contain any character. The keypad is for convenience."
+         virtualName="" explicitFocusOrder="0" pos="328 520 320 88" textCol="ffffffff"
+         edTextCol="ffd2d2d2" edBkgCol="0" labelText="Protect the wallet pass phrase by entering a personal PIN code. &#10;The PIN may contain any character. The keypad is for convenience."
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="18" bold="0" italic="0" justification="36"/>
   <LABEL name="addressLabel" id="271d36f5ad829a89" memberName="addressLabel"
-         virtualName="" explicitFocusOrder="0" pos="32 280 312 24" edTextCol="ffd2d2d2"
-         edBkgCol="0" labelText="BURST-address" editableSingleClick="0"
+         virtualName="" explicitFocusOrder="0" pos="32 280 312 24" textCol="ffffffff"
+         edTextCol="ffd2d2d2" edBkgCol="0" labelText="BURST-address" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="25" bold="0" italic="0" justification="33"/>
   <TEXTBUTTON name="refreshButton" id="3b82e2dd2b7f5bae" memberName="refreshButton"
-              virtualName="" explicitFocusOrder="0" pos="40 80 80 24" tooltip="Generate a new one, if you dont like this one"
+              virtualName="" explicitFocusOrder="0" pos="40 80 80 24" tooltip="Refresh, generate a new phrase."
               bgColOff="ffa8a8a8" bgColOn="ff8d8d8d" buttonText="new" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="importButton" id="7617d54c57455844" memberName="importButton"
@@ -1382,8 +1457,8 @@ BEGIN_JUCER_METADATA
               multiline="0" retKeyStartsLine="0" readonly="0" scrollbars="1"
               caret="1" popupmenu="1"/>
   <LABEL name="enterPassPhraseLabel" id="7a2b5c39c3b79600" memberName="enterPassPhraseLabel"
-         virtualName="" explicitFocusOrder="0" pos="472 160 216 96" edTextCol="ffd2d2d2"
-         edBkgCol="0" labelText="Enter your exact pass phrase.&#10;You can check if its correct when the BURST address below matches."
+         virtualName="" explicitFocusOrder="0" pos="472 160 216 96" textCol="ffffffff"
+         edTextCol="ffd2d2d2" edBkgCol="0" labelText="Enter your exact pass phrase.&#10;You can check if its correct when the BURST address below matches."
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="18" bold="0" italic="0" justification="36"/>
   <TEXTBUTTON name="savePassPhraseButton" id="422992e6136d83c4" memberName="savePassPhraseButton"
@@ -1391,8 +1466,8 @@ BEGIN_JUCER_METADATA
               bgColOn="ff77b517" buttonText="Save (encrypted)" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <LABEL name="enterAddressLabel" id="de69e0fb985e9592" memberName="enterAddressLabel"
-         virtualName="" explicitFocusOrder="0" pos="464 416 232 25" edTextCol="ffd2d2d2"
-         edBkgCol="0" labelText="BURST-address" editableSingleClick="0"
+         virtualName="" explicitFocusOrder="0" pos="464 416 232 25" textCol="ffffffff"
+         edTextCol="ffd2d2d2" edBkgCol="0" labelText="BURST-address" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="25" bold="0" italic="0" justification="36"/>
   <TEXTBUTTON name="newButton" id="536e3078320f4c27" memberName="newButton"
@@ -1408,8 +1483,8 @@ BEGIN_JUCER_METADATA
               multiline="0" retKeyStartsLine="0" readonly="0" scrollbars="1"
               caret="1" popupmenu="1"/>
   <LABEL name="checkHeaderLabel" id="fb4df01f557589d" memberName="checkHeaderLabel"
-         virtualName="" explicitFocusOrder="0" pos="40 776 320 104" edTextCol="ffd2d2d2"
-         edBkgCol="0" labelText="Copy check of your pass phrase. If incorrect you will return back to the new pass phrase creation.&#10;&#10;Only enter the _ word, and click next."
+         virtualName="" explicitFocusOrder="0" pos="40 776 320 104" textCol="ffffffff"
+         edTextCol="ffd2d2d2" edBkgCol="0" labelText="Copy check of your pass phrase. If incorrect you will return back to the new pass phrase creation.&#10;&#10;Only enter the _ word, and click next."
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="18" bold="0" italic="0" justification="36"/>
   <TEXTBUTTON name="checkButton" id="32bddfd3e5904f14" memberName="checkButton"
@@ -1417,17 +1492,17 @@ BEGIN_JUCER_METADATA
               bgColOn="ff77b517" textCol="ffffffff" buttonText="next" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <LABEL name="addressHeaderLabel" id="f822a181e5d1e62e" memberName="addressHeaderLabel"
-         virtualName="" explicitFocusOrder="0" pos="32 256 312 24" edTextCol="ffd2d2d2"
-         edBkgCol="0" labelText="My address:" editableSingleClick="0"
+         virtualName="" explicitFocusOrder="0" pos="32 256 312 24" textCol="ffdfdfdf"
+         edTextCol="ffd2d2d2" edBkgCol="0" labelText="My address:" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="20" bold="0" italic="0" justification="33"/>
   <LABEL name="passHeaderLabel" id="5afea88149693777" memberName="passHeaderLabel"
-         virtualName="" explicitFocusOrder="0" pos="32 312 312 24" edTextCol="ffd2d2d2"
-         edBkgCol="0" labelText="My pass phrase:" editableSingleClick="0"
-         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
-         fontsize="20" bold="0" italic="0" justification="33"/>
+         virtualName="" explicitFocusOrder="0" pos="32 312 312 24" textCol="ffdfdfdf"
+         edTextCol="ffd2d2d2" edBkgCol="0" labelText="My pass phrase:"
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default font" fontsize="20" bold="0" italic="0" justification="33"/>
   <TEXTBUTTON name="copyNewButton" id="f8d473a96cd8d062" memberName="copyNewButton"
-              virtualName="" explicitFocusOrder="0" pos="248 440 184 24" tooltip="save this data to file"
+              virtualName="" explicitFocusOrder="0" pos="248 440 184 24" tooltip="copy the passphrase to the clipboard. PLEASE NOTE: COPY SOMETHING ELSE TO CLEAR THE CLIPBOARD AFTER"
               bgColOff="ffa8a8a8" bgColOn="ff8d8d8d" buttonText="copy to clipboard"
               connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="fileSaveButton" id="d6a39a84d29d7cfa" memberName="fileSaveButton"
@@ -1435,7 +1510,7 @@ BEGIN_JUCER_METADATA
               bgColOff="ffa8a8a8" bgColOn="ff8d8d8d" buttonText="save to file"
               connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTEDITOR name="vanityTextEditor" id="36c160dcdf337251" memberName="vanityTextEditor"
-              virtualName="" explicitFocusOrder="0" pos="216 80 150 24" tooltip="Enter a word to search for an address containing it. Longer words will take longer to find. Best to use 5 characters or less. Put an * at end or front to force the search to it."
+              virtualName="" explicitFocusOrder="0" pos="288 80 78 24" tooltip="Enter a word to search for an address containing the word. Longer words will take longer to find. Best to use 5 characters or less. Put an * character at end or front of the word to force the search to it. ie. CURB* to only search an address starting with 'curb'."
               initialText="" multiline="0" retKeyStartsLine="0" readonly="0"
               scrollbars="0" caret="1" popupmenu="1"/>
   <TEXTBUTTON name="searchButton" id="c7207b621654c4ce" memberName="searchButton"
@@ -1446,6 +1521,10 @@ BEGIN_JUCER_METADATA
               virtualName="" explicitFocusOrder="0" pos="448 80 80 24" tooltip="stop searching"
               bgColOff="ffa8a8a8" bgColOn="ff8d8d8d" buttonText="cancel" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
+  <TOGGLEBUTTON name="vanityToggleButton" id="375f4533c5b2e944" memberName="vanityToggleButton"
+                virtualName="" explicitFocusOrder="0" pos="152 80 128 24" txtcol="ffffffff"
+                buttonText="make vanity address" connectedEdges="0" needsCallback="1"
+                radioGroupId="0" state="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

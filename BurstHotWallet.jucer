@@ -5,10 +5,36 @@
               jucerVersion="4.3.1" companyName="CryptoExtensions">
   <MAINGROUP id="OXzctD" name="BurstHotWallet">
     <GROUP id="{D85C0C04-C916-D7B6-1C02-82BD1D0BBF3E}" name="Source">
+      <GROUP id="{B8AE8685-2187-86BC-5670-55B65E25C16F}" name="chat">
+        <FILE id="LXoOpW" name="ChatBox.cpp" compile="1" resource="0" file="Source/chat/ChatBox.cpp"/>
+        <FILE id="gZUnuf" name="ChatBox.h" compile="0" resource="0" file="Source/chat/ChatBox.h"/>
+        <FILE id="CXu4yH" name="ChatComponent.cpp" compile="1" resource="0"
+              file="Source/chat/ChatComponent.cpp"/>
+        <FILE id="jdG3EO" name="ChatComponent.h" compile="0" resource="0" file="Source/chat/ChatComponent.h"/>
+        <FILE id="iqdQzL" name="Menu.cpp" compile="1" resource="0" file="Source/chat/Menu.cpp"/>
+        <FILE id="JEJrnW" name="Menu.h" compile="0" resource="0" file="Source/chat/Menu.h"/>
+        <FILE id="PSwF7N" name="MessageList.cpp" compile="1" resource="0" file="Source/chat/MessageList.cpp"/>
+        <FILE id="vAt6L7" name="MessageList.h" compile="0" resource="0" file="Source/chat/MessageList.h"/>
+      </GROUP>
+      <GROUP id="{A38B8587-D628-1D37-2540-913EC2B4BBB2}" name="QR-code">
+        <FILE id="y7yKu1" name="BitBuffer.cpp" compile="1" resource="0" file="Source/QR-code/BitBuffer.cpp"/>
+        <FILE id="YTnX50" name="BitBuffer.hpp" compile="0" resource="0" file="Source/QR-code/BitBuffer.hpp"/>
+        <FILE id="hVeJGJ" name="JuceQrCodeGenerator.h" compile="0" resource="0"
+              file="Source/QR-code/JuceQrCodeGenerator.h"/>
+        <FILE id="DzIpvl" name="QrCode.cpp" compile="1" resource="0" file="Source/QR-code/QrCode.cpp"/>
+        <FILE id="IpLSs2" name="QrCode.hpp" compile="0" resource="0" file="Source/QR-code/QrCode.hpp"/>
+        <FILE id="Ua4VaD" name="QrSegment.cpp" compile="1" resource="0" file="Source/QR-code/QrSegment.cpp"/>
+        <FILE id="Nb6Nxs" name="QrSegment.hpp" compile="0" resource="0" file="Source/QR-code/QrSegment.hpp"/>
+      </GROUP>
       <GROUP id="{D3E28483-5FF4-E9F5-6DF0-C6F5F2075EBC}" name="img">
         <FILE id="BGJyRW" name="BurstHotWallet-icon.svg" compile="0" resource="1"
               file="Source/BurstHotWallet-icon.svg"/>
         <FILE id="Kr4bW9" name="cog.svg" compile="0" resource="1" file="Source/img/cog.svg"/>
+        <FILE id="rPbyD6" name="groupchat.svg" compile="0" resource="1" file="Source/img/groupchat.svg"/>
+        <FILE id="Qd0ACS" name="hatnu-bg-p1.svg" compile="0" resource="1" file="Source/img/hatnu-bg-p1.svg"/>
+        <FILE id="O72VSn" name="hatnu-bg-p2.svg" compile="0" resource="1" file="Source/img/hatnu-bg-p2.svg"/>
+        <FILE id="Gj2ymj" name="Ubuntu Medium Nerd Font Complete.ttf" compile="0"
+              resource="1" file="Source/img/Ubuntu Medium Nerd Font Complete.ttf"/>
       </GROUP>
       <FILE id="fHOLdA" name="BalanceComponent.cpp" compile="1" resource="0"
             file="Source/BalanceComponent.cpp"/>
@@ -26,6 +52,10 @@
             file="Source/TransactionsComponent.cpp"/>
       <FILE id="VO6TiQ" name="TransactionsComponent.h" compile="0" resource="0"
             file="Source/TransactionsComponent.h"/>
+      <FILE id="KZri31" name="TradeInterfaceComponent.cpp" compile="1" resource="0"
+            file="Source/TradeInterfaceComponent.cpp"/>
+      <FILE id="PePg3t" name="TradeInterfaceComponent.h" compile="0" resource="0"
+            file="Source/TradeInterfaceComponent.h"/>
       <FILE id="J4K7o8" name="AboutComponent.cpp" compile="1" resource="0"
             file="Source/AboutComponent.cpp"/>
       <FILE id="y6SXuB" name="AboutComponent.h" compile="0" resource="0"
@@ -89,11 +119,11 @@
             smallIcon="BGJyRW" bigIcon="BGJyRW">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
-                       isDebug="1" optimisation="1" targetName="BurstHotWallet" headerPath="E:\Libraries\boost_1_64_0&#10;E:\Libraries\beast\include&#10;..\..\..\..\..\BurstLib\trunk\Source"
+                       isDebug="1" optimisation="1" targetName="BurstHotWallet" headerPath="$(LIBS)boost_1_69_0&#10;$(LIBS)beast\include&#10;..\..\..\..\..\BurstLib\trunk\Source&#10;..\..\Source\chat\"
                        prebuildCommand="revision-update.bat &quot;$(ProjectDir)..\..\&quot;"
                        defines="NO_BEAST=1" userNotes="beast need cpp11 - msvc2015 pack 3"/>
         <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
-                       isDebug="0" optimisation="2" targetName="BurstHotWallet" headerPath="E:\Libraries\boost_1_64_0&#10;E:\Libraries\beast\include&#10;..\..\..\..\..\BurstLib\trunk\Source"
+                       isDebug="0" optimisation="2" targetName="BurstHotWallet" headerPath="$(LIBS)boost_1_64_0&#10;$(LIBS)beast\include&#10;..\..\..\..\..\BurstLib\trunk\Source&#10;..\..\Source\chat\"
                        prebuildCommand="revision-update.bat &quot;$(ProjectDir)..\..\&quot;"
                        useRuntimeLibDLL="0" defines="NO_BEAST=1" userNotes="beast need cpp11 - msvc2015 pack 3"/>
       </CONFIGURATIONS>
@@ -139,7 +169,7 @@
   </EXPORTFORMATS>
   <MODULES>
     <MODULE id="juce_audio_basics" showAllCode="0" useLocalCopy="0"/>
-    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_devices" showAllCode="0" useLocalCopy="0"/>
     <MODULE id="juce_audio_formats" showAllCode="0" useLocalCopy="0"/>
     <MODULE id="juce_audio_processors" showAllCode="0" useLocalCopy="0"/>
     <MODULE id="juce_core" showAllCode="0" useLocalCopy="0"/>

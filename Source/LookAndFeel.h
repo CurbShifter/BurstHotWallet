@@ -29,8 +29,6 @@ struct CELookAndFeel    : public LookAndFeel_V3
 	void Init();
 
 	void setFont(Font f);
-	void setFontBold(Font f);
-	void setFontAlt(Font f);
 	Typeface::Ptr 	getTypefaceForFont(const Font &) override;
 	
 	void drawLabel(Graphics& g, Label& label);
@@ -52,9 +50,7 @@ struct CELookAndFeel    : public LookAndFeel_V3
 	
 	void drawProgressBardrawProgressBar(Graphics& g, ProgressBar& progressBar, int width, int height, double progress, const String& textToShow);
 	
-	void drawDocumentWindowTitleBar(DocumentWindow&, Graphics&, int w, int h,
-		int titleSpaceX, int titleSpaceW,
-		const Image* icon, bool drawTitleTextOnLeft) override;
+	void drawDocumentWindowTitleBar(DocumentWindow&, Graphics&, int w, int h, int titleSpaceX, int titleSpaceW, const Image* icon, bool drawTitleTextOnLeft) override;
 	Button* createDocumentWindowButton(int buttonType) override;
 	class OSXWindowButton;
 
@@ -80,12 +76,9 @@ struct CELookAndFeel    : public LookAndFeel_V3
 		textLayout.createLayout(s, length);
 	}
 	
-	Font brFont;
-	Font brFontBold;
-	Font brFontAlt;
-
 	ScopedPointer<DrawableComposite> cogDrawableComposite;
 	ScopedPointer<Drawable> icon;
+	juce::Font mFont;
 };
 
 

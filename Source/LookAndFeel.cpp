@@ -18,6 +18,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 CELookAndFeel::CELookAndFeel()
 {
+	Typeface::Ptr typefacePtr = Typeface::createSystemTypefaceFor(BinaryData::Ubuntu_Medium_Nerd_Font_Complete_ttf, BinaryData::Ubuntu_Medium_Nerd_Font_Complete_ttfSize);
+	//Typeface::Ptr typefacePtr = Typeface::createSystemTypefaceFor(BinaryData::Ubuntu_Nerd_Font_Complete_Mono_ttf, BinaryData::Ubuntu_Nerd_Font_Complete_Mono_ttfSize);
+	//Typeface::Ptr typefacePtr = Typeface::createSystemTypefaceFor(BinaryData::BigBlue_Terminal_437TT_Nerd_Font_Complete_TTF, BinaryData::BigBlue_Terminal_437TT_Nerd_Font_Complete_TTFSize);
+	//	Typeface::Ptr typefacePtr = Typeface::createSystemTypefaceFor(BinaryData::NotoSansRegular_ttf, BinaryData::NotoSansRegular_ttfSize);
+	Font font(typefacePtr);
+	setFont(font); 
+	setDefaultSansSerifTypefaceName(font.getTypefaceName());
 }
 
 CELookAndFeel::~CELookAndFeel()
@@ -66,9 +73,9 @@ void CELookAndFeel::Init()
 }
 void CELookAndFeel::setFont(Font f)
 {
-	brFont = f.withHeight(20);
+	mFont = f.withHeight(20);
 }
-
+/*
 void CELookAndFeel::setFontBold(Font f)
 {
 	brFontBold = f.withHeight(20);
@@ -78,10 +85,11 @@ void CELookAndFeel::setFontAlt(Font f)
 {
 	brFontAlt = f.withHeight(20);
 }
-
+*/
 Typeface::Ptr 	CELookAndFeel::getTypefaceForFont(const Font &)
 {
-	return brFont.getTypeface();
+	//return fontAwesome.getFont(20.f).getTypeface();
+	return mFont.getTypeface();
 }
 
 void CELookAndFeel::drawDocumentWindowTitleBar(DocumentWindow& window, Graphics& g,
@@ -229,7 +237,7 @@ void CELookAndFeel::drawLabel(Graphics& g, Label& label)
 		
 		g.setColour(label.findColour(Label::textColourId).withMultipliedAlpha(alpha));
 		
-		g.setFont(brFont.withHeight(font.getHeight()));
+		g.setFont(mFont.withHeight(font.getHeight()));
 
 		juce::Rectangle<int> textArea(label.getBorderSize().subtractedFrom(label.getLocalBounds()));
 		g.drawFittedText(label.getText(), textArea, label.getJustificationType(),
@@ -318,7 +326,7 @@ void CELookAndFeel::drawButtonText(Graphics& g, TextButton& button, bool /*isMou
 {
 	{
 		float fontHeight = jmin<float>(button.getHeight() - 4.f, 16.f);
-		g.setFont(brFontBold.withHeight(fontHeight));
+		g.setFont(mFont.withHeight(fontHeight));
 
 		g.setColour(button.findColour(button.getToggleState() ? TextButton::textColourOnId
 			: TextButton::textColourOffId)
@@ -334,8 +342,10 @@ void CELookAndFeel::drawButtonText(Graphics& g, TextButton& button, bool /*isMou
 		}
 		else
 		{
-			bool just = (button.getName().compare("testname") == 0) || (button.getName().compare("accountButton") == 0);
-			g.drawFittedText(txt, 4, 0, button.getWidth() - 8, button.getHeight(), just ? Justification::right : Justification::centred, 2);
+			bool left = button.getName().startsWith("_");
+			bool right = button.getName().endsWith("_");
+			//bool just = (button.getName().compare("assetMenuButton") == 0);// || (button.getName().compare("accountButton") == 0);
+			g.drawFittedText(txt, 4, 0, button.getWidth() - 8, button.getHeight(), left ? Justification::left : (right ? Justification::right : Justification::centred), 2);
 		}
 	}
 }
@@ -378,7 +388,7 @@ void CELookAndFeel::drawButtonBackground (Graphics& g, Button& button, const Col
 				((isMouseOverButton && baseColour.getAlpha() <= 0) || button.getToggleState()))
 			{
 				float fontHeight = jmin<float>(button.getHeight() - 4.f, 16.f);
-				g.setFont(brFontBold.withHeight(fontHeight));
+				g.setFont(mFont.withHeight(fontHeight));
 				String txt = button.getButtonText();
 				String name = button.getName();
 				float textWidth = (float)g.getCurrentFont().getStringWidth(txt);
@@ -387,17 +397,23 @@ void CELookAndFeel::drawButtonBackground (Graphics& g, Button& button, const Col
 					: TextButton::textColourOffId)
 					.withMultipliedAlpha(button.isEnabled() ? 1.0f : 0.5f));
 
-				bool just = (button.getName().compare("slotFeeButton") == 0) ||
-					(button.getName().compare("myAccount_") == 0) ||
-					(button.getName().compare("balanceButton") == 0) ||
-					(button.getName().compare("accountButton") == 0) ||
-					(button.getName().compare("addressButton") == 0);
+			/*	bool right = (button.getName().compare("slotFeeButton") == 0) ||
+							(button.getName().compare("myAccount_") == 0) ||
+							(button.getName().compare("balanceButton") == 0) ||
+							(button.getName().compare("accountButton") == 0) ||
+							(button.getName().compare("addressButton") == 0);
+				bool left = (button.getName().compare("assetMenuButton") == 0);*/
+				bool left = button.getName().startsWith("_");
+				bool right = button.getName().endsWith("_");
 
+				int hoffset = height * 0.2;
 				for (int i = 0; i < (button.getToggleState() ? 2 : 1); i++)
 				{
-					if (!just)
-						g.drawHorizontalLine((int)(height - 3 + i), ((button.getWidth() - textWidth) / 2.f), ((button.getWidth() - textWidth) / 2.f) + textWidth); // center
-					else g.drawHorizontalLine((int)(height - 3 + i), (button.getWidth() - textWidth - 4.f), button.getWidth() - 4.f); // right
+					if (right)
+						g.drawHorizontalLine((int)(height - hoffset + i), (button.getWidth() - textWidth - 4.f), button.getWidth() - 4.f); // right
+					else if (left)
+						g.drawHorizontalLine((int)(height - hoffset + i), 4.f, textWidth + 4.f); // left
+					else g.drawHorizontalLine((int)(height - hoffset + i), ((button.getWidth() - textWidth) / 2.f), ((button.getWidth() - textWidth) / 2.f) + textWidth); // center					
 				}
 			}
 		}

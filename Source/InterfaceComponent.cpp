@@ -18,7 +18,6 @@
 */
 
 //[Headers] You can add your own extra header files here...
-#define TRADE_BIRB 0
 //[/Headers]
 
 #include "InterfaceComponent.h"
@@ -28,8 +27,6 @@
 #include "BurstLib-source.cpp"
 #include "Logger.h"
 #include "Version.h"
-
-#define REQ_PORT 41137
 
 void InterfaceComponent::log(String message)
 {
@@ -44,11 +41,20 @@ InterfaceComponent::InterfaceComponent ()
 	//  : Thread("InterfaceComponent")
     //[/Constructor_pre]
 
-    addAndMakeVisible (tradeButton = new TextButton ("tradeButton"));
-    tradeButton->setButtonText (TRANS("trade"));
-    tradeButton->addListener (this);
-    tradeButton->setColour (TextButton::buttonColourId, Colour (0xff84cb16));
-    tradeButton->setColour (TextButton::buttonOnColourId, Colour (0xff84cb16));
+    addAndMakeVisible (chatButton = new TextButton ("chatButton"));
+    chatButton->setButtonText (TRANS("chat"));
+    chatButton->addListener (this);
+    chatButton->setColour (TextButton::buttonColourId, Colour (0xff84cb16));
+    chatButton->setColour (TextButton::buttonOnColourId, Colour (0xff84cb16));
+
+    addAndMakeVisible (chatComponent = new ChatComponent());
+    chatComponent->setName ("chatComponent");
+
+    addAndMakeVisible (inventoryButton = new TextButton ("inventoryButton"));
+    inventoryButton->setButtonText (TRANS("holdings"));
+    inventoryButton->addListener (this);
+    inventoryButton->setColour (TextButton::buttonColourId, Colour (0xff84cb16));
+    inventoryButton->setColour (TextButton::buttonOnColourId, Colour (0xff84cb16));
 
     addAndMakeVisible (balanceComponent = new BalanceComponent());
     balanceComponent->setName ("balanceComponent");
@@ -91,17 +97,17 @@ InterfaceComponent::InterfaceComponent ()
     versionLabel->setColour (TextEditor::textColourId, Colours::black);
     versionLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    addAndMakeVisible (settingsComponent = new SettingsComponent());
-    settingsComponent->setName ("settingsComponent");
-
-    addAndMakeVisible (aboutComponent = new AboutComponent());
-    aboutComponent->setName ("aboutComponent");
-
     addAndMakeVisible (tradeComponent = new TradeComponent());
     tradeComponent->setName ("tradeComponent");
 
     addAndMakeVisible (pinComponent = new PinComponent());
     pinComponent->setName ("pinComponent");
+
+    addAndMakeVisible (settingsComponent = new SettingsComponent());
+    settingsComponent->setName ("settingsComponent");
+
+    addAndMakeVisible (aboutComponent = new AboutComponent());
+    aboutComponent->setName ("aboutComponent");
 
     drawable1 = Drawable::createFromImageData (burstHotWalletlogo_svg, burstHotWalletlogo_svgSize);
     drawable2 = Drawable::createFromImageData (burstHotWalletPrologo_svg, burstHotWalletPrologo_svgSize);
@@ -118,18 +124,26 @@ InterfaceComponent::InterfaceComponent ()
 
 
     //[Constructor] You can add your own custom stuff here..
+	setSize(700, 700);
 	leftTopCorner1 = juce::Rectangle<float>(0, 0, 100, 50).reduced(5);
 	leftTopCorner2 = juce::Rectangle<float>(100, 0, 80, 50).reduced(6);
 
 	lastSendDataMs = 0;
 
-	options.commonToAllUsers = false;
+
+/*	options.commonToAllUsers = false;
 	options.applicationName = ProjectInfo::projectName;
 	options.folderName = "CryptoExtensions";
 	options.filenameSuffix = "settings";
 	options.osxLibrarySubFolder = "Application Support";
 	options.storageFormat = PropertiesFile::storeAsXML;
-	appProp.setStorageParameters(options);
+
+	File f = options.getDefaultFile();
+	bool showAbout = f.existsAsFile() == false;
+
+	appProp.setStorageParameters(options);*/
+	File f = getAppProperties().getStorageParameters().getDefaultFile();
+	bool showAbout = f.existsAsFile() == false;
 
 	if (settingsComponent)
 	{
@@ -149,6 +163,7 @@ InterfaceComponent::InterfaceComponent ()
 	if (aboutComponent)
 	{
 		aboutComponent->addInterfaceListener(this);
+		aboutComponent->setVisible(showAbout);
 	}
 
 	if (historyComponent)
@@ -156,6 +171,18 @@ InterfaceComponent::InterfaceComponent ()
 		historyComponent->getTransactionComponent()->addInterfaceListener(this);
 		addHistoryComponentListener(historyComponent);
 		addTransactionsComponentListener(historyComponent->getTransactionComponent());
+	}
+
+	if (tradeComponent)
+	{
+		tradeComponent->addInterfaceListener(this);
+		addTradeComponentListener(tradeComponent);
+	}
+
+	if (chatComponent)
+	{
+		chatComponent->addInterfaceListener(this);
+		addChatComponentListener(chatComponent);
 	}
 
 	if (shoutComponent)
@@ -182,6 +209,8 @@ InterfaceComponent::InterfaceComponent ()
 	bool forceSSLOn = forceSSLOnStr.getIntValue() > 0;
 	burstExt.SetForceSSL_TSL(forceSSLOn);
 	transactionsComponentListeners.call(&TransactionsComponentListener::SetForceSSL_TSL, forceSSLOn);
+	tradeComponentListeners.call(&TradeComponentListener::SetForceSSL_TSL, forceSSLOn);
+	chatComponentListeners.call(&ChatComponentListener::SetForceSSL_TSL, forceSSLOn);
 	shoutComponentListeners.call(&ShoutComponentListener::SetForceSSL_TSL, forceSSLOn);
 	settingsListeners.call(&SettingsListener::SetForceSSL_TSL, forceSSLOn);
 	balanceComponentListeners.call(&BalanceComponentListener::SetForceSSL_TSL, forceSSLOn);
@@ -196,14 +225,17 @@ InterfaceComponent::InterfaceComponent ()
 	node_server = burstExt.GetNode();
 
 	transactionsComponentListeners.call(&TransactionsComponentListener::SetNode, node_server, false);
+	tradeComponentListeners.call(&TradeComponentListener::SetNode, node_server, false);
+	chatComponentListeners.call(&ChatComponentListener::SetNode, node_server, false);
 	shoutComponentListeners.call(&ShoutComponentListener::SetNode, node_server, false);
 	settingsListeners.call(&SettingsListener::SetNode, node_server, false);
 	balanceComponentListeners.call(&BalanceComponentListener::SetNode, node_server, false);
 
 	wizlaf = new CELookAndFeel();
-	Typeface::Ptr typefacePtr = Typeface::createSystemTypefaceFor(BinaryData::NotoSansRegular_ttf, BinaryData::NotoSansRegular_ttfSize);
-	Font f(typefacePtr);
-	wizlaf->setFont(f);
+/*	Typeface::Ptr typefacePtr = Typeface::createSystemTypefaceFor(BinaryData::BigBlue_Terminal_437TT_Nerd_Font_Complete_TTF, BinaryData::BigBlue_Terminal_437TT_Nerd_Font_Complete_TTFSize);
+//	Typeface::Ptr typefacePtr = Typeface::createSystemTypefaceFor(BinaryData::NotoSansRegular_ttf, BinaryData::NotoSansRegular_ttfSize);
+	Font font(typefacePtr);
+	wizlaf->setFont(font);*/
 	wizlaf->setColour(TreeView::selectedItemBackgroundColourId, Colour(0xff83acf0));
 	wizlaf->setColour(TextEditor::highlightColourId, Colour(0xff83acf0));
 	wizlaf->setColour(TextEditor::highlightedTextColourId, Colour(0xff141305));
@@ -259,13 +291,30 @@ InterfaceComponent::InterfaceComponent ()
 	bool hopOn = hopOnStr.getIntValue() > 0;
 	burstExt.EnableNodeHop(hopOn ? 7 : 0);
 	transactionsComponentListeners.call(&TransactionsComponentListener::SetNodeHop, hopOn);
+	tradeComponentListeners.call(&TradeComponentListener::SetNodeHop, hopOn);
 	shoutComponentListeners.call(&ShoutComponentListener::SetNodeHop, hopOn);
 	settingsListeners.call(&SettingsListener::SetNodeHop, hopOn);
 	balanceComponentListeners.call(&BalanceComponentListener::SetNodeHop, hopOn);
 
-	//systemTray->showInfoBubble(ProjectInfo::projectName, "hi");
-	//systemTray->setIconTooltip("");
-	//systemTray->setHighlighted(true);
+	balanceComponent->InitAccountSelection(-1);
+
+	systemTray = new SystemTrayIconComponent;
+	//Image logo_pngCache = ImageCache::getFromMemory(BinaryData::BurstHotWalleticon_svg, BinaryData::BurstHotWalleticon_svgSize);
+	ScopedPointer<juce::Drawable> logo_pngCache = juce::Drawable::createFromImageData(BinaryData::BurstHotWalleticon_svg, BinaryData::BurstHotWalleticon_svgSize);
+	juce::Image logo_Image(juce::Image::ARGB, 32, 32, true);
+	Graphics g(logo_Image);
+	logo_pngCache->drawWithin(g, logo_Image.getBounds().toFloat(), juce::RectanglePlacement::centred, 1.f);
+	systemTray->setIconImage(logo_Image);
+	systemTray->setIconTooltip(ProjectInfo::projectName);
+	systemTray->setHighlighted(true);
+
+
+	settingsButton->setVisible(false);
+
+	chatComponent->Init();
+
+	resized();
+
 	StartHttpServer();
 
 	startTimer(INTERFACE_UPDATE_MS);
@@ -283,7 +332,9 @@ InterfaceComponent::~InterfaceComponent()
 
     //[/Destructor_pre]
 
-    tradeButton = nullptr;
+    chatButton = nullptr;
+    chatComponent = nullptr;
+    inventoryButton = nullptr;
     balanceComponent = nullptr;
     settingsButton = nullptr;
     shoutComponent = nullptr;
@@ -292,17 +343,17 @@ InterfaceComponent::~InterfaceComponent()
     sendButton = nullptr;
     historyComponent = nullptr;
     versionLabel = nullptr;
-    settingsComponent = nullptr;
-    aboutComponent = nullptr;
     tradeComponent = nullptr;
     pinComponent = nullptr;
+    settingsComponent = nullptr;
+    aboutComponent = nullptr;
     drawable1 = nullptr;
     drawable2 = nullptr;
     drawable3 = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
-	//systemTray = nullptr;
+	systemTray = nullptr;
     //[/Destructor]
 }
 
@@ -344,9 +395,12 @@ void InterfaceComponent::paint (Graphics& g)
 	*/
 	g.fillAll(Colour(0xff535353));
 
-	g.setGradientFill(ColourGradient(Colour(0xff004578),
+	Colour g1(0xff004578);
+	Colour g2(0xff00432f);
+
+	g.setGradientFill(ColourGradient(g1,
 		getWidth() - 100.f, getHeight() / 2,
-		Colour(0xff00432f),
+		g2,
 		100.0f, 100.0f,
 		true));
 	g.fillRect(0, 0, getWidth(), getHeight());
@@ -354,11 +408,29 @@ void InterfaceComponent::paint (Graphics& g)
 	g.setColour(Colours::black);
 
 
-	// BURST
-	jassert(drawable3 != 0);
-	if (drawable3 != 0)
-		drawable3->drawWithin(g, leftTopCorner1,
-		RectanglePlacement::centred, 1.000f);
+	if (burstExt.IsOnTestNet())
+	{
+		g.setColour(Colour(0xffad0f0f));
+		g.fillRoundedRectangle(leftTopCorner1, 3.f);
+		// BURST
+		jassert(drawable3 != 0);
+		if (drawable3 != 0)
+			drawable3->drawWithin(g, leftTopCorner1.withTrimmedBottom(20).reduced(2),
+			RectanglePlacement::centred, 1.000f);
+
+		g.setColour(Colours::white);
+		g.setFont(18);
+		g.drawText("TESTNET", leftTopCorner1.withTrimmedTop(leftTopCorner1.getHeight() - 20) /*.translated(0, leftTopCorner1.getHeight())*/ .reduced(2), Justification::centredTop, false);
+	}
+	else
+	{
+		// BURST
+		jassert(drawable3 != 0);
+		if (drawable3 != 0)
+			drawable3->drawWithin(g, leftTopCorner1,
+			RectanglePlacement::centred, 1.000f);
+
+	}
 
 	// LOGO
 	if (isPro == false)
@@ -384,7 +456,9 @@ void InterfaceComponent::resized()
 	/*
     //[/UserPreResize]
 
-    tradeButton->setBounds (0, 120, 112, 24);
+    chatButton->setBounds (0, 144, 112, 24);
+    chatComponent->setBounds (648, 304, 168, 176);
+    inventoryButton->setBounds (0, 120, 112, 24);
     balanceComponent->setBounds (136, 24, 416, 24);
     settingsButton->setBounds (576, 8, 56, 56);
     shoutComponent->setBounds (120, 496, 416, 24);
@@ -393,10 +467,10 @@ void InterfaceComponent::resized()
     sendButton->setBounds (0, 96, 112, 24);
     historyComponent->setBounds (296, 72, 168, 224);
     versionLabel->setBounds (48, 40, 64, 24);
-    settingsComponent->setBounds (472, 72, 168, 224);
-    aboutComponent->setBounds (120, 304, 168, 179);
     tradeComponent->setBounds (472, 304, 168, 176);
     pinComponent->setBounds (296, 304, 168, 179);
+    settingsComponent->setBounds (472, 72, 168, 224);
+    aboutComponent->setBounds (120, 304, 168, 179);
     //[UserResized] Add your own custom resize handling here..
 	*/
 	juce::Rectangle<float> r = getBounds().toFloat();
@@ -406,28 +480,37 @@ void InterfaceComponent::resized()
 	const float rowH2 = 35.f;
 	const int w = (int)r.getWidth();
 
-	if (pinComponent) pinComponent->setBounds(r.toNearestInt());
+	if (pinComponent)
+		pinComponent->setBounds(r.withTrimmedTop(((rowH * 2) - 5) + 60).toNearestInt());
+	//pinComponent->setBounds(r.toNearestInt());
+
 	aboutComponent->setBounds(r.toNearestInt());
 
 	versionLabel->setBounds(juce::Rectangle<int>(20, 50, leftTopCorner2.getRight() - 20, 20));
 
-	balanceComponent->setBounds(juce::Rectangle<int>(versionLabel->getRight(), 0, w - versionLabel->getRight() - (2 * rowH), (int)rowH * 2).reduced(3));
+	balanceComponent->setBounds(juce::Rectangle<int>(
+		leftTopCorner2.getRight() - rowH,
+		0,
+		w - leftTopCorner2.getRight() - (1 * rowH),
+		(int)rowH * 2).reduced(3));
 
 	settingsButton->setBounds(juce::Rectangle<int>(w - (2 * rowH), 0, (2 * rowH), (2 * rowH)).reduced(15));
 
-#if TRADE_BIRB == 0
-	historyButton->setBounds(0, balanceComponent->getBottom(), w / 2, (int)rowH);
-	sendButton->setBounds(w / 2, balanceComponent->getBottom(), w / 2, (int)rowH);
-#else
-	historyButton->setBounds(0, balanceComponent->getBottom(), w / 3, (int)rowH);
-	sendButton->setBounds(w / 3, balanceComponent->getBottom(), w / 3, (int)rowH);
-	tradeButton->setBounds(w / 3 * 2, balanceComponent->getBottom(), w / 3, (int)rowH);
-#endif
+	inventoryButton->setBounds(0, balanceComponent->getBottom(), w / 4, (int)rowH);
+	historyButton->setBounds(w / 4, balanceComponent->getBottom(), w / 4, (int)rowH);
+	sendButton->setBounds(w / 4 * 2, balanceComponent->getBottom(), w / 4, (int)rowH);
+	chatButton->setBounds(w / 4 * 3, balanceComponent->getBottom(), w / 4, (int)rowH);
 
-	settingsComponent->setBounds(r.withTrimmedTop(sendButton->getBottom()).withTrimmedBottom(rowH2).toNearestInt());
+	const bool loggedIn = (burstExt.GetAccountID().getLargeIntValue() > 0);
+
+	if (loggedIn)
+		settingsComponent->setBounds(r.withTrimmedTop(sendButton->getBottom()).withTrimmedBottom(rowH2).toNearestInt());
+	else settingsComponent->setBounds(r.withTrimmedTop((rowH * 2) - 5).withHeight(60).toNearestInt()); // cut off user controls
+
 	sendComponent->setBounds(r.withTrimmedTop(sendButton->getBottom()).withTrimmedBottom(rowH2).toNearestInt());
 	historyComponent->setBounds(r.withTrimmedTop(sendButton->getBottom()).withTrimmedBottom(rowH2).toNearestInt());
 	tradeComponent->setBounds(r.withTrimmedTop(sendButton->getBottom()).withTrimmedBottom(rowH2).toNearestInt());
+	chatComponent->setBounds(r.withTrimmedTop(sendButton->getBottom()).withTrimmedBottom(rowH2).toNearestInt());
 
 	shoutComponent->setBounds(r.withTrimmedTop(r.getHeight() - rowH2).toNearestInt());
     //[/UserResized]
@@ -438,11 +521,17 @@ void InterfaceComponent::buttonClicked (Button* buttonThatWasClicked)
     //[UserbuttonClicked_Pre]
     //[/UserbuttonClicked_Pre]
 
-    if (buttonThatWasClicked == tradeButton)
+    if (buttonThatWasClicked == chatButton)
     {
-        //[UserButtonCode_tradeButton] -- add your button handler code here..
-		SetView(3);
-        //[/UserButtonCode_tradeButton]
+        //[UserButtonCode_chatButton] -- add your button handler code here..
+		SetView(4);
+        //[/UserButtonCode_chatButton]
+    }
+    else if (buttonThatWasClicked == inventoryButton)
+    {
+        //[UserButtonCode_inventoryButton] -- add your button handler code here..
+		SetView(1);
+        //[/UserButtonCode_inventoryButton]
     }
     else if (buttonThatWasClicked == settingsButton)
     {
@@ -453,7 +542,7 @@ void InterfaceComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == historyButton)
     {
         //[UserButtonCode_historyButton] -- add your button handler code here..
-		SetView(1);
+		SetView(3);
         //[/UserButtonCode_historyButton]
     }
     else if (buttonThatWasClicked == sendButton)
@@ -519,24 +608,6 @@ void InterfaceComponent::SetupTransaction(const String requestHeader, const Stri
 	setupTX_encrypted = encrypted;
 }
 
-
-void InterfaceComponent::SavePassPhraseWithNewPIN(const String passPhrase)
-{ // save pass phrase
-	// show PIN dialog
-	pinComponent->setViewMode(4, passPhrase);
-	pinComponent->setVisible(true);
-	// ask for new PIN
-	// PIN  dialog calls SavePassPhrase with new PIN code
-}
-
-void InterfaceComponent::LoadPassPhrase()
-{
-	// show PIN dialog "enter your PIN to load the wallet pass phrase"
-	pinComponent->setViewMode(5);
-	pinComponent->setVisible(true);
-	// PIN dialog calls LoadPassPhraseReturn(String pin)
-}
-
 String InterfaceComponent::Encrypt(String input, String pin)
 {
 	if (input.isEmpty())
@@ -546,7 +617,6 @@ String InterfaceComponent::Encrypt(String input, String pin)
 	memoryBlock.loadFromHexString(String::toHexString(input.toUTF8(), (int)input.getNumBytesAsUTF8()));
 
 	SHA256 sha256(pin.toUTF8());
-	sha256.toHexString();
 	String encryptionKey(sha256.toHexString());
 
 	BlowFish blowFish(encryptionKey.toUTF8(), (int)encryptionKey.getNumBytesAsUTF8());
@@ -564,7 +634,6 @@ String InterfaceComponent::Decrypt(String input, String pin)
 	memoryBlock.fromBase64Encoding(input);
 
 	SHA256 sha256(pin.toUTF8());
-	sha256.toHexString();
 	String encryptionKey(sha256.toHexString());
 
 	BlowFish blowFish(encryptionKey.toUTF8(), (int)encryptionKey.getNumBytesAsUTF8());
@@ -576,19 +645,26 @@ String InterfaceComponent::Decrypt(String input, String pin)
 void InterfaceComponent::SetView(int nr)
 {
 	if (settingsComponent)
+	{
 		settingsComponent->setVisible(nr == -1);
+		resized();
+	}
 
-	historyComponent->setVisible(nr == 1);
+	tradeComponent->setVisible(nr == 1);
+	sendComponent->setVisible(nr == 2);
+	historyComponent->setVisible(nr == 3);
+	chatComponent->setVisible(nr == 4);
+
 	if (nr == 1)
 		transactionsComponentListeners.call(&TransactionsComponentListener::Refresh);
-
-	sendComponent->setVisible(nr == 2);
-	tradeComponent->setVisible(nr == 3);
+	if (nr == 3)
+		tradeComponentListeners.call(&TradeComponentListener::Refresh);
 
 	settingsButton->setColour(TextButton::ColourIds::buttonColourId, settingsButton->findColour(TextButton::ColourIds::buttonColourId).withAlpha(nr == -1 ? 1.0f : 0.0f));
-	historyButton->setColour(TextButton::ColourIds::buttonColourId, historyButton->findColour(TextButton::ColourIds::buttonColourId).withAlpha(nr == 1 ? 1.0f : 0.0f));
+	inventoryButton->setColour(TextButton::ColourIds::buttonColourId, inventoryButton->findColour(TextButton::ColourIds::buttonColourId).withAlpha(nr == 1 ? 1.0f : 0.0f));
 	sendButton->setColour(TextButton::ColourIds::buttonColourId, sendButton->findColour(TextButton::ColourIds::buttonColourId).withAlpha(nr == 2 ? 1.0f : 0.0f));
-	tradeButton->setColour(TextButton::ColourIds::buttonColourId, tradeButton->findColour(TextButton::ColourIds::buttonColourId).withAlpha(nr == 3 ? 1.0f : 0.0f));
+	chatButton->setColour(TextButton::ColourIds::buttonColourId, chatButton->findColour(TextButton::ColourIds::buttonColourId).withAlpha(nr == 4 ? 1.0f : 0.0f));
+	historyButton->setColour(TextButton::ColourIds::buttonColourId, historyButton->findColour(TextButton::ColourIds::buttonColourId).withAlpha(nr == 3 ? 1.0f : 0.0f));
 
 	repaint();
 }
@@ -649,6 +725,13 @@ StringArray InterfaceComponent::LimitedTokenList(String tokenlist, String newIte
 	return list;
 }
 
+void InterfaceComponent::SystemTrayNotify(const String message, const String tooltip, const bool highlight)
+{
+	systemTray->showInfoBubble(ProjectInfo::projectName, message);
+	systemTray->setIconTooltip(tooltip);
+	systemTray->setHighlighted(highlight);
+}
+
 // -----------------------------------------------------
 void InterfaceComponent::GetAppValue(const String type, String &value)
 {
@@ -658,7 +741,7 @@ void InterfaceComponent::GetAppValue(const String type, String &value)
 String InterfaceComponent::GetAppValue(const String type)
 {
 	String ret;
-	PropertiesFile* props2 = appProp.getUserSettings();
+	PropertiesFile* props2 = getAppProperties().getUserSettings();
 	if (props2)
 		ret = props2->getValue(type);
 	return ret.replace("&quot;", "\"");
@@ -666,7 +749,7 @@ String InterfaceComponent::GetAppValue(const String type)
 
 void InterfaceComponent::SetAppValue(const String type, const String value)
 {
-	PropertiesFile* props2 = appProp.getUserSettings();
+	PropertiesFile* props2 = getAppProperties().getUserSettings();
 	if (props2)
 	{
 		if (type.compare("server") == 0)
@@ -675,23 +758,61 @@ void InterfaceComponent::SetAppValue(const String type, const String value)
 		}
 		props2->setValue(type, value.replace("\"", "&quot;"));
 	}
-	appProp.closeFiles();
+	getAppProperties().closeFiles();
 }
 
 // read pass phrase ------------------------------------
+void InterfaceComponent::SetAccountIndex(const int index)
+{
+	const bool refresh = (accountIndex != index);
+
+	accountIndex = index;
+
+	if (refresh)
+		UnloadPassPhrase();
+}
+
+void InterfaceComponent::SavePassPhraseWithNewPIN(const String passPhrase)
+{ // save pass phrase
+	// show PIN dialog
+	pinComponent->setViewMode(4, passPhrase);
+	pinComponent->setVisible(true);
+	settingsComponent->setVisible(true);
+	settingsButton->setVisible(false);
+	// ask for new PIN
+	// PIN  dialog calls SavePassPhrase with new PIN code
+}
+
 void InterfaceComponent::UnloadPassPhrase()
 {
 	burstExt.SetSecretPhrase(String::empty, 0);
 	transactionsComponentListeners.call(&TransactionsComponentListener::SetSecretPhrase, String::empty);
+	tradeComponentListeners.call(&TradeComponentListener::SetSecretPhrase, String::empty);
+	chatComponentListeners.call(&ChatComponentListener::SetSecretPhrase, String::empty);
 	settingsListeners.call(&SettingsListener::SetSecretPhrase, String::empty);
 	balanceComponentListeners.call(&BalanceComponentListener::SetSecretPhrase, String::empty);
 
 	LoadPassPhrase();
+
+	resized(); // reset settings component size
+}
+
+void InterfaceComponent::LoadPassPhrase()
+{
+	// show PIN dialog "enter your PIN to load the wallet pass phrase"
+	pinComponent->setViewMode(5);
+	pinComponent->setVisible(true);
+	settingsButton->setVisible(false);
+	settingsComponent->setVisible(true);
+	// PIN dialog calls LoadPassPhraseReturn(String pin)
+
+	resized(); // reset settings component size
 }
 
 void InterfaceComponent::LoadPassPhraseReturn(String pin)
 { // called from PIN dialog
-	String passPhraseEnc = GetAppValue("passPhraseEnc");
+	StringArray passPhrasesEnc = StringArray::fromTokens(GetAppValue("passPhraseEnc"), ",", "");
+	String passPhraseEnc(passPhrasesEnc[accountIndex]);
 	if (passPhraseEnc.isNotEmpty())
 	{
 		String passphrase = Decrypt(passPhraseEnc, pin);
@@ -699,18 +820,138 @@ void InterfaceComponent::LoadPassPhraseReturn(String pin)
 		{
 			passphrase = passphrase.substring(3);
 			pinComponent->setVisible(false);
+			settingsComponent->setVisible(false);
+			settingsButton->setVisible(true);
 			// reload burstExt account
 			burstExt.SetSecretPhrase(passphrase, 0);
 
+			// ensure the address is saved in the settings file
+			StringArray account_addresses = StringArray::fromTokens(GetAppValue("account_addresses"), ",", "");
+			if (account_addresses.size() <= 0)
+			{
+				account_addresses.add(burstExt.GetAccountRS());
+				SetAppValue("account_addresses", account_addresses.joinIntoString(","));
+			}
+
 			transactionsComponentListeners.call(&TransactionsComponentListener::SetSecretPhrase, passphrase);
+			tradeComponentListeners.call(&TradeComponentListener::SetSecretPhrase, passphrase);
+			chatComponentListeners.call(&ChatComponentListener::SetSecretPhrase, passphrase);
 			balanceComponentListeners.call(&BalanceComponentListener::SetSecretPhrase, passphrase);
 			settingsListeners.call(&SettingsListener::SetSecretPhrase, passphrase);
 
+			transactionsComponentListeners.call(&TransactionsComponentListener::Refresh);
 			balanceComponentListeners.call(&BalanceComponentListener::UpdateBalance);
+
 			SetView(1);
 		}
 	}
 }
+
+void InterfaceComponent::SavePassPhrase(String passphrase, String pin, String address)
+{ // called from PIN dialog
+	pinComponent->setVisible(false);
+	settingsComponent->setVisible(false);
+	settingsButton->setVisible(true);
+
+	String saveStr;
+	if (passphrase.isNotEmpty())
+	{
+		// reload burstExt account
+		burstExt.SetSecretPhrase(passphrase, 0);
+		transactionsComponentListeners.call(&TransactionsComponentListener::SetSecretPhrase, passphrase);
+		tradeComponentListeners.call(&TradeComponentListener::SetSecretPhrase, passphrase);
+		chatComponentListeners.call(&ChatComponentListener::SetSecretPhrase, passphrase);
+		settingsListeners.call(&SettingsListener::SetSecretPhrase, passphrase);
+		balanceComponentListeners.call(&BalanceComponentListener::SetSecretPhrase, passphrase);
+
+		saveStr = Encrypt("PIN" + passphrase, pin).replace("\"", "&quot;");
+	}
+
+	// add encrypted account passphrase to settings file
+	StringArray passPhrasesEnc = StringArray::fromTokens(GetAppValue("passPhraseEnc"), ",", "");
+	passPhrasesEnc.add(saveStr);
+	SetAppValue("passPhraseEnc", passPhrasesEnc.joinIntoString(","));
+
+	// add account address to settings file
+	StringArray account_addresses = StringArray::fromTokens(GetAppValue("account_addresses"), ",", "");
+	account_addresses.add(address);
+	SetAppValue("account_addresses", account_addresses.joinIntoString(","));
+
+	balanceComponentListeners.call(&BalanceComponentListener::InitAccountSelection, account_addresses.size() - 1);
+	balanceComponentListeners.call(&BalanceComponentListener::UpdateBalance);
+
+	SetView(1);
+}
+
+void InterfaceComponent::GetAccountNames(StringArray &addresses)
+{
+	addresses = StringArray::fromTokens(GetAppValue("account_addresses"), ",", "");
+	if (addresses.size() <= 0)
+	{
+		StringArray passPhrasesEnc = StringArray::fromTokens(GetAppValue("passPhraseEnc"), ",", "");
+		if (passPhrasesEnc.size() > 0) // get burst RS for old accounts without account address info saved
+		{
+			if (burstExt.GetAccountID().isNotEmpty())
+				addresses.add(burstExt.GetAccountRS());
+			else addresses.add("Main account address");
+		}
+	}
+
+	for (int i = 0; i < addresses.size(); i++)
+	{
+		String getAccountStr = burstExt.getAccount(addresses[i]);
+		var jsonStructure;
+		Result r = JSON::parse(getAccountStr, jsonStructure);
+		String name = jsonStructure["name"];
+		String description = jsonStructure["description"];
+
+		addresses.getReference(i) = name.isEmpty() ? addresses.getReference(i) : addresses.getReference(i) + " - " + name;
+	}
+}
+
+void InterfaceComponent::GetAccountAddresses(StringArray &addresses)
+{
+	addresses = StringArray::fromTokens(GetAppValue("account_addresses"), ",", "");
+	if (addresses.size() <= 0)
+	{
+		StringArray passPhrasesEnc = StringArray::fromTokens(GetAppValue("passPhraseEnc"), ",", "");
+		if (passPhrasesEnc.size() > 0) // get burst RS for old accounts without account address info saved
+		{
+			if (burstExt.GetAccountID().isNotEmpty())
+				addresses.add(burstExt.GetAccountRS());
+			else addresses.add("Main account address");
+		}
+	}
+}
+
+void InterfaceComponent::RemoveWallet()
+{
+	if (NativeMessageBox::showOkCancelBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "Really remove the current account? Please ensure you have a backup !"))
+	{
+		// add encrypted account passphrase to settings file
+		StringArray passPhrasesEnc = StringArray::fromTokens(GetAppValue("passPhraseEnc"), ",", "");
+		passPhrasesEnc.remove(accountIndex);
+		SetAppValue("passPhraseEnc", passPhrasesEnc.joinIntoString(","));
+
+		// add account address to settings file
+		StringArray account_addresses = StringArray::fromTokens(GetAppValue("account_addresses"), ",", "");
+		account_addresses.remove(accountIndex);
+		SetAppValue("account_addresses", account_addresses.joinIntoString(","));
+
+		balanceComponentListeners.call(&BalanceComponentListener::InitAccountSelection, 0);
+
+		UnloadPassPhrase();
+	}
+}
+
+void InterfaceComponent::CreateWallet()
+{
+	pinComponent->setViewMode(1);
+	pinComponent->setVisible(true);
+	settingsComponent->setVisible(true);
+	settingsButton->setVisible(false);
+}
+
 
 void InterfaceComponent::timerCallback()
 {
@@ -765,10 +1006,13 @@ void InterfaceComponent::SetNode(const String address)
 	else
 	{
 		transactionsComponentListeners.call(&TransactionsComponentListener::SetNode, checkedAddress, false);
+		tradeComponentListeners.call(&TradeComponentListener::SetNode, checkedAddress, false);
+		chatComponentListeners.call(&ChatComponentListener::SetNode, checkedAddress, false);
 		shoutComponentListeners.call(&ShoutComponentListener::SetNode, checkedAddress, false);
 		settingsListeners.call(&SettingsListener::SetNode, checkedAddress, false);
 		balanceComponentListeners.call(&BalanceComponentListener::SetNode, checkedAddress, false);
 	}
+	repaint();
 }
 
 void InterfaceComponent::SetForceSSL_TSL(const bool forceSSLOn)
@@ -777,6 +1021,8 @@ void InterfaceComponent::SetForceSSL_TSL(const bool forceSSLOn)
 
 	burstExt.SetForceSSL_TSL(forceSSLOn);
 	transactionsComponentListeners.call(&TransactionsComponentListener::SetForceSSL_TSL, forceSSLOn);
+	tradeComponentListeners.call(&TradeComponentListener::SetForceSSL_TSL, forceSSLOn);
+	chatComponentListeners.call(&ChatComponentListener::SetForceSSL_TSL, forceSSLOn);
 	shoutComponentListeners.call(&ShoutComponentListener::SetForceSSL_TSL, forceSSLOn);
 	settingsListeners.call(&SettingsListener::SetForceSSL_TSL, forceSSLOn);
 	balanceComponentListeners.call(&BalanceComponentListener::SetForceSSL_TSL, forceSSLOn);
@@ -788,6 +1034,8 @@ void InterfaceComponent::SetNodeHop(const bool hopOn)
 
 	burstExt.EnableNodeHop(hopOn ? 7 : 0);
 	transactionsComponentListeners.call(&TransactionsComponentListener::SetNodeHop, hopOn);
+	tradeComponentListeners.call(&TradeComponentListener::SetNodeHop, hopOn);
+	chatComponentListeners.call(&ChatComponentListener::SetNodeHop, hopOn);
 	shoutComponentListeners.call(&ShoutComponentListener::SetNodeHop, hopOn);
 	settingsListeners.call(&SettingsListener::SetNodeHop, hopOn);
 	balanceComponentListeners.call(&BalanceComponentListener::SetNodeHop, hopOn);
@@ -826,10 +1074,11 @@ void InterfaceComponent::MakeCoupon(couponArgs args)
 
 		if (NativeMessageBox::showOkCancelBox(AlertWindow::QuestionIcon, ProjectInfo::projectName, "Make coupon for " + NQT2Burst(args.amountNQT) + " Burstcoin\nto " + dispName + " ?"))
 		{
-			String txSignedHex = burstExt.sendMoneyWithMessage(args.recipient, args.amountNQT, args.feeNQT, args.deadline, args.msg, args.encrypted, "", false);
+			String txSignedHex = burstExt.sendMoneyWithMessage(args.recipient, args.amountNQT, args.feeNQT, args.deadline, args.msg, true, args.encrypted, "", false);
 			if (txSignedHex.isNotEmpty())
 			{
-				String coupon = burstExt.CreateCoupon(txSignedHex, args.password);
+				BurstCoupon burstCoupon;
+				String coupon = burstCoupon.CreateCoupon(txSignedHex, args.password);
 				//String transactionID = burstExt.GetJSONvalue(txSignedHex, "transaction");
 				if (coupon.isNotEmpty())
 				{
@@ -854,7 +1103,8 @@ void InterfaceComponent::MakeCoupon(couponArgs args)
 
 void InterfaceComponent::RedeemCoupon(const String couponCode, const String password)
 {
-	burstExt.RedeemCoupon(couponCode, password);
+	BurstCoupon burstCoupon;
+	burstCoupon.RedeemCoupon(couponCode, password);
 }
 
 void InterfaceComponent::SendHotWalletLicense(const String recipient)
@@ -866,7 +1116,7 @@ void InterfaceComponent::SendHotWalletLicense(const String recipient)
 		String assetID;
 		if (assetID.isEmpty())
 		{ // find the HotWallet asset
-			String assetsByCurb = burstExt.getAssetsByIssuer(burstExt.ensureAccountID("HotWallet"));
+			String assetsByCurb = burstExt.getAssetsByIssuer(burstExt.convertToAccountID("HotWallet"));
 			var assetsByCurbJson;
 			Result r = JSON::parse(assetsByCurb, assetsByCurbJson);
 			if (assetsByCurbJson["assets"].isArray() && assetsByCurbJson["assets"][0].isArray())
@@ -966,7 +1216,7 @@ void InterfaceComponent::SendBurstcoin(const String recipient, const String amou
 
 		if (NativeMessageBox::showOkCancelBox(AlertWindow::QuestionIcon, ProjectInfo::projectName, "Send " + NQT2Burst(amountNQT) + " Burstcoin\nto " + dispName + " ?"))
 		{
-			String resp = burstExt.sendMoneyWithMessage(recipient, amountNQT, feeNQT, "1440", msg, encrypted, "", true);
+			String resp = burstExt.sendMoneyWithMessage(recipient, amountNQT, feeNQT, "1440", msg, true, encrypted, "", true);
 			String transactionID = burstExt.GetJSONvalue(resp, "transaction");
 			if (transactionID.isNotEmpty())
 			{
@@ -990,12 +1240,14 @@ void InterfaceComponent::SetAssetsBalances(const StringPairArray assetsBalances)
 	this->assetsBalances = assetsBalances;
 
 	UpdateAssetData();
+
+	chatComponentListeners.call(&ChatComponentListener::SetAssetsBalances, assetsBalances);
 }
 
-void InterfaceComponent::Broke(const bool show, const String pubKey_b64, const bool isPro)
+void InterfaceComponent::Broke(const bool show, const String addressRS, const String pubKey_b64, const bool isPro)
 { // show the secure account option, if the wallet is empty and has no pubkey
 	this->isPro = isPro;
-	historyComponentListeners.call(&HistoryComponentListener::ShowSecureAccount, show, pubKey_b64, isPro);
+	historyComponentListeners.call(&HistoryComponentListener::ShowSecureAccount, show, addressRS, pubKey_b64, isPro);
 	repaint();
 }
 
@@ -1003,45 +1255,18 @@ void InterfaceComponent::GetAccountDisplayName(const uint64 account, const Strin
 {
 	if(accountRS.isEmpty())
 	{
-		const String rs = burstExt.ensureAccountRS(String(account));
+		const String rs = burstExt.convertToReedSolomon(String(account));
 		displayName = burstExt.getAccountAliases(rs);
 		if (displayName.isEmpty())
 			displayName = rs;
 	}
 	else
 	{
-		const String rs = burstExt.ensureAccountRS(String(accountRS));
+		const String rs = burstExt.convertToReedSolomon(String(accountRS));
 		displayName = burstExt.getAccountAliases(rs);
 		if (displayName.isEmpty())
 			displayName = rs;
 	}
-}
-
-void InterfaceComponent::CreateWallet()
-{
-	pinComponent->setViewMode(1);
-	pinComponent->setVisible(true);
-}
-
-void InterfaceComponent::SavePassPhrase(String passphrase, String pin)
-{ // called from PIN dialog
-	pinComponent->setVisible(false);
-	if (passphrase.isNotEmpty())
-	{
-		// reload burstExt account
-		burstExt.SetSecretPhrase(passphrase, 0);
-		transactionsComponentListeners.call(&TransactionsComponentListener::SetSecretPhrase, passphrase);
-		settingsListeners.call(&SettingsListener::SetSecretPhrase, passphrase);
-		balanceComponentListeners.call(&BalanceComponentListener::SetSecretPhrase, passphrase);
-
-		String encryptedPassPhrase = Encrypt("PIN" + passphrase, pin).replace("\"", "&quot;");
-		SetAppValue("passPhraseEnc", encryptedPassPhrase);
-	}
-	else SetAppValue("passPhraseEnc", "");
-
-	balanceComponentListeners.call(&BalanceComponentListener::UpdateBalance);
-
-	SetView(1);
 }
 
 void InterfaceComponent::WalletPubKeyToClipboard(const int index)
@@ -1079,11 +1304,12 @@ void InterfaceComponent::UpdateAssetData()
 	GetAssetWhitelist(assets, assetsNames, assetsDescription, assetsDecimals);
 	sendComponentListeners.call(&SendComponentListener::SetAssets, assets, assetsNames, assetsDescription, assetsDecimals, assetsBalances);
 	transactionsComponentListeners.call(&TransactionsComponentListener::SetAssets, assets, assetsNames, assetsDescription, assetsDecimals, assetsBalances);
+	tradeComponentListeners.call(&TradeComponentListener::SetAssets, assets, assetsNames, assetsDescription, assetsDecimals, assetsBalances);
 }
 
 void InterfaceComponent::GetAssetWhitelist(StringArray &assets, StringArray &assetsNames, StringArray &assetsDescription, StringArray &assetsDecimals)
 {
-	if (assetWhitelist.size() <= 0)
+//	if (assetWhitelist.size() <= 0) // commented due to multi account
 	{
 		assets = assetsBalances.getAllKeys();
 		assets.sortNatural();
@@ -1093,13 +1319,18 @@ void InterfaceComponent::GetAssetWhitelist(StringArray &assets, StringArray &ass
 		{
 			if (assets[i].compare("0") == 0)
 			{
-				assetsNames.add("BURST");
-				assetsDescription.add("Burstcoin");
+				assetsNames.add("Burstcoin");
+				assetsDescription.add("Burst is an open-source decentralized platform that connects people, companies, and financial institutions. It allows you to move value according to your own rules within a scalable, green and customizable ledger");
 				assetsDecimals.add("8");
 			}
 			else
 			{
-				String assetStr = burstExt.getAsset(assets[i]);
+				String assetStr;
+				if (assetMap.contains(assets[i]) == false)
+					assetStr = burstExt.getAsset(assets[i]);
+				else assetStr = assetMap[assets[i]];
+				assetMap.set(assets[i], assetStr);
+
 				var assetJson;
 				Result r = JSON::parse(assetStr, assetJson);
 
@@ -1114,13 +1345,13 @@ void InterfaceComponent::GetAssetWhitelist(StringArray &assets, StringArray &ass
 		assetWhitelistDescription = assetsDescription;
 		assetWhitelistDecimals = assetsDecimals;
 	}
-	else
+/*	else
 	{
 		assets = assetWhitelist;
 		assetsNames = assetWhitelistNames;
 		assetsDescription = assetWhitelistDescription;
 		assetsDecimals = assetWhitelistDecimals;
-	}
+	}*/
 }
 
 /*********************************************************************************/
@@ -1216,9 +1447,16 @@ BEGIN_JUCER_METADATA
     <IMAGE pos="12 12 64 24" resource="burst_logo_white_svg" opacity="1"
            mode="1"/>
   </BACKGROUND>
-  <TEXTBUTTON name="tradeButton" id="c66545c977e55339" memberName="tradeButton"
+  <TEXTBUTTON name="chatButton" id="a7a3c4a38cb08240" memberName="chatButton"
+              virtualName="" explicitFocusOrder="0" pos="0 144 112 24" bgColOff="ff84cb16"
+              bgColOn="ff84cb16" buttonText="chat" connectedEdges="0" needsCallback="1"
+              radioGroupId="0"/>
+  <GENERICCOMPONENT name="chatComponent" id="fbab477742a793c" memberName="chatComponent"
+                    virtualName="" explicitFocusOrder="0" pos="648 304 168 176" class="ChatComponent"
+                    params=""/>
+  <TEXTBUTTON name="inventoryButton" id="c66545c977e55339" memberName="inventoryButton"
               virtualName="" explicitFocusOrder="0" pos="0 120 112 24" bgColOff="ff84cb16"
-              bgColOn="ff84cb16" buttonText="trade" connectedEdges="0" needsCallback="1"
+              bgColOn="ff84cb16" buttonText="holdings" connectedEdges="0" needsCallback="1"
               radioGroupId="0"/>
   <GENERICCOMPONENT name="balanceComponent" id="dccea979d2f05486" memberName="balanceComponent"
                     virtualName="" explicitFocusOrder="0" pos="136 24 416 24" class="BalanceComponent"
@@ -1249,17 +1487,17 @@ BEGIN_JUCER_METADATA
          edTextCol="ff000000" edBkgCol="0" labelText="v0.1" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="11.5" bold="0" italic="0" justification="9"/>
-  <GENERICCOMPONENT name="settingsComponent" id="205c6171ce3a77a7" memberName="settingsComponent"
-                    virtualName="" explicitFocusOrder="0" pos="472 72 168 224" class="SettingsComponent"
-                    params=""/>
-  <GENERICCOMPONENT name="aboutComponent" id="ab42d58ceea79f04" memberName="aboutComponent"
-                    virtualName="" explicitFocusOrder="0" pos="120 304 168 179" class="AboutComponent"
-                    params=""/>
   <GENERICCOMPONENT name="tradeComponent" id="5c1b1d0d1081e914" memberName="tradeComponent"
                     virtualName="" explicitFocusOrder="0" pos="472 304 168 176" class="TradeComponent"
                     params=""/>
   <GENERICCOMPONENT name="pinComponent" id="33c6370b679be6dc" memberName="pinComponent"
                     virtualName="" explicitFocusOrder="0" pos="296 304 168 179" class="PinComponent"
+                    params=""/>
+  <GENERICCOMPONENT name="settingsComponent" id="205c6171ce3a77a7" memberName="settingsComponent"
+                    virtualName="" explicitFocusOrder="0" pos="472 72 168 224" class="SettingsComponent"
+                    params=""/>
+  <GENERICCOMPONENT name="aboutComponent" id="ab42d58ceea79f04" memberName="aboutComponent"
+                    virtualName="" explicitFocusOrder="0" pos="120 304 168 179" class="AboutComponent"
                     params=""/>
 </JUCER_COMPONENT>
 

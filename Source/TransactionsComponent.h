@@ -100,18 +100,18 @@ public:
 		type,
 		subtype,
 		asset,
-	//	assetName,
 		assetQuantityQNT,
 		assetPriceNQT,
-	//	assetDecimals,
+		deadline,
 		total
 	};
 	struct txDetails
 	{
-		var value[col::total];
+		String value[col::total];
 	};
 
 	TransactionsComponent::txDetails GetCache(int i);
+	TransactionsComponent::txDetails TryGetCache(int i);
 	void SetCache(Array<TransactionsComponent::txDetails> txds);
 	int GetCacheSize();
 	void ClearCache();
@@ -167,6 +167,8 @@ private:
 	txDetails FillTxStruct(String txDetailsStr);
 	String GetAccountDisplayName(const String account);
 	HashMap<String, String> displayNames;
+
+	HashMap<String, String> pubKeyCache;
 
 	StringArray assetWhitelist;
 	StringArray assetWhitelistNames;

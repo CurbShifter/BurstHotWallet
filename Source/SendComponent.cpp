@@ -107,7 +107,7 @@ SendComponent::SendComponent ()
     amountLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (feeLabel = new Label ("feeLabel",
-                                             TRANS("+ Fee in BURST")));
+                                             TRANS("+ Fee in Burstcoin")));
     feeLabel->setFont (Font (15.00f, Font::plain));
     feeLabel->setJustificationType (Justification::centredRight);
     feeLabel->setEditable (false, false, false);
@@ -221,6 +221,7 @@ SendComponent::SendComponent ()
 	currencyComboBox->setSelectedItemIndex(0);
 	//amountComboBox->setInputRestrictions(20, "0.123456789");
 	messageTextEditor->setInputRestrictions(999);
+//	messageTextEditor->applyFontToAllText(LookAndFeel::getDefaultLookAndFeel().getComboBoxFont());
 
 	passwordTextEditor->setTextToShowWhenEmpty("the coupon password", Colours::darkred);
 	passwordTextEditor->setVisible(false);
@@ -463,7 +464,7 @@ void SendComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     {
         //[UserComboBoxCode_currencyComboBox] -- add your combo box handling code here..
 		UpdateTotalLabel(amountComboBox->getText(), String(feeSlider->getValue()));
-		//[/UserComboBoxCode_currencyComboBox]
+        //[/UserComboBoxCode_currencyComboBox]
     }
 
     //[UsercomboBoxChanged_Post]
@@ -617,7 +618,7 @@ void SendComponent::UpdateTotalLabel(const String amount, const String fee)
 {
 	int64 amountNQT = Burst2NQT(amount).getLargeIntValue();
 	int64 feeNQT = Burst2NQT(fee).getLargeIntValue();
-	
+
 	String totalNQT;
 	String assetStr;
 	if (currencyComboBox->getSelectedItemIndex() > 0)
@@ -627,10 +628,10 @@ void SendComponent::UpdateTotalLabel(const String amount, const String fee)
 		assetStr = String(String(amountNQT / 100000000., decimals) + " " + assetWhitelistNames[currencyComboBox->getSelectedItemIndex()] + " + ");
 	}
 	else totalNQT = String(amountNQT + feeNQT);
-	
+
 	String balance_t(NQT2Burst(totalNQT) + " BURST");
 	String balance_t_ext;
-	
+
 	//if (amountNQT > 0)
 	{
 		if (currency.compare("BTC") == 0)
@@ -671,7 +672,15 @@ void SendComponent::SendBurst()
 		message = message.substring(0, 999);
 	bool encrypt = encryptToggleButton->getToggleState();
 
-	//if (amountComboBox->getText().compare("HotWalletToken") == 0)
+	if (amountComboBox->getText().compareIgnoreCase("PURGE") == 0)
+	{ // max amount !
+		if (currencyComboBox->getSelectedItemIndex() == 0) // subtract the fee if the purge is in Burstcoin
+			amount = String(assetsBalances["0"].getLargeIntValue() - fee.getLargeIntValue());
+
+		if (NativeMessageBox::showOkCancelBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "[PURGE]\nEmpty the wallet balance?\n" + NQT2Burst(amount) + " " + assetWhitelistNames[currencyComboBox->getSelectedItemIndex()] + " + tx fee") == false)
+			return;
+	}
+
 	if (currencyComboBox->getSelectedItemIndex() > 0)
 	{
 		if (couponToggleButton->getToggleState())
@@ -707,7 +716,10 @@ void SendComponent::SendBurst()
 
 			listeners.call(&InterfaceListener::MakeCoupon, args);// recipient, amount, fee, deadline, message, passwordTextEditor->getText(), encrypt);
 		}
-		else listeners.call(&InterfaceListener::SendBurstcoin, recipient, amount, fee, message, encrypt);
+		else
+		{
+			listeners.call(&InterfaceListener::SendBurstcoin, recipient, amount, fee, message, encrypt);
+		}
 
 		SetView(0);
 	}
@@ -817,7 +829,7 @@ BEGIN_JUCER_METADATA
          bold="0" italic="0" justification="34"/>
   <LABEL name="feeLabel" id="eb8589e135b07e36" memberName="feeLabel" virtualName=""
          explicitFocusOrder="0" pos="15 72 80 24" edTextCol="ff000000"
-         edBkgCol="0" labelText="+ Fee in BURST" editableSingleClick="0"
+         edBkgCol="0" labelText="+ Fee in Burstcoin" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15" bold="0" italic="0" justification="34"/>
   <COMBOBOX name="feeComboBox" id="de6333299e5ba6b6" memberName="feeComboBox"

@@ -248,7 +248,7 @@ void AboutComponent::buttonClicked (Button* buttonThatWasClicked)
     //[/UserbuttonClicked_Post]
 }
 
-void AboutComponent::mouseUp (const MouseEvent& e)
+void AboutComponent::mouseUp (const MouseEvent&)
 {
     //[UserCode_mouseUp] -- Add your code here...
     //[/UserCode_mouseUp]

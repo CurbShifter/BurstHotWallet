@@ -466,8 +466,8 @@ void SettingsComponent::buttonClicked (Button* buttonThatWasClicked)
 		contextMenu->addSeparator();
 		contextMenu->addItem(3, "Import pass phrase (plain text!)", true);*/
 		contextMenu->addItem(2, "Export pass phrase (plain text!)", true);
-		contextMenu->addSeparator();
-		contextMenu->addItem(6, "Generate new / import account", true);
+		//contextMenu->addSeparator();
+		//contextMenu->addItem(6, "Generate new / import account", true);
 
 		int result = contextMenu->show();
 		if (result == 1)
@@ -590,7 +590,7 @@ void SettingsComponent::buttonClicked (Button* buttonThatWasClicked)
 		if (poolSelection.length() >= 26)
 		{
 			poolSelection = poolSelection.substring(poolSelection.length() - 26, poolSelection.length());
-			String recipient = burstExt.ensureAccountRS(poolSelection);
+			String recipient = burstExt.convertToReedSolomon(poolSelection);
 			if (NativeMessageBox::showOkCancelBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "Set the account reward recipient to " + recipient + " ?\n(cheap fee)"))
 			{
 				String str = burstExt.setRewardRecipient(recipient, "cheap", "1440");
@@ -734,8 +734,8 @@ void SettingsComponent::SetSecretPhrase(const String passphrase)
 		passPhraseTextEditor->setColour(TextEditor::backgroundColourId, Colours::white);
 	else passPhraseTextEditor->setColour(TextEditor::backgroundColourId, Colours::red);
 
-	if (passphrase.isNotEmpty())
-		UpdateAccountData();
+	//if (passphrase.isNotEmpty())
+	UpdateAccountData();
 	// else todo clear
 }
 
@@ -746,48 +746,73 @@ void SettingsComponent::timerCallback()
 
 void SettingsComponent::UpdateAccountData()
 {
-	String getAccountStr = burstExt.getAccount(burstExt.GetAccountRS());
-	var jsonStructure;
-	Result r = JSON::parse(getAccountStr, jsonStructure);
-	name = jsonStructure["name"];
-	description = jsonStructure["description"];
-
-	accountNameTextEditor->setText(name, dontSendNotification);
-	accountDescriptionTextEditor->setText(description, dontSendNotification);
-	setAccountButton->setEnabled(false);
-
-	aliasesComboBox->clear();
-	aliasesArray.clear();
-	String aliases = burstExt.getAliases(burstExt.GetAccountRS());
-	var aliasesJson;
-	Result r2 = JSON::parse(aliases, aliasesJson);
-	if (aliasesJson["aliases"].isArray())
+	const bool initialized = burstExt.GetAccountID().getLargeIntValue() != 0;
+	if (initialized)
 	{
-		for (int i = 0; i < aliasesJson["aliases"].size(); i++)
+		String getAccountStr = burstExt.getAccount(burstExt.GetAccountRS());
+		var jsonStructure;
+		Result r = JSON::parse(getAccountStr, jsonStructure);
+		name = jsonStructure["name"];
+		description = jsonStructure["description"];
+
+		accountNameTextEditor->setText(name, dontSendNotification);
+		accountDescriptionTextEditor->setText(description, dontSendNotification);
+		setAccountButton->setEnabled(false);
+
+		aliasesComboBox->clear();
+		aliasesArray.clear();
+		String aliases = burstExt.getAliases(burstExt.GetAccountRS());
+		var aliasesJson;
+		Result r2 = JSON::parse(aliases, aliasesJson);
+		if (aliasesJson["aliases"].isArray())
 		{
-			aliasesArray.add(aliasesJson["aliases"][i]["aliasName"]);
+			for (int i = 0; i < aliasesJson["aliases"].size(); i++)
+			{
+				aliasesArray.add(aliasesJson["aliases"][i]["aliasName"]);
+			}
+			aliasesComboBox->addItemList(aliasesArray, 1);
+			aliasesComboBox->setSelectedItemIndex(0);
 		}
-		aliasesComboBox->addItemList(aliasesArray, 1);
-		aliasesComboBox->setSelectedItemIndex(0);
+
+		const String rewardRecipientJsonStr = burstExt.getRewardRecipient(burstExt.GetAccountRS());
+		const String rewardRecipientStr = burstExt.GetJSONvalue(rewardRecipientJsonStr, "rewardRecipient");
+		const String rewardRecipientRS = rewardRecipientStr.isNotEmpty() ? burstExt.convertToReedSolomon(rewardRecipientStr) : burstExt.GetAccountRS();
+		if (rewardRecipientRS.isNotEmpty())
+		{
+			int idx = -1;
+			for (int i = 0; i < poolComboBox->getNumItems(); i++)
+			{
+				if (poolComboBox->getItemText(i).contains(rewardRecipientRS))
+					idx = i;
+			}
+			if (idx >= 0)
+				poolComboBox->setSelectedItemIndex(idx, dontSendNotification);
+			else if (rewardRecipientRS.isNotEmpty())
+				poolComboBox->setText(rewardRecipientRS, dontSendNotification);
+			setRewardRecipientButton->setEnabled(false);
+		}
 	}
 
-	const String rewardRecipientJsonStr = burstExt.getRewardRecipient(burstExt.GetAccountRS());
-	const String rewardRecipientStr = burstExt.GetJSONvalue(rewardRecipientJsonStr, "rewardRecipient");
-	const String rewardRecipientRS = burstExt.ensureAccountRS(rewardRecipientStr);
-	if (rewardRecipientRS.isNotEmpty())
-	{
-		int idx = -1;
-		for (int i = 0; i < poolComboBox->getNumItems(); i++)
-		{
-			if (poolComboBox->getItemText(i).contains(rewardRecipientRS))
-				idx = i;
-		}
-		if (idx >= 0)
-			poolComboBox->setSelectedItemIndex(idx, dontSendNotification);
-		else if (rewardRecipientRS.isNotEmpty())
-			poolComboBox->setText(rewardRecipientRS, dontSendNotification);
-		setRewardRecipientButton->setEnabled(false);
-	}
+/*	nodeComboBox->setVisible(true);
+	nodeAddressButton->setVisible(true);
+
+	passPhraseTextEditor->setVisible(initialized);
+	myPassPhraseButton->setVisible(initialized);
+	lockButton->setVisible(initialized);
+	cmcButton->setVisible(initialized);
+	cmcTextEditor->setVisible(initialized);
+	getKeyButton->setVisible(initialized);
+	setRewardRecipientButton->setVisible(initialized);
+	poolComboBox->setVisible(initialized);
+	accountNameTextEditor->setVisible(initialized);
+	accountDescriptionTextEditor->setVisible(initialized);
+	poolLabel->setVisible(initialized);
+	nameLabel->setVisible(initialized);
+	descriptionLabel->setVisible(initialized);
+	setAccountButton->setVisible(initialized);
+	aliasesComboBox->setVisible(initialized);
+	aliasesLabel->setVisible(initialized);
+	addAliasButton->setVisible(initialized);*/
 }
 
 void SettingsComponent::EnableControls(const bool on)

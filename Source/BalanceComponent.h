@@ -40,7 +40,8 @@ class BalanceComponent  : public Component,
                           public Thread,
                           public Timer,
                           public BalanceComponentListener,
-                          public ButtonListener
+                          public ButtonListener,
+                          public ComboBoxListener
 {
 public:
     //==============================================================================
@@ -51,13 +52,17 @@ public:
     //[UserMethods]     -- You can add your own custom methods in this section.
 	void addInterfaceListener(InterfaceListener* const l)      { interfaceListeners.add(l); };
 	void removeInterfaceListener(InterfaceListener* const l)   { interfaceListeners.remove(l); };
+	
 	void run();
 	void timerCallback();
+
+	void InitAccountSelection(const int index) override;
 	void SetNode(const String address, const bool allowNonSSL = true) override;
 	void SetSecretPhrase(const String str) override;
 	void SetForceSSL_TSL(const bool forceSSLOn) override;
 	void SetNodeHop(const bool hopOn) override;
 	void SetPrice(String currency, double price) override;
+
 	void UpdateBalance();
 	void UpdateBalanceRun();
 	void AddAssetWhitelist(const StringArray assetIDs);
@@ -67,6 +72,7 @@ public:
     void paint (Graphics& g) override;
     void resized() override;
     void buttonClicked (Button* buttonThatWasClicked) override;
+    void comboBoxChanged (ComboBox* comboBoxThatHasChanged) override;
 
     // Binary resources:
     static const char* diamond_svg;
@@ -105,6 +111,7 @@ private:
     //==============================================================================
     ScopedPointer<Label> balanceLabel;
     ScopedPointer<TextButton> accountButton;
+    ScopedPointer<ComboBox> accountComboBox;
     ScopedPointer<Drawable> drawable1;
 
 

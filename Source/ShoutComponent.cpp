@@ -18,8 +18,11 @@
 */
 
 //[Headers] You can add your own extra header files here...
-#define SHOUT_ADDRESS "HotWallet"
+//"HotWallet"
+#define SHOUT_ADDRESS "BURST-SCKT-GBVL-X3ZD-GQHNQ"
+
 #define SHOUT_PREFIX "Shout: "
+#define SHOUT_EXPIRE_DAYS (7*4*3)
 //[/Headers]
 
 #include "ShoutComponent.h"
@@ -323,19 +326,20 @@ void ShoutComponent::run()
 	String timestamp;
 	{
 		const ScopedLock lock(burstExtLock);
-		account = (burstExt.ensureAccountRS(SHOUT_ADDRESS)); // is the account RS
-		accountID = (burstExt.ensureAccountID(account)); // is the account ID
-		timestamp = String((Time::currentTimeMillis() / 1000) - BURSTCOIN_GENESIS_EPOCH - (60 * 60 * 24)); // is the earliest block(in seconds since the genesis block) to retrieve(optional)
+		account = (burstExt.convertToReedSolomon(SHOUT_ADDRESS)); // is the account RS
+		accountID = (burstExt.convertToAccountID(account)); // is the account ID
+		timestamp = String((Time::currentTimeMillis() / 1000) - BURSTCOIN_GENESIS_EPOCH - (60 * 60 * 24 * SHOUT_EXPIRE_DAYS)); // is the earliest block(in seconds since the genesis block) to retrieve(optional)
 	}
 
 	int freeTokenBase = 100000000; // 1.0 burst - 1st buy is free 60 sec = 1 burst
 	uint64 alivetimes = 0;
 	uint64 amountNQTs = 0;
 	Array<shout> compiledShouts;
+	shout defaultShout;
 	if (!threadShouldExit())
 	{
 		const ScopedLock lock(burstExtLock);
-		const String accountTransactions = burstExt.getAccountTransactions(account, timestamp); // , type, subtype, firstIndex, lastIndex, numberOfConfirmations
+		const String accountTransactions = burstExt.getAccountTransactions(account, timestamp, "1", "0", "0", "60"); // firstIndex, lastIndex, numberOfConfirmations
 		const String unconfirmedAccountTransactions = burstExt.getUnconfirmedTransactions(account); // , type, subtype, firstIndex, lastIndex, numberOfConfirmations
 		// collect the shouts
 		var accountTransactionsJson;
@@ -349,7 +353,8 @@ void ShoutComponent::run()
 			{
 				int freeToken = freeTokenBase;
 				bool freeTokenTaken = false;
-				for (int i = 0; i < accountTransactionsJson[arrayName.toUTF8()].size() && !threadShouldExit(); i++)
+				//for (int i = 0; i < accountTransactionsJson[arrayName.toUTF8()].size() && !threadShouldExit(); i++)
+				for (int i = accountTransactionsJson[arrayName.toUTF8()].size() - 1; i >= 0 && !threadShouldExit(); i--)
 				{
 					int index = accountTransactionsJson[arrayName.toUTF8()].size() - 1 - i; // reverse order, bcz free token
 					if (accountTransactionsJson[arrayName.toUTF8()][index]["attachment"]["messageIsText"])

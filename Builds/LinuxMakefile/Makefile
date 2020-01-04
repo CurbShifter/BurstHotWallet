@@ -64,9 +64,18 @@ ifeq ($(CONFIG),Release)
 endif
 
 OBJECTS := \
+  $(JUCE_OBJDIR)/ChatBox_6d2bf1e5.o \
+  $(JUCE_OBJDIR)/ChatComponent_d4012857.o \
+  $(JUCE_OBJDIR)/Menu_eb882857.o \
+  $(JUCE_OBJDIR)/MessageList_9e6be857.o \
+  $(JUCE_OBJDIR)/BitBuffer_817e8118.o \
+  $(JUCE_OBJDIR)/QrCode_5ea1a1ed.o \
+  $(JUCE_OBJDIR)/QrSegment_8af5d8bd.o \
   $(JUCE_OBJDIR)/BalanceComponent_48b9438a.o \
   $(JUCE_OBJDIR)/ShoutComponent_a1fb75ad.o \
+  $(JUCE_OBJDIR)/TradeComponent_3a50302.o \
   $(JUCE_OBJDIR)/TransactionsComponent_6938289.o \
+  $(JUCE_OBJDIR)/TradeInterfaceComponent_8a0e50a9.o \
   $(JUCE_OBJDIR)/AboutComponent_ebbe5b79.o \
   $(JUCE_OBJDIR)/HistoryComponent_4b30d8d2.o \
   $(JUCE_OBJDIR)/SendComponent_ffe19336.o \
@@ -113,6 +122,41 @@ strip:
 	@echo Stripping BurstHotWallet
 	-@$(STRIP) --strip-unneeded $(JUCE_OUTDIR)/$(TARGET)
 
+$(JUCE_OBJDIR)/ChatBox_6d2bf1e5.o: ../../Source/chat/ChatBox.cpp
+	-@mkdir -p $(JUCE_OBJDIR)
+	@echo "Compiling ChatBox.cpp"
+	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
+
+$(JUCE_OBJDIR)/ChatComponent_d4012857.o: ../../Source/chat/ChatComponent.cpp
+	-@mkdir -p $(JUCE_OBJDIR)
+	@echo "Compiling ChatComponent.cpp"
+	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
+
+$(JUCE_OBJDIR)/Menu_eb882857.o: ../../Source/chat/Menu.cpp
+	-@mkdir -p $(JUCE_OBJDIR)
+	@echo "Compiling Menu.cpp"
+	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
+
+$(JUCE_OBJDIR)/MessageList_9e6be857.o: ../../Source/chat/MessageList.cpp
+	-@mkdir -p $(JUCE_OBJDIR)
+	@echo "Compiling MessageList.cpp"
+	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
+
+$(JUCE_OBJDIR)/BitBuffer_817e8118.o: ../../Source/QR-code/BitBuffer.cpp
+	-@mkdir -p $(JUCE_OBJDIR)
+	@echo "Compiling BitBuffer.cpp"
+	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
+
+$(JUCE_OBJDIR)/QrCode_5ea1a1ed.o: ../../Source/QR-code/QrCode.cpp
+	-@mkdir -p $(JUCE_OBJDIR)
+	@echo "Compiling QrCode.cpp"
+	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
+
+$(JUCE_OBJDIR)/QrSegment_8af5d8bd.o: ../../Source/QR-code/QrSegment.cpp
+	-@mkdir -p $(JUCE_OBJDIR)
+	@echo "Compiling QrSegment.cpp"
+	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
+
 $(JUCE_OBJDIR)/BalanceComponent_48b9438a.o: ../../Source/BalanceComponent.cpp
 	-@mkdir -p $(JUCE_OBJDIR)
 	@echo "Compiling BalanceComponent.cpp"
@@ -123,9 +167,19 @@ $(JUCE_OBJDIR)/ShoutComponent_a1fb75ad.o: ../../Source/ShoutComponent.cpp
 	@echo "Compiling ShoutComponent.cpp"
 	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
 
+$(JUCE_OBJDIR)/TradeComponent_3a50302.o: ../../Source/TradeComponent.cpp
+	-@mkdir -p $(JUCE_OBJDIR)
+	@echo "Compiling TradeComponent.cpp"
+	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
+
 $(JUCE_OBJDIR)/TransactionsComponent_6938289.o: ../../Source/TransactionsComponent.cpp
 	-@mkdir -p $(JUCE_OBJDIR)
 	@echo "Compiling TransactionsComponent.cpp"
+	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
+
+$(JUCE_OBJDIR)/TradeInterfaceComponent_8a0e50a9.o: ../../Source/TradeInterfaceComponent.cpp
+	-@mkdir -p $(JUCE_OBJDIR)
+	@echo "Compiling TradeInterfaceComponent.cpp"
 	$(V_AT)$(CXX) $(JUCE_CXXFLAGS) -o "$@" -c "$<"
 
 $(JUCE_OBJDIR)/AboutComponent_ebbe5b79.o: ../../Source/AboutComponent.cpp

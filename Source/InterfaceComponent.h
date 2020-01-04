@@ -32,9 +32,11 @@
 #include "ShoutComponent.h"
 #include "BalanceComponent.h"
 #include "TradeComponent.h"
+#include "ChatComponent.h"
 #include "Listeners.h"
 
 #include "HttpServer.h"
+
 /* MSVC 2017
 needs a mod in boost line 50 of config.hpp
 
@@ -43,6 +45,8 @@ becomes:
 #if defined(__clang__) && defined(__has_cpp_attribute)
 
 */
+
+ApplicationProperties& getAppProperties();
 
 
 #define INTERFACE_UPDATE_MS 1000
@@ -84,15 +88,16 @@ public:
 	String Encrypt(String input, String pin);
 	String Decrypt(String input, String pin);
 
-	ApplicationProperties appProp;
-	PropertiesFile::Options options;
+//	ApplicationProperties appProp;
+//	PropertiesFile::Options options;
 	String GetAppValue(const String type);
 	void GetAppValue(const String type, String &value) override;
 	void SetAppValue(const String type, const String value) override;
 
+	void RemoveWallet() override;
 	void CreateWallet() override;
 	void SavePassPhraseWithNewPIN(const String passphrase) override;
-	void SavePassPhrase(String passphrase, String pin) override;
+	void SavePassPhrase(String passphrase, String pin, String address) override;
 	void LoadPassPhrase() override;
 	void UnloadPassPhrase() override;
 	void LoadPassPhraseReturn(String pin) override;
@@ -108,6 +113,8 @@ public:
 	bool ProcessHttpSocketMessage(const MemoryBlock& message);
 #endif
 	StringArray LimitedTokenList(String tokenlist, String newItem, const int maxItems);
+
+	void SystemTrayNotify(const String message, const String tooltip, const bool highlight) override;
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -156,11 +163,25 @@ private:
 	void removeBalanceComponentListener(BalanceComponentListener* const l)   { balanceComponentListeners.remove(l); };
 	ListenerList <BalanceComponentListener> balanceComponentListeners;
 
+	void addTradeComponentListener(TradeComponentListener* const l)      { tradeComponentListeners.add(l); };
+	void removeTradeComponentListener(TradeComponentListener* const l)   { tradeComponentListeners.remove(l); };
+	ListenerList <TradeComponentListener> tradeComponentListeners;
+
+	void addChatComponentListener(ChatComponentListener* const l)      { chatComponentListeners.add(l); };
+	void removeChatComponentListener(ChatComponentListener* const l)   { chatComponentListeners.remove(l); };
+	ListenerList <ChatComponentListener> chatComponentListeners;
+
 	String NQT2Burst(const String value);
 	String Burst2NQT(const String value);
 
 	void timerCallback();
 	void SetView(int nr);
+
+	int accountIndex = 0;
+	void GetAccountNames(StringArray &addresses);
+	void GetAccountAddresses(StringArray &addresses);
+	void GetAccountIndex(int &index) { index = accountIndex; };
+	void SetAccountIndex(const int index);
 
 	void CreateVote();
 	void CastVote();
@@ -177,7 +198,7 @@ private:
 	ScopedPointer<CELookAndFeel> wizlaf;
 
 	int autoRefreshCounter;
-	//ScopedPointer<SystemTrayIconComponent> systemTray;
+	ScopedPointer<SystemTrayIconComponent> systemTray;
 #if ALLOW_EXT_REQ == 1
 	ScopedPointer<StreamingSocket> streamingSocket;
 	ScopedPointer<MemoryBlock> socketMessageData;
@@ -216,7 +237,7 @@ private:
 #endif
 	}
 
-	void Broke(const bool show, const String pubKey_b64, const bool isPro) override;
+	void Broke(const bool show, const String addressRS, const String pubKey_b64, const bool isPro) override;
 	void SetAssetsBalances(const StringPairArray assetsBalances) override;
 
 	// calls to burstExt
@@ -239,13 +260,16 @@ private:
 	StringArray assetWhitelistDescription;
 	StringArray assetWhitelistDecimals;
 	StringPairArray assetsBalances;
+	HashMap<String, String> assetMap;
 
 	juce::Rectangle<float> leftTopCorner1;
 	juce::Rectangle<float> leftTopCorner2;
     //[/UserVariables]
 
     //==============================================================================
-    ScopedPointer<TextButton> tradeButton;
+    ScopedPointer<TextButton> chatButton;
+    ScopedPointer<ChatComponent> chatComponent;
+    ScopedPointer<TextButton> inventoryButton;
     ScopedPointer<BalanceComponent> balanceComponent;
     ScopedPointer<TextButton> settingsButton;
     ScopedPointer<ShoutComponent> shoutComponent;
@@ -254,10 +278,10 @@ private:
     ScopedPointer<TextButton> sendButton;
     ScopedPointer<HistoryComponent> historyComponent;
     ScopedPointer<Label> versionLabel;
-    ScopedPointer<SettingsComponent> settingsComponent;
-    ScopedPointer<AboutComponent> aboutComponent;
     ScopedPointer<TradeComponent> tradeComponent;
     ScopedPointer<PinComponent> pinComponent;
+    ScopedPointer<SettingsComponent> settingsComponent;
+    ScopedPointer<AboutComponent> aboutComponent;
     ScopedPointer<Drawable> drawable1;
     ScopedPointer<Drawable> drawable2;
     ScopedPointer<Drawable> drawable3;

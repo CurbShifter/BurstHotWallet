@@ -57,7 +57,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\..\JuceLibraryCode;..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules;E:\Libraries\boost_1_64_0;E:\Libraries\beast\include;..\..\..\..\..\BurstLib\trunk\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\JuceLibraryCode;..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules;$(LIBS)boost_1_69_0;$(LIBS)beast\include;..\..\..\..\..\BurstLib\trunk\Source;..\..\Source\chat\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_WINDOWS;DEBUG;_DEBUG;NO_BEAST=1;JUCER_VS2013_78A5020=1;JUCE_APP_VERSION=1.0.0;JUCE_APP_VERSION_HEX=0x10000;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -102,7 +102,7 @@
     </Midl>
     <ClCompile>
       <Optimization>MinSpace</Optimization>
-      <AdditionalIncludeDirectories>..\..\JuceLibraryCode;..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules;E:\Libraries\boost_1_64_0;E:\Libraries\beast\include;..\..\..\..\..\BurstLib\trunk\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\JuceLibraryCode;..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules;$(LIBS)boost_1_64_0;$(LIBS)beast\include;..\..\..\..\..\BurstLib\trunk\Source;..\..\Source\chat\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_WINDOWS;NDEBUG;NO_BEAST=1;JUCER_VS2013_78A5020=1;JUCE_APP_VERSION=1.0.0;JUCE_APP_VERSION_HEX=0x10000;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -139,10 +139,18 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\chat\ChatBox.cpp"/>
+    <ClCompile Include="..\..\Source\chat\ChatComponent.cpp"/>
+    <ClCompile Include="..\..\Source\chat\Menu.cpp"/>
+    <ClCompile Include="..\..\Source\chat\MessageList.cpp"/>
+    <ClCompile Include="..\..\Source\QR-code\BitBuffer.cpp"/>
+    <ClCompile Include="..\..\Source\QR-code\QrCode.cpp"/>
+    <ClCompile Include="..\..\Source\QR-code\QrSegment.cpp"/>
     <ClCompile Include="..\..\Source\BalanceComponent.cpp"/>
     <ClCompile Include="..\..\Source\ShoutComponent.cpp"/>
     <ClCompile Include="..\..\Source\TradeComponent.cpp"/>
     <ClCompile Include="..\..\Source\TransactionsComponent.cpp"/>
+    <ClCompile Include="..\..\Source\TradeInterfaceComponent.cpp"/>
     <ClCompile Include="..\..\Source\AboutComponent.cpp"/>
     <ClCompile Include="..\..\Source\HistoryComponent.cpp"/>
     <ClCompile Include="..\..\Source\SendComponent.cpp"/>
@@ -153,69 +161,6 @@
     <ClCompile Include="..\..\Source\SettingsComponent.cpp"/>
     <ClCompile Include="..\..\Source\HttpServer.cpp"/>
     <ClCompile Include="..\..\Source\Main.cpp"/>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\audio_io\juce_AudioDeviceManager.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\audio_io\juce_AudioIODevice.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\audio_io\juce_AudioIODeviceType.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\midi_io\juce_MidiMessageCollector.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\midi_io\juce_MidiOutput.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_android_Audio.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_android_Midi.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_android_OpenSL.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_ios_Audio.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_linux_ALSA.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_linux_JackAudio.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_linux_Midi.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_mac_CoreAudio.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_mac_CoreMidi.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_win32_ASIO.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_win32_DirectSound.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_win32_Midi.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_win32_WASAPI.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\sources\juce_AudioSourcePlayer.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\sources\juce_AudioTransportSource.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\JuceLibraryCode\BinaryData.cpp"/>
     <ClCompile Include="..\..\JuceLibraryCode\juce_audio_basics.cpp"/>
     <ClCompile Include="..\..\JuceLibraryCode\juce_audio_devices.cpp"/>
@@ -232,10 +177,19 @@
     <ClCompile Include="..\..\JuceLibraryCode\juce_video.cpp"/>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\chat\ChatBox.h"/>
+    <ClInclude Include="..\..\Source\chat\ChatComponent.h"/>
+    <ClInclude Include="..\..\Source\chat\Menu.h"/>
+    <ClInclude Include="..\..\Source\chat\MessageList.h"/>
+    <ClInclude Include="..\..\Source\QR-code\BitBuffer.hpp"/>
+    <ClInclude Include="..\..\Source\QR-code\JuceQrCodeGenerator.h"/>
+    <ClInclude Include="..\..\Source\QR-code\QrCode.hpp"/>
+    <ClInclude Include="..\..\Source\QR-code\QrSegment.hpp"/>
     <ClInclude Include="..\..\Source\BalanceComponent.h"/>
     <ClInclude Include="..\..\Source\ShoutComponent.h"/>
     <ClInclude Include="..\..\Source\TradeComponent.h"/>
     <ClInclude Include="..\..\Source\TransactionsComponent.h"/>
+    <ClInclude Include="..\..\Source\TradeInterfaceComponent.h"/>
     <ClInclude Include="..\..\Source\AboutComponent.h"/>
     <ClInclude Include="..\..\Source\HistoryComponent.h"/>
     <ClInclude Include="..\..\Source\SendComponent.h"/>
@@ -246,18 +200,6 @@
     <ClInclude Include="..\..\Source\LookAndFeel.h"/>
     <ClInclude Include="..\..\Source\SettingsComponent.h"/>
     <ClInclude Include="..\..\Source\HttpServer.h"/>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\audio_io\juce_AudioDeviceManager.h"/>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\audio_io\juce_AudioIODevice.h"/>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\audio_io\juce_AudioIODeviceType.h"/>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\audio_io\juce_SystemAudioVolume.h"/>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\midi_io\juce_MidiInput.h"/>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\midi_io\juce_MidiMessageCollector.h"/>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\midi_io\juce_MidiOutput.h"/>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\native\juce_MidiDataConcatenator.h"/>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\sources\juce_AudioSourcePlayer.h"/>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\sources\juce_AudioTransportSource.h"/>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.h"/>
-    <ClInclude Include="..\..\..\..\..\..\..\Libraries\JUCE_4.3.1\JUCE\modules\juce_audio_devices\juce_audio_devices.h"/>
     <ClInclude Include="..\..\JuceLibraryCode\AppConfig.h"/>
     <ClInclude Include="..\..\JuceLibraryCode\BinaryData.h"/>
     <ClInclude Include="..\..\JuceLibraryCode\JuceHeader.h"/>
@@ -265,6 +207,10 @@
   <ItemGroup>
     <None Include="..\..\Source\BurstHotWallet-icon.svg"/>
     <None Include="..\..\Source\img\cog.svg"/>
+    <None Include="..\..\Source\img\groupchat.svg"/>
+    <None Include="..\..\Source\img\hatnu-bg-p1.svg"/>
+    <None Include="..\..\Source\img\hatnu-bg-p2.svg"/>
+    <None Include="..\..\Source\img\Ubuntu Medium Nerd Font Complete.ttf"/>
     <None Include="..\..\Source\NotoSans-Regular.ttf"/>
     <None Include=".\icon.ico"/>
   </ItemGroup>

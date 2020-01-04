@@ -66,9 +66,10 @@ public:
 
 	String NewPassPhrase();
 
-	void ToggleVanityView(const bool togg);
+	void ToggleVanityVisible(const bool togg);
+	void ToggleVanityEnabled(const bool togg);
 	void timerCallback() override;
-	
+
 	void StartVanity();
 	void StopVanity();
 
@@ -91,11 +92,17 @@ public:
 		void run() override;
 
 		String ConvertPubKeyToNumerical(const MemoryBlock pubKey);
+		void UpdatePassPhrase(const StringArray &wordList, String &passPhrase);
+		String CalcAddress(const String &passPhrase);
 
+		juce::Random r;
+		Crypto crypto;
+		BurstAddress burstAddress;
 		CriticalSection ittLock;
 		String passPhraseVanity;
 		String vanityWord;
 		int vanityItt;
+		bool bitwiseCheck;
 	};
     //[/UserMethods]
 
@@ -129,7 +136,7 @@ private:
 	int checkIter;
 	int threadcount;
 	int64 startVanity;
-	//[/UserVariables]
+    //[/UserVariables]
 
     //==============================================================================
     ScopedPointer<TextButton> textButton_1;
@@ -172,6 +179,7 @@ private:
     ScopedPointer<TextEditor> vanityTextEditor;
     ScopedPointer<TextButton> searchButton;
     ScopedPointer<TextButton> searchCancelButton;
+    ScopedPointer<ToggleButton> vanityToggleButton;
     ScopedPointer<Drawable> drawable1;
     ScopedPointer<Drawable> drawable2;
 

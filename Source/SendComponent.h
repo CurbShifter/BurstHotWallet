@@ -90,7 +90,7 @@ private:
 	StringArray assetWhitelistDecimals;
 
 	StringPairArray assetsBalances;
-	//[/UserVariables]
+    //[/UserVariables]
 
     //==============================================================================
     ScopedPointer<Label> fixedMessageLabel;

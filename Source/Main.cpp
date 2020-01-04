@@ -8,16 +8,31 @@
   ==============================================================================
 */
 
-#include "../JuceLibraryCode/JuceHeader.h"
 #include "InterfaceComponent.h"
 
+#include "../JuceLibraryCode/JuceHeader.h"
 
 //==============================================================================
 class BurstWalletApplication  : public JUCEApplication
 {
 public:
     //==============================================================================
-    BurstWalletApplication() {}
+    BurstWalletApplication()
+	{
+		PropertiesFile::Options options;
+		options.commonToAllUsers = false;
+		options.applicationName = ProjectInfo::projectName;
+		options.folderName = "CryptoExtensions";
+		options.filenameSuffix = "settings";
+		options.osxLibrarySubFolder = "Application Support";
+		options.storageFormat = PropertiesFile::storeAsXML;
+
+		File f = options.getDefaultFile();
+		bool showAbout = f.existsAsFile() == false;
+		
+		appProperties = new ApplicationProperties();
+		appProperties->setStorageParameters(options);
+	}
 
     const String getApplicationName() override       { return ProjectInfo::projectName; }
     const String getApplicationVersion() override    { return ProjectInfo::versionString; }
@@ -66,14 +81,22 @@ public:
 			setContentOwned(ic, true);
 
 			juce::Rectangle<int> rMin = ic->getBounds();
-			juce::Rectangle<int> rMax(rMin.withSize(1920, 1080));
+			juce::Rectangle<int> rMax(rMin.withSize(1920, 1920));
 			
 			setResizable(true, true);
 			setResizeLimits(rMin.getWidth(), rMin.getHeight(), rMax.getWidth(), rMax.getHeight());
 
 			centreWithSize(getWidth(), getHeight());
+
+			restoreWindowStateFromString(getAppProperties().getUserSettings()->getValue("mainWindowPos"));
+
             setVisible (true);
         }
+
+		~MainWindow()
+		{
+			getAppProperties().getUserSettings()->setValue("mainWindowPos", getWindowStateAsString());
+		}
 
         void closeButtonPressed() override
         {
@@ -93,11 +116,16 @@ public:
     private:
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
     };
+	ScopedPointer<ApplicationProperties> appProperties;
 
 private:
     ScopedPointer<MainWindow> mainWindow;
 	TooltipWindow tooltipWindow;
 };
+
+static BurstWalletApplication& getApp()                      { return *dynamic_cast<BurstWalletApplication*>(JUCEApplication::getInstance()); }
+ApplicationProperties& getAppProperties()           { return *getApp().appProperties; }
+
 
 //==============================================================================
 // This macro generates the main() routine that launches the app.
