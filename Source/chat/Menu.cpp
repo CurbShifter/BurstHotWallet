@@ -146,8 +146,6 @@ void Menu::resized()
 	*/
 	juce::Rectangle<float> r = getBounds().withZeroOrigin().toFloat();
 
-	int settingsWH = 30;
-	int baseY = 50;
 	int baseH = 40;
 	int baseH2 = 35;
 
@@ -156,8 +154,8 @@ void Menu::resized()
 	chatlist->setBounds(
 		0,
 		slotFeeButton->getBottom() + 20,
-		r.getWidth(),
-		r.getHeight() - ((((uint64)slotFeeButton->getBottom()) + 20L) + (baseH2 * 3.5)));
+		(int)r.getWidth(),
+		(int)(r.getHeight() - ((((uint64)slotFeeButton->getBottom()) + 20L) + (baseH2 * 3.5))));
 
 	channelNameComboBox->setBounds(r.withTrimmedTop(r.getHeight() - (baseH2 * 3.5f)).withHeight(baseH2).reduced(2).toNearestInt());
 	publicRoomButton->setBounds(r.withTrimmedTop(r.getHeight() - (baseH2 * 2.5f)).withHeight(baseH2).reduced(1).toNearestInt());
@@ -388,9 +386,9 @@ void Menu::SetAccountRS(const String rs)
 }
 
 // RoomsListBoxModel -------------------------------------------------------------
-void Menu::RoomsListBoxModel::setParent(Menu *menu)
+void Menu::RoomsListBoxModel::setParent(Menu *menuIn)
 {
-	this->menu = menu;
+	this->menu = menuIn;
 }
 
 void Menu::RoomsListBoxModel::paintListBoxItem(int rowNumber, Graphics& g, int width, int height, bool rowIsSelected)
@@ -406,7 +404,7 @@ void Menu::RoomsListBoxModel::paintListBoxItem(int rowNumber, Graphics& g, int w
 	if (tp[rowNumber].notify == 1)
 	{
 		g.setColour(notifyColor);
-		g.fillRect(Rectangle<float>(0, 0, width, height).reduced(2));
+		g.fillRect(Rectangle<float>(0.f, 0.f, (float)width, (float)height).reduced(2));
 	}
 
 	if (tp[rowNumber].privateChannel && (tp[rowNumber].notify == 0))

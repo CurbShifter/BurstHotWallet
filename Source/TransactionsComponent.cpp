@@ -135,17 +135,17 @@ void TransactionsComponent::SetCMCkey(const String key)
 	cmcAPIkey = key;
 }
 
-void TransactionsComponent::SetCurrencyType(const String currency)
+void TransactionsComponent::SetCurrencyType(const String currencyIn)
 {
 	const ScopedLock lock(tldLock);
-	currencyType = currency;
+	currencyType = currencyIn;
 }
 
-void TransactionsComponent::GetCurrency(String &key, String &currency)
+void TransactionsComponent::GetCurrency(String &key, String &currencyIn)
 {
 	const ScopedLock lock(tldLock);
 	key = cmcAPIkey;
-	currency = currencyType;
+	currencyIn = currencyType;
 }
 
 void TransactionsComponent::Refresh()
@@ -543,11 +543,11 @@ void TransactionsComponent::ClearCache()
 	txDetailArray.clear();
 }
 
-void TransactionsComponent::SetPrice(String currency, double price)
+void TransactionsComponent::SetPrice(String currencyIn, double priceIn)
 {
 	const ScopedLock lock(tldLock);
-	this->currency = currency;
-	this->price = price;
+	this->currency = currencyIn;
+	this->price = priceIn;
 }
 
 void TransactionsComponent::GetPrice(String &currency, double &price)

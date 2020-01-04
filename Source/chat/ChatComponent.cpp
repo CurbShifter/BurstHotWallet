@@ -354,8 +354,8 @@ void ChatComponent::NewTab(const String recipient, bool isPrivate, bool forceSho
 		targetAddress = menu->FindActiveTabWithAlias(aliases);
 	}
 	int tab_idx = -1;
-	String id = burstSocket.convertToAccountID(targetAddress);
-	if (id.isNotEmpty() || global) // check validity of recipient, (resolve alias/str to BURST RS)
+	String targetId = burstSocket.convertToAccountID(targetAddress, true);
+	if (targetId.isNotEmpty() || global) // check validity of recipient, (resolve alias/str to BURST RS)
 	{
 		String name;
 		if (global == false)
@@ -363,24 +363,35 @@ void ChatComponent::NewTab(const String recipient, bool isPrivate, bool forceSho
 		else
 		{
 			name = "*";
-			id = burstSocket.GetAccountID();
+			targetId = burstSocket.GetAccountID();
 			targetAddress = "*";
 			isPrivate = true;
 		}
 
-		tab_idx = menu->GetRoomNames().indexOf(name, true, 0);
+		//tab_idx = menu->GetRoomNames().indexOf(name, true, 0);
+		// convert room names to account ids
+		// find index of targetId
+		StringArray roomNames = menu->GetRoomNames();
+		for (int i = 0; i < roomNames.size(); i++)
+		{
+			String roomId = burstSocket.convertToAccountID(roomNames[i].replaceCharacters("#@", "  ").trim(), true);
+			if (roomId.compareIgnoreCase(targetId) == 0 && // same id
+				(isPrivate == !(roomNames[i].contains("#")))) // check private or public
+				tab_idx = i;
+		}
+
 		if (tab_idx == -1) // check if a tab with same settings exists
 		{
 			if (menu->GetRoomNames().size() < 100) // no more than 100 tabs
 			{
 				uint64 senderID = burstSocket.GetUINT64(burstSocket.GetAccountID());
-				ChatBox *chatBox = new ChatBox(senderID, burstSocket.GetUINT64(id), targetAddress, isPrivate);
+				ChatBox *chatBox = new ChatBox(senderID, burstSocket.GetUINT64(targetId), targetAddress, isPrivate);
 				if (chatBox)
 				{
 					addChildComponent(chatBox, 0);
 
 					chatComponents.add(chatBox);
-					menu->AddTab(name, burstSocket.GetUINT64(burstSocket.GetAccountID()), burstSocket.GetUINT64(id), targetAddress, isPrivate, -1, forceShow);
+					menu->AddTab(name, burstSocket.GetUINT64(burstSocket.GetAccountID()), burstSocket.GetUINT64(targetId), targetAddress, isPrivate, -1, forceShow);
 
 					Viewport *messageViewport = (Viewport *)chatBox->findChildWithID("messageViewport");
 					chatBox->addListener(this);
@@ -582,8 +593,8 @@ void ChatComponent::timerCallback()
 			fwi.dwTimeout = 0;
 			FlashWindowEx(&fwi);
 #elif JUCE_MAC
-			MacOSUserNotification notifier;
-			notifier.Send(ProjectInfo::projectName, msg.toUTF8());
+			//MacOSUserNotification notifier; // depreciated
+			//notifier.Send(ProjectInfo::projectName, msg.toUTF8());
 #endif
 		}
 

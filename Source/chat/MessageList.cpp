@@ -89,19 +89,19 @@ void MessageList::paint (Graphics& g)
 		float textWidth = (float)g.getCurrentFont().getStringWidth(msg);
 		int numLines = (int)(((float)textWidth / baseWidth) + 1) + (msg.retainCharacters("\n").length());
 		lines += numLines;
-		int y1 = getHeight() - ((timeHeight * ((txPackets.size()-1) - i)) + (rowH * lines));
-		int h = (numLines * (rowH - timeHeight));
+		float y1 = getHeight() - ((timeHeight * ((txPackets.size()-1) - i)) + (rowH * lines));
+		float hF = (numLines * (rowH - timeHeight));
 		bool myMessage = tx.sender == senderID;
-		int cornerSize = 6;
+		float cornerSize = 6.f;
 				
 		// BUBBLE
 		int scrollBarWidth = 15;
-		juce::Rectangle<float> bubble(5.f, y1, getWidth() - 10.f - scrollBarWidth, h);
+		juce::Rectangle<float> bubble(5.f, y1, getWidth() - 10.f - scrollBarWidth, hF);
 
 		if (clip.contains(bubble.toNearestInt()))
 		{
 			// TEXT
-			GlyphArrangement arr = DrawFittedText(g, msg, bubble.reduced(10, 7).toNearestInt(), myMessage ? Justification::right : Justification::left, numLines, 1.0f);
+			GlyphArrangement arr = DrawFittedText(g, msg, bubble.reduced(10, 7).toNearestInt(), myMessage ? juce::Justification::right : juce::Justification::left, numLines, 1.0f);
 			float newWidth = arr.getBoundingBox(0, arr.getNumGlyphs(), true).getWidth();
 
 			if (myMessage)
@@ -247,13 +247,13 @@ void MessageList::AddUnconfirmedSendMessage(String msg)
 	repaint();
 }
 
-void MessageList::SetFilters(uint64 idSender, uint64 idReceiver, bool isPrivate)
+void MessageList::SetFilters(uint64 idSender, uint64 idReceiver, bool isPrivateIn)
 {
 	senderID = idSender;
 	receiverID = idReceiver;
-	this->isPrivate = isPrivate;
+	this->isPrivate = isPrivateIn;
 
-	if (idSender != 0 || idReceiver != 0 || isPrivate != 0) // ignore new tab
+	if (idSender != 0 || idReceiver != 0 || isPrivateIn != 0) // ignore new tab
 	{
 #if ENABLE_MESSGE_LOG == 1
 		const File logFileToWriteTo(File::getSpecialLocation(File::SpecialLocationType::userDocumentsDirectory).getChildFile(ProjectInfo::projectName).getChildFile(String(idReceiver) + "-" + String(idReceiver) + "-" + String(isPrivate)).withFileExtension("chatlog"));

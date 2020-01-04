@@ -283,7 +283,7 @@ void BalanceComponent::SetNodeHop(const bool hopOn)
 
 void BalanceComponent::timerCallback()
 {
-	if (timerDelay++ > 60 * (1000 / getTimerInterval()))
+	if (timerDelay++ > (60L * (int64)(1000L / getTimerInterval())))
 	{
 		timerDelay = 0;
 		startThread();

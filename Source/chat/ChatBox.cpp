@@ -175,7 +175,7 @@ void ChatBox::paint (Graphics& g)
 		g.setGradientFill(ColourGradient(Colours::white,
 			getWidth() / 4.f, 0.f,
 			Colours::lightgrey.brighter(0.5),
-			getWidth() / 2.f, getBottom(),
+			getWidth() / 2.f, (float)getBottom(),
 			false));
 		g.fillAll();
 
@@ -328,7 +328,7 @@ void ChatBox::PrimeResize(bool &isAtBottom)
 	}
 }
 
-void ChatBox::ScrollToBottom(int bottomPos)
+void ChatBox::ScrollToBottom(int /*bottomPos*/)
 {
 	juce::Rectangle<int> r = messageViewport->getViewArea();
 	ScrollBar* scroll = messageViewport->getVerticalScrollBar();
