@@ -261,7 +261,7 @@
 					"JUCE_APP_VERSION=1.0.0",
 					"JUCE_APP_VERSION_HEX=0x10000", );
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
-				HEADER_SEARCH_PATHS = ("../../JuceLibraryCode", "../../../../../Libraries/JUCE_4.3.1/JUCE/modules", "$(SRCROOT)/../../../../../Libs/JUCE_4.3.0/modules", "$(SRCROOT)/../../BurstLib/Source", "$(SRCROOT)/../../../../../Libs/boost_1_67_0", "$(SRCROOT)/../../../../../Libs/beast/include", "$(inherited)");
+				HEADER_SEARCH_PATHS = ("../../JuceLibraryCode", "../../../../../Libraries/JUCE_4.3.1/JUCE/modules", "$(SRCROOT)/../../../../../Libs/JUCE_4.3.0/modules", "$(SRCROOT)/../../../../../Libs/boost_1_67_0", "$(SRCROOT)/../../../../../Libs/beast/include", "../../../BurstLib/*", "$(inherited)");
 				INFOPLIST_FILE = Info-App.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
@@ -284,7 +284,7 @@
 					"JUCE_APP_VERSION_HEX=0x10000", );
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
-				HEADER_SEARCH_PATHS = ("../../JuceLibraryCode", "../../../../../Libraries/JUCE_4.3.1/JUCE/modules", "$(SRCROOT)/../../../../../Libs/JUCE_4.3.0/modules", "$(SRCROOT)/../../BurstLib/Source", "$(SRCROOT)/../../../../../Libs/boost_1_67_0", "$(SRCROOT)/../../../../../Libs/beast/include", "$(inherited)");
+				HEADER_SEARCH_PATHS = ("../../JuceLibraryCode", "../../../../../Libraries/JUCE_4.3.1/JUCE/modules", "$(SRCROOT)/../../../../../Libs/JUCE_4.3.0/modules", "$(SRCROOT)/../../../../../Libs/boost_1_67_0", "$(SRCROOT)/../../../../../Libs/beast/include", "../../../BurstLib/*", "$(inherited)");
 				INFOPLIST_FILE = Info-App.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
