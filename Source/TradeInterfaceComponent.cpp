@@ -468,7 +468,7 @@ void TradeInterfaceComponent::paint (Graphics& g)
 
 	if (asset.assetID.compare("0") == 0)
 	{
-		int dim = getHeight() - 450 + 50;
+		int dim = jmin<float>(300, getHeight() - 450 + 50);
 		juce::Rectangle<float> r((getWidth() / 2) - (dim / 2), getHeight() - (75 + dim), dim, dim);
 		if (qrDrawable != 0)
 		{

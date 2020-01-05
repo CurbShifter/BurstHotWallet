@@ -339,7 +339,7 @@ void ShoutComponent::run()
 	if (!threadShouldExit())
 	{
 		const ScopedLock lock(burstExtLock);
-		const String accountTransactions = burstExt.getAccountTransactions(account, timestamp, "1", "0", "0", "60"); // firstIndex, lastIndex, numberOfConfirmations
+		const String accountTransactions = burstExt.getAccountTransactions(account, timestamp, String::empty, String::empty, /*"1", "0", */ "0", "60"); // firstIndex, lastIndex, numberOfConfirmations
 		const String unconfirmedAccountTransactions = burstExt.getUnconfirmedTransactions(account); // , type, subtype, firstIndex, lastIndex, numberOfConfirmations
 		// collect the shouts
 		var accountTransactionsJson;
