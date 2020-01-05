@@ -65,7 +65,9 @@ void MessageList::paint (Graphics& g)
 	for (int i = txPackets.size() - 1; i >= jmax<int>(txPackets.size() - maxMessages, 0); i--)
 	{
 		const BurstSocket::BurstSocketThread::txPacketIn tx = txPackets[i];
-		String msg(&(tx.message[0]), tx.messageSize);
+		String msg;
+		if (juce::CharPointer_UTF8::isValidString(&(tx.message[0]), tx.messageSize))
+			msg = (MemoryBlock(&(tx.message[0]), tx.messageSize).toString());
 		
 		Colour meBgColor(0xffacffa3);
 		Colour senderBgColor(0xffb1ddff);
@@ -81,8 +83,12 @@ void MessageList::paint (Graphics& g)
 		}
 		const bool date = ((Time::currentTimeMillis() / 1000) - tx.timestamp > 60 * 60 * 24);
 		const String tcStr(Time(tx.timestamp * 1000).toString(date, true, true));
-		const String sender(accountNames[String(tx.sender)].replace(";", " / "));
-		const String recipient(accountNames[String(tx.recipient)].replace(";", " / "));
+		String sender(accountNames[String(tx.sender)].upToFirstOccurrenceOf(";", false, true));//.replace(";", " / "));
+		if (sender.isEmpty())
+			sender = String(tx.sender);
+		String recipient(accountNames[String(tx.recipient)].upToFirstOccurrenceOf(";", false, true));//.replace(";", " / "));
+		if (recipient.isEmpty())
+			recipient = String(tx.recipient);
 		
 
 		g.setFont(18);
@@ -178,7 +184,7 @@ void MessageList::mouseDoubleClick(const MouseEvent& event)
 			if (rIdx >= 0)
 			{ // check if its text or a file stream/download
 				BurstSocket::BurstSocketThread::txPacketIn tx = txPackets[rIdx];
-				String msg(&(tx.message[0]), tx.messageSize);
+				String msg(MemoryBlock(&(tx.message[0]), tx.messageSize).toString());
 				if (tx.isText)
 					SystemClipboard::copyTextToClipboard(msg);
 				else
@@ -331,8 +337,10 @@ void MessageList::AddMessage(BurstSocket::BurstSocketThread::txPacketIn txPacket
 				(txPackets[i].txid == 0 && txPackets[i].recipient != 0) &&
 				!replaced)
 			{
-				String str1(&(txPacket.message[0]), txPacket.messageSize);
-				String str2(&(txPackets[i].message[0]), txPackets[i].messageSize);
+				//String str1(&(txPacket.message[0]), txPacket.messageSize);
+				String str1(MemoryBlock(&(txPacket.message[0]), txPacket.messageSize).toString());
+				//String str2(&(txPackets[i].message[0]), txPackets[i].messageSize);
+				String str2(MemoryBlock(&(txPackets[i].message[0]), txPackets[i].messageSize).toString());
 				if (str1.compare(str2) == 0)
 				{
 					txPackets.getReference(i) = txPacket;
@@ -360,7 +368,7 @@ void MessageList::AddMessage(BurstSocket::BurstSocketThread::txPacketIn txPacket
 			String msg;
 			char *t = &(txPacket.message[0]);
 			if (t != nullptr && CharPointer_ASCII::isValidString(t, txPacket.messageSize));
-			msg = String(&(txPacket.message[0]), txPacket.messageSize);
+			msg = MemoryBlock(&(txPacket.message[0]), txPacket.messageSize).toString();
 
 #if ENABLE_MESSGE_LOG == 1
 			String logOn;

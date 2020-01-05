@@ -395,7 +395,13 @@ void ChatComponent::NewTab(const String recipient, bool isPrivate, bool forceSho
 
 					Viewport *messageViewport = (Viewport *)chatBox->findChildWithID("messageViewport");
 					chatBox->addListener(this);
+					if (interfaceListeners.getListeners().size() > 0)
+						chatBox->addInterfaceListener(interfaceListeners.getListeners().getFirst());
+
 					addChatBoxListener(chatBox);
+
+					
+
 
 					if (messageViewport)
 					{

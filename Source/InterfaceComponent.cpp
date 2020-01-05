@@ -1256,14 +1256,14 @@ void InterfaceComponent::GetAccountDisplayName(const uint64 account, const Strin
 	if(accountRS.isEmpty())
 	{
 		const String rs = burstExt.convertToReedSolomon(String(account));
-		displayName = burstExt.getAccountAliases(rs);
+		displayName = burstExt.getAccountAliases(rs, true, true);
 		if (displayName.isEmpty())
 			displayName = rs;
 	}
 	else
 	{
 		const String rs = burstExt.convertToReedSolomon(String(accountRS));
-		displayName = burstExt.getAccountAliases(rs);
+		displayName = burstExt.getAccountAliases(rs, true, true);
 		if (displayName.isEmpty())
 			displayName = rs;
 	}

@@ -53,9 +53,19 @@ public:
 	void removeListener(ChatComponentListener* const l)   { listeners.remove(l); };
 	ListenerList <ChatComponentListener> listeners;
 
-/*	void addListener(InterfaceListener* const l)      { listeners.add(l); };
-	void removeListener(InterfaceListener* const l)   { listeners.remove(l); };
-	ListenerList <InterfaceListener> listeners;*/
+	void addInterfaceListener(InterfaceListener* const l) {
+		MessageList* messageList = messageViewport ? (MessageList*)messageViewport->getViewedComponent() : nullptr;
+		if (messageList)
+			messageList->addInterfaceListener(l);
+		listenersInterface.add(l);
+	};
+	void removeInterfaceListener(InterfaceListener* const l) {
+		MessageList* messageList = messageViewport ? (MessageList*)messageViewport->getViewedComponent() : nullptr;
+		if (messageList)
+			messageList->removeInterfaceListener(l);
+		listenersInterface.remove(l);
+	};
+	ListenerList <InterfaceListener> listenersInterface;
 
 	void labelTextChanged(Label* labelThatHasChanged); // Called when a Label's text has changed.
 	void editorShown(Label*, TextEditor&); // Called when a Label goes into editing mode and displays a TextEditor.

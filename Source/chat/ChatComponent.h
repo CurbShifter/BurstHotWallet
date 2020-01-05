@@ -104,11 +104,25 @@ public:
 	void SetHoldSize(const int newHoldMultiplier) override;
 
 	void addInterfaceListener(InterfaceListener* const l) {
-		if(menu) menu->addInterfaceListener(l);
+		if (menu)
+			menu->addInterfaceListener(l);
+		for (int tabIndex = 0; tabIndex < chatComponents.size(); tabIndex++)
+		{
+			ChatBox* chatBox = chatComponents.getReference(tabIndex);
+			chatBox->addInterfaceListener(l);
+		}
+		
 		interfaceListeners.add(l); 
 	};
 	void removeInterfaceListener(InterfaceListener* const l) {
-		if (menu) menu->removeInterfaceListener(l);
+		if (menu)
+			menu->removeInterfaceListener(l);
+		for (int tabIndex = 0; tabIndex < chatComponents.size(); tabIndex++)
+		{
+			ChatBox* chatBox = chatComponents.getReference(tabIndex);
+			chatBox->removeInterfaceListener(l);
+		}
+
 		interfaceListeners.remove(l);
 	};
     //[/UserMethods]

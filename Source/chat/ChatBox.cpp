@@ -80,7 +80,7 @@ ChatBox::ChatBox (uint64 senderID, uint64 receiverID, String receiver, bool priv
 	messageEditor->setTextToShowWhenEmpty(String(privateChannel? "private message " : "message public room ") + String(privateChannel ? "" : "#") + receiver, Colours::lightgrey);
 
 	MessageList *messageList = (MessageList *)messageViewport->getViewedComponent();
-	messageList->addChatBoxListener((ChatBoxListener*)this);	
+	messageList->addChatBoxListener((ChatBoxListener*)this);
 
 	messageEditor->setFont(messageEditor->getFont().withHeight(16));
     //[/UserPreSize]
