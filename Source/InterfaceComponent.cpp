@@ -273,7 +273,7 @@ InterfaceComponent::InterfaceComponent ()
 		settingsListeners.call(&SettingsListener::CreateWallet);
 	else LoadPassPhrase();
 
-	versionLabel->setText("v0.3." PROJECT_SVNRevision " (" + String(burstExt.GetBurstKitVersionNumber()) + ")", dontSendNotification);
+	versionLabel->setText("v0.3." + String(PROJECT_SVNRevision) /*+ " (" + String(burstExt.GetBurstKitVersionNumber()) + ")"*/, dontSendNotification);
 
 #if ALLOW_EXT_REQ == 1
 	String httpsocketStr;
@@ -781,6 +781,8 @@ void InterfaceComponent::SavePassPhraseWithNewPIN(const String passPhrase)
 	settingsButton->setVisible(false);
 	// ask for new PIN
 	// PIN  dialog calls SavePassPhrase with new PIN code
+
+	// TODO remove old account before adding new
 }
 
 void InterfaceComponent::UnloadPassPhrase()
@@ -1257,14 +1259,14 @@ void InterfaceComponent::GetAccountDisplayName(const uint64 account, const Strin
 	{
 		const String rs = burstExt.convertToReedSolomon(String(account));
 		displayName = burstExt.getAccountAliases(rs, true, true);
-		if (displayName.isEmpty())
+		if (displayName.trim().isEmpty())
 			displayName = rs;
 	}
 	else
 	{
 		const String rs = burstExt.convertToReedSolomon(String(accountRS));
 		displayName = burstExt.getAccountAliases(rs, true, true);
-		if (displayName.isEmpty())
+		if (displayName.trim().isEmpty())
 			displayName = rs;
 	}
 }

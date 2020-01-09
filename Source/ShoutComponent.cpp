@@ -63,6 +63,7 @@ ShoutComponent::ShoutComponent ()
 	totalShowTime = 0;
 	totalShowTimeLoop = 60;
 	totalAmountNQTs = 0;
+	youngOnes = 0;
 
 	const int timerInterval = 100;
 	timerDelay = (totalShowTimeLoop - 5) * (1000 / timerInterval);
@@ -150,7 +151,7 @@ void ShoutComponent::buttonClicked (Button* buttonThatWasClicked)
 		uint64 total = 0;
 		{
 			const ScopedLock lock(shoutsLock);
-			total = totalAmountNQTs;
+			total = youngOnes > 0 ? totalAmountNQTs : 0;
 		}
 		ScopedPointer<PopupMenu> contextMenu;
 		contextMenu = new PopupMenu;
@@ -336,6 +337,8 @@ void ShoutComponent::run()
 	uint64 amountNQTs = 0;
 	Array<shout> compiledShouts;
 	shout defaultShout;
+	youngOnes = 0;
+
 	if (!threadShouldExit())
 	{
 		const ScopedLock lock(burstExtLock);
@@ -383,6 +386,8 @@ void ShoutComponent::run()
 									freeToken = 0;
 									freeTokenTaken = true;
 								}
+								if (s.alivetime < 24 * 60 * 60) // msg younger than 24H
+									youngOnes++;
 
 								compiledShouts.add(s);
 							}
@@ -394,31 +399,35 @@ void ShoutComponent::run()
 	}
 
 	int totalShowTimeSum = 0;
-
 	if (compiledShouts.size() > 0 && !threadShouldExit())
 	{
+		if (youngOnes > 0)
+		{ // filter out msg that are older than 24H
+			Array<shout> compiledShouts_temp;
+			for (int i = 0; i < compiledShouts.size(); i++)
+			{
+				if (compiledShouts[i].alivetime < 24 * 60 * 60)
+					compiledShouts_temp.add(compiledShouts[i]);
+			}
+			if(compiledShouts_temp.size() > 0) // replace
+				compiledShouts = compiledShouts_temp;
+		}
+
+		// calc the total amount paid
 		for (int i = 0; i < compiledShouts.size(); i++)
-		{
-			alivetimes = compiledShouts[i].alivetime;
 			amountNQTs += compiledShouts[i].amountNQT;
-		}
 
-		//StringArray tooltipStrAry;
+		// calc the show times relative to amount paid
 		for (int i = 0; i < compiledShouts.size(); i++)
 		{
-			float alive = (float)compiledShouts[i].alivetime;
-			float amount = (float)compiledShouts[i].amountNQT;
+			float showtime = ((float)totalShowTimeLoop / (float)amountNQTs) * (float)compiledShouts[i].amountNQT;
 
-			float showtime = ((float)totalShowTimeLoop / (float)amountNQTs) * amount;
 			compiledShouts.getReference(i).showtime = jmax<float>(showtime, 1.f);
-
 			totalShowTimeSum += compiledShouts[i].showtime;
-
-		//	tooltipStrAry.add(compiledShouts[i].message);
 		}
-	//	shoutMessageButton->setTooltip(tooltipStrAry.joinIntoString("\n"));
 	}
-	else
+	
+	if (totalShowTimeSum <= 0)
 	{
 		shout s;
 		s.message = "Reach the community, a FREE Burst blockchain shout space available !";
@@ -430,7 +439,6 @@ void ShoutComponent::run()
 
 		amountNQTs = 0;
 		totalShowTimeSum = totalShowTimeLoop;
-	//	shoutMessageButton->setTooltip(s.message);
 	}
 
 	{

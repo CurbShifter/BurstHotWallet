@@ -461,7 +461,7 @@ void SettingsComponent::buttonClicked (Button* buttonThatWasClicked)
 		contextMenu->addItem(7, "Copy public address to clipboard", true);
 		contextMenu->addItem(9, "Copy public key to clipboard", true);
 		contextMenu->addSeparator();
-		contextMenu->addItem(1, "Change my access PIN code", true);
+	//	contextMenu->addItem(1, "Change my access PIN code", true);
 	/*	contextMenu->addItem(5, "Manual edit pass phrase", true, editingPassPhrase);
 		contextMenu->addSeparator();
 		contextMenu->addItem(3, "Import pass phrase (plain text!)", true);*/

@@ -69,8 +69,9 @@ void MessageList::paint (Graphics& g)
 		if (juce::CharPointer_UTF8::isValidString(&(tx.message[0]), tx.messageSize))
 			msg = (MemoryBlock(&(tx.message[0]), tx.messageSize).toString());
 		
-		Colour meBgColor(0xffacffa3);
-		Colour senderBgColor(0xffb1ddff);
+		Colour meBgColor = Colour::fromHSV((double)tx.recipient / (double)UINT_FAST64_MAX, 0.5, 0.7, 0xff);// (0xffacffa3);
+		Colour senderBgColor = Colour::fromHSV((double)tx.sender / (double)UINT_FAST64_MAX, 0.5, 0.7, 0xff);// (0xffb1ddff);
+		
 		Colour timeColor(isPrivate && !global ? Colours::whitesmoke.withAlpha(0.5f) : Colours::grey);
 		Colour outlineColor(Colours::lightgrey.withAlpha(0.3f));
 		Colour txtColor(tx.txid == 0 ? Colours::black.withAlpha(0.3f) : Colours::black);
@@ -86,6 +87,9 @@ void MessageList::paint (Graphics& g)
 		String sender(accountNames[String(tx.sender)].upToFirstOccurrenceOf(";", false, true));//.replace(";", " / "));
 		if (sender.isEmpty())
 			sender = String(tx.sender);
+		if (sender.compare("0") == 0)
+			sender.clear();
+
 		String recipient(accountNames[String(tx.recipient)].upToFirstOccurrenceOf(";", false, true));//.replace(";", " / "));
 		if (recipient.isEmpty())
 			recipient = String(tx.recipient);
@@ -107,7 +111,11 @@ void MessageList::paint (Graphics& g)
 		if (clip.contains(bubble.toNearestInt()))
 		{
 			// TEXT
-			GlyphArrangement arr = DrawFittedText(g, msg, bubble.reduced(10, 7).toNearestInt(), myMessage ? juce::Justification::right : juce::Justification::left, numLines, 1.0f);
+			GlyphArrangement arr = DrawFittedText(g, 
+				msg, 
+				bubble.reduced(10, 7).toNearestInt(), 
+				myMessage ? juce::Justification::Flags::right : juce::Justification::Flags::left, 
+				numLines, 1.0f);
 			float newWidth = arr.getBoundingBox(0, arr.getNumGlyphs(), true).getWidth();
 
 			if (myMessage)
@@ -127,7 +135,7 @@ void MessageList::paint (Graphics& g)
 			g.setColour(timeColor);
 			g.setFont(15.0f);
 			g.drawSingleLineText(
-				tcStr + (isPrivate && !global ? "" : (" " + sender)) + (global && recipient.isNotEmpty() ? " to " + recipient : ""),
+				tcStr + " " + sender + (global && recipient.compare("0") != 0 && recipient.isNotEmpty() ? " to " + recipient : ""),
 				myMessage ? getWidth() - 10.f - scrollBarWidth : 10, 
 				y1 - 5,
 				myMessage ? Justification::right : Justification::left);

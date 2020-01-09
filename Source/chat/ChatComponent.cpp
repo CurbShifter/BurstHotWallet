@@ -400,9 +400,6 @@ void ChatComponent::NewTab(const String recipient, bool isPrivate, bool forceSho
 
 					addChatBoxListener(chatBox);
 
-					
-
-
 					if (messageViewport)
 					{
 						MessageList *messageList = (MessageList *)messageViewport->getViewedComponent();
@@ -488,6 +485,7 @@ void ChatComponent::NotifyTab(uint64 recipientID, uint64 senderID, bool isPriv, 
 	if (hasKeyboardFocus(true) == false)
 	{
 		notify++;
+		notifyMsg = msg;
 	}
 }
 
@@ -588,7 +586,7 @@ void ChatComponent::timerCallback()
 		{
 			notify = 0;
 
-			interfaceListeners.call(&InterfaceListener::SystemTrayNotify, "New message(s)", "", true);
+			interfaceListeners.call(&InterfaceListener::SystemTrayNotify, notifyMsg, "", true);
 
 #ifdef JUCE_WINDOWS
 			FLASHWINFO fwi;

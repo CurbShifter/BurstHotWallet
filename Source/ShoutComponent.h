@@ -85,6 +85,7 @@ private:
 	int totalShowTimeLoop;
 	int totalShowTime;
 	uint64 totalAmountNQTs;
+    int youngOnes;
     //[/UserVariables]
 
     //==============================================================================

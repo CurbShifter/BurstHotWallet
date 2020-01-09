@@ -226,6 +226,7 @@ private:
 
 	uint32 next_banner_poll_ms;
 	int notify;
+	String notifyMsg;
 	StringPairArray assetsBalances;
 	Array<ScopedPointer<ChatBox>> chatComponents;
 	CriticalSection burstSktLock;
