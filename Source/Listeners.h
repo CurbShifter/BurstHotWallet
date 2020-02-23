@@ -341,8 +341,7 @@ public:
 	virtual void SetStatusText(const String, const double) {};
 	virtual void NotifyTab(uint64, uint64, bool, String) {};
 	virtual void ReloadChannelItems() {};
-	//virtual void SetBurstRS(const String) {};
-	virtual void SetAccountRS(const String) {};
+	virtual void SetAccountRS(const String, const String pubkey) {};
 };
 
 

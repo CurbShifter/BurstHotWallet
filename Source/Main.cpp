@@ -41,12 +41,41 @@ public:
     //==============================================================================
     void initialise (const String& /*commandLine*/) override
     {
-        mainWindow = new MainWindow (getApplicationName());
+        if (CheckLatestVersion())
+        {
+            NativeMessageBox::showMessageBox(AlertWindow::InfoIcon, ProjectInfo::projectName, "Install the new version after downloading it via your browser.\nClosing " + String(ProjectInfo::projectName) + " now.");
+            quit();
+        }
+        else mainWindow = new MainWindow (getApplicationName());
     }
 
     void shutdown() override
     {
         mainWindow = nullptr; // (deletes our window)
+    }
+
+    bool CheckLatestVersion()
+    {
+        String latestInfoStr = URL("https://api.github.com/repos/CurbShifter/BurstHotWallet/releases").readEntireTextStream(false);
+        String versionTagStr = latestInfoStr.fromFirstOccurrenceOf("\"tag_name\":\"", false, true).upToFirstOccurrenceOf("\"", false, true);
+        String revisionTagStr = versionTagStr.fromLastOccurrenceOf(".", false, true);
+
+        // check if online revision is higher than local
+    	if (revisionTagStr.getIntValue() > PROJECT_SVNRevisionN)
+        {
+            if (NativeMessageBox::showOkCancelBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "A new version is available!\nDo you want to download the latest version?\n" + versionTagStr))
+            {
+#ifdef JUCE_WINDOWS
+                juce::URL url(GITHUB_HOTWALLET_URL "releases/latest/download/BurstHotWallet.msi");
+#elif JUCE_MAC
+                juce::URL url(GITHUB_HOTWALLET_URL "releases/latest/download/BurstHotWallet.dmg");
+#endif
+                url.launchInDefaultBrowser();
+
+                return true;
+            }
+        }
+        return false;
     }
 
     //==============================================================================

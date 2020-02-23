@@ -1003,7 +1003,7 @@ void InterfaceComponent::SetNode(const String address)
 
 	if (v.isEmpty())
 	{
-		NativeMessageBox::showMessageBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "Node address seems invalid !");
+		NativeMessageBox::showMessageBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "Node address seems invalid, offline or unresponsive !\nPlease switch to another node.");
 	}
 	else
 	{

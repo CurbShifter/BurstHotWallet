@@ -105,7 +105,7 @@ public:
 	void NotifyTab(uint64 recipientID, uint64 senderID, bool isPriv, String msg) override;
 	void SetStatusText(const String msg, const double progress) override;
 	void SetIsOnline(const bool) override;
-	void SetAccountRS(const String) override;
+	void SetAccountRS(const String, const String pubkey) override;
 
 	struct tabprops
 	{
@@ -135,6 +135,7 @@ private:
 	bool isOnline;
 	Array<tabprops> tabs;
 	String accountRS;
+	String accountPubkey;
     //[/UserVariables]
 
     //==============================================================================

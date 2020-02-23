@@ -151,9 +151,8 @@ private:
 
 	void timerCallback();
 
-	void log(String message);
-
-	void Play_Sound(int nr);
+	//void log(String message);
+	//void Play_Sound(int nr);
 
 	class CustomTabbedComponent : public TabbedComponent
 	{
@@ -232,6 +231,7 @@ private:
 	CriticalSection burstSktLock;
 	BurstSocket burstSocket;
 
+	String accountPubkey;
 	String balance;
 	bool burning;
 	int slot;

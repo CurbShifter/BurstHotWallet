@@ -48,7 +48,7 @@ becomes:
 
 ApplicationProperties& getAppProperties();
 
-
+#define GITHUB_HOTWALLET_URL "https://github.com/CurbShifter/BurstHotWallet/"
 #define INTERFACE_UPDATE_MS 1000
 //[/Headers]
 
@@ -261,6 +261,8 @@ private:
 	StringArray assetWhitelistDecimals;
 	StringPairArray assetsBalances;
 	HashMap<String, String> assetMap;
+
+	void CheckLatestVerion();
 
 	juce::Rectangle<float> leftTopCorner1;
 	juce::Rectangle<float> leftTopCorner2;

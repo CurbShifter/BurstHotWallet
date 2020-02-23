@@ -233,34 +233,39 @@ void Menu::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
 void Menu::RequestNewTab(bool priv, String name)
 {
-	if (name.isEmpty())
-		name = channelNameComboBox->getText();
-	if (name.isEmpty())
-		name = channelNameComboBox->getTextWhenNothingSelected();
-
-	if (name.isNotEmpty())
-		chatListeners.call(&ChatComponentListener::NewTab, name, priv, true);
-	else NativeMessageBox::showMessageBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "Please enter a BURST address, alias or account ID.");
-
-	String channelsList;
-	interfaceListeners.call(&InterfaceListener::GetAppValue, accountRS + "-openTabs", channelsList);
-	StringArray sa = StringArray::fromTokens(channelsList, ",", "'");
-	int idx = sa.indexOf(name);
-	if (idx == -1)
-	{
-		if (sa.size() > 10)
-			sa.removeRange(10, sa.size() - 10);
-	}
+	if(priv && accountPubkey.isEmpty())
+		NativeMessageBox::showMessageBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "You first need a public key on the blockchain before you can create valid encrypted messages!\nMake a transaction ie. register an alias or set your account name in the settings page.");
 	else
 	{
-		sa.removeString(name);
-	}
-	sa.insert(0, name);
-	channelsList = sa.joinIntoString(",");
-	interfaceListeners.call(&InterfaceListener::SetAppValue, accountRS + "-openTabs", channelsList);
+		if (name.isEmpty())
+			name = channelNameComboBox->getText();
+		if (name.isEmpty())
+			name = channelNameComboBox->getTextWhenNothingSelected();
 
-	ReloadChannelItems();
-	chatlist->updateContent();
+		if (name.isNotEmpty())
+			chatListeners.call(&ChatComponentListener::NewTab, name, priv, true);
+		else NativeMessageBox::showMessageBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "Please enter a BURST address, alias or account ID.");
+
+		String channelsList;
+		interfaceListeners.call(&InterfaceListener::GetAppValue, accountRS + "-openTabs", channelsList);
+		StringArray sa = StringArray::fromTokens(channelsList, ",", "'");
+		int idx = sa.indexOf(name);
+		if (idx == -1)
+		{
+			if (sa.size() > 10)
+				sa.removeRange(10, sa.size() - 10);
+		}
+		else
+		{
+			sa.removeString(name);
+		}
+		sa.insert(0, name);
+		channelsList = sa.joinIntoString(",");
+		interfaceListeners.call(&InterfaceListener::SetAppValue, accountRS + "-openTabs", channelsList);
+
+		ReloadChannelItems();
+		chatlist->updateContent();
+	}
 }
 
 void Menu::AddTab(const String &tabName, uint64 senderID, uint64 receiverID, String receiver, bool privateChannel, const int insertIndex, const bool forceShow)
@@ -380,9 +385,10 @@ StringArray Menu::GetRoomNames()
 	return tabNames;
 }
 
-void Menu::SetAccountRS(const String rs)
+void Menu::SetAccountRS(const String rs, const String pubkey)
 {
 	accountRS = rs;
+	accountPubkey = pubkey;
 }
 
 // RoomsListBoxModel -------------------------------------------------------------

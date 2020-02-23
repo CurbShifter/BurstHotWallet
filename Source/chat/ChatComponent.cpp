@@ -198,7 +198,10 @@ void ChatComponent::SetSecretPhrase(const String passphrase)
 	CloseSocket();
 	burstSocket.SetSecretPhrase(passphrase);
 
-	menu->SetAccountRS(burstSocket.GetAccountRS());
+	String rs = burstSocket.GetAccountRS();
+	accountPubkey = burstSocket.GetJSONvalue(burstSocket.getAccountPublicKey(rs), "publicKey");
+
+	menuListeners.call(&MenuListener::SetAccountRS, rs, accountPubkey);
 
 	if(passphrase.isNotEmpty())
 		OpenChannels();
@@ -319,7 +322,7 @@ void ChatComponent::SetAssetsBalances(const StringPairArray assetsBalances)
 	this->assetsBalances = assetsBalances;
 	this->balance = assetsBalances["0"];
 
-	menuListeners.call(&MenuListener::SetAccountRS, burstSocket.GetAccountRS());
+	menuListeners.call(&MenuListener::SetAccountRS, burstSocket.GetAccountRS(), accountPubkey);
 }
 
 void ChatComponent::ActivateTab(const int index, const bool forceShow)

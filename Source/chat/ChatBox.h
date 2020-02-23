@@ -118,7 +118,8 @@ private:
 	uint64 receiverID;
 	bool isPrivateChannel;
 	String receiverChannel;
-
+	String receiverPubkey;	
+	BurstExt burstExt;
 	int maxETx;
     //[/UserVariables]
 

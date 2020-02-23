@@ -34,7 +34,10 @@ ChatBox::ChatBox (uint64 senderID, uint64 receiverID, String receiver, bool priv
 	this->receiverID = receiverID;
 	receiverChannel = receiver;
 	isPrivateChannel = privateChannel;
-    //[/Constructor_pre]
+    
+	if (privateChannel && receiverChannel.compare("*") != 0)
+		receiverPubkey = burstExt.GetJSONvalue(burstExt.getAccountPublicKey(receiverChannel), "publicKey");
+	//[/Constructor_pre]
 
     addAndMakeVisible (sendButton = new TextButton ("sendButton"));
     sendButton->setTooltip (TRANS("Send message, the recipient needs to be online to see it."));
@@ -357,14 +360,19 @@ void ChatBox::SendFile(File file)
 
 void ChatBox::SendMessage(String msg)
 {
-	MessageList *messageList = (MessageList *)messageViewport->getViewedComponent();
-	if (msg.isEmpty())
-		msg = messageEditor->getText();
+	if (isPrivateChannel && receiverPubkey.isEmpty())
+		NativeMessageBox::showMessageBox(AlertWindow::WarningIcon, ProjectInfo::projectName, "Recipient does not have a public key to encrypt the chat!\nRecipient needs to make a transaction on the blockchain first.");
+	else
+	{
+		MessageList* messageList = (MessageList*)messageViewport->getViewedComponent();
+		if (msg.isEmpty())
+			msg = messageEditor->getText();
 
-	messageList->AddUnconfirmedSendMessage(msg);
-	listeners.call(&ChatComponentListener::SocketSendMessage, receiverChannel, msg, isPrivateChannel);
+		messageList->AddUnconfirmedSendMessage(msg);
+		listeners.call(&ChatComponentListener::SocketSendMessage, receiverChannel, msg, isPrivateChannel);
 
-	messageEditor->setText("", false);
+		messageEditor->setText("", false);
+	}
 }
 //[/MiscUserCode]
 
