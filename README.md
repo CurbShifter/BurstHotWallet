@@ -1,3 +1,9 @@
+# Discontinued
+Burst's Hotwallet is discontinued (2021)
+For compatible wallets check https://signum.network/wallet.html
+
+----
+
 ![](https://github.com/CurbShifter/BurstHotWallet/blob/master/Source/CryptoExtensionsLogo.svg)
 
 # [CryptoExtensions](https://twitter.com/BurstExtensions) #
@@ -16,13 +22,7 @@ Libraries used
 Juce and BurstLib
 
 ----
-Please support the developers of the software you use. With value for value. 
 
-BURST-WN56-VW53-7B6V-9YAFW
-
-contact: [Discord](https://discord.gg/KsFf3jb "https://discord.gg/KsFf3jb"), 
-[twitter](https://twitter.com/BurstExtensions) or curbshifter at protonmail com
-
-----------
+Thank you to everyone that has supported the development of this software.
 
 Released under GPL v3 License - Copyright (c) 2019 CurbShifter 
